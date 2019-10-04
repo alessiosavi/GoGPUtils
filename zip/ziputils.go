@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// ReadZip is delegated to extract the files and read the content
 func ReadZip(filename string) (map[string]string, error) {
 	var filesContent map[string]string
 
@@ -31,10 +32,10 @@ func ReadZip(filename string) (map[string]string, error) {
 		}
 	}
 	log.Println("ReadZip | Unzipped ", len(filesContent), " files")
-	return filesContent, err
+	return filesContent, nil
 }
 
-// readAll is a wrapper function for ioutil.ReadAll. It accepts a zip.File as
+// ReadZipFile is a wrapper function for ioutil.ReadAll. It accepts a zip.File as
 // its parameter, opens it, reads its content and returns it as a byte slice.
 func ReadZipFile(file *zip.File) (string, error) {
 	if !file.Mode().IsRegular() {
