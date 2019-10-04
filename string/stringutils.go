@@ -29,11 +29,22 @@ func CheckPresence(target string, array []string) bool {
 	return false
 }
 
-// IsUpper verify that a string does not contains upper char
+// IsUpper verify that a string does contains only upper char
 func IsUpper(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
-		if ascii < 91 && ascii > 64 {
+		if ascii < 65 || ascii > 90 {
+			return false
+		}
+	}
+	return true
+}
+
+// IsLower verify that a string does contains only lower char
+func IsLower(str string) bool {
+	for i := range str {
+		ascii := int(str[i])
+		if ascii < 97 || ascii > 122 {
 			return false
 		}
 	}

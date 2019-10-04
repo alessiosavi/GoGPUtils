@@ -15,9 +15,15 @@ func Check(e error) {
 }
 
 // Random initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
-func Random(min int, max int) int {
+func RandomInt(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
+}
+
+// RandomFloat initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+func RandomFloat(min, max float64) float64 {
+	rand.Seed(time.Now().UnixNano())
+	return min + rand.Float64()*(max-min)
 }
 
 // ByteCountSI convert the byte in input to MB/KB/TB ecc
