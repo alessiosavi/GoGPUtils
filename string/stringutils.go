@@ -2,6 +2,7 @@ package stringutils
 
 import (
 	"bufio"
+	"bytes"
 	"regexp"
 	"strings"
 )
@@ -53,8 +54,8 @@ func IsLower(str string) bool {
 
 // ContainsLetter verity that the given string contains, at least, an ASCII character
 func ContainsLetter(str string) bool {
-	for _, charVariable := range str {
-		if (charVariable >= 'a' && charVariable <= 'z') || (charVariable >= 'A' && charVariable <= 'Z') {
+	for i := range str {
+		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') {
 			return true
 		}
 	}
@@ -79,8 +80,8 @@ func CreateJSON(values ...string) string {
 // Join is a quite efficient string concatenator
 func Join(strs ...string) string {
 	var sb strings.Builder
-	for _, str := range strs {
-		sb.WriteString(str)
+	for i := range strs {
+		sb.WriteString(strs[i])
 	}
 	return sb.String()
 }
@@ -101,18 +102,31 @@ func RemoveWhiteSpaceString(str string) string {
 
 // IsASCII is delegated to verify if a given string is ASCII compliant
 func IsASCII(s string) bool {
-	for _, c := range s {
-		if c > 127 {
+	for i := range s {
+		if s[i] > 127 {
 			return false
 		}
 	}
 	return true
 }
 
-// RemoveFromString Remove a given element from a string
-func RemoveFromString(s []byte, i int) []byte {
+// IsASCIIRune is delegated to verify if the given character is ASCII compliant
+func IsASCIIRune(r rune) bool {
+	return !(r > 127)
+}
+
+// RemoveFromByte Remove a given element from a string
+// NOTE: Panic in case of index out of bound
+func RemoveFromByte(s []byte, i int) []byte {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]
+}
+
+// RemoveFromString Remove a given element from a string
+func RemoveFromString(data string, i int) string {
+	s := []byte(data)
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return string(s[:len(s)-1])
 }
 
 // Split is delegated to split the string by the new line
@@ -176,4 +190,16 @@ func LowerizeString(str *string) string {
 		}
 	}
 	return *str
+}
+
+// RemoveNonAscii is delegated to clean the text from the NON ASCII character
+func RemoveNonAscii(str string) string {
+	var b bytes.Buffer
+	b.Grow(len(str))
+	for _, c := range str {
+		if IsASCIIRune(c) {
+			b.WriteRune(c)
+		}
+	}
+	return RemoveWhiteSpaceString(b.String())
 }
