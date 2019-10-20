@@ -45,3 +45,17 @@ func TestContainsLetter(t *testing.T) {
 		}
 	}
 }
+
+func TestUpperizeString(t *testing.T) {
+	dataOK := []string{`AAA`, `AbbbA`, `aBBBBa`}
+	for _, item := range dataOK {
+		t.Log(UpperizeString(&item))
+	}
+}
+
+func TestLowerizeString(t *testing.T) {
+	dataOK := []string{`AAA`, `AbbbA`, `aBBBBa`}
+	for _, item := range dataOK {
+		t.Log(LowerizeString(&item))
+	}
+}

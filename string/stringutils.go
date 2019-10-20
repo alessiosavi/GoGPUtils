@@ -33,7 +33,7 @@ func CheckPresence(target string, array []string) bool {
 func IsUpper(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
-		if ascii < 65 || ascii > 90 {
+		if !(ascii > 64 && ascii < 91) {
 			return false
 		}
 	}
@@ -44,7 +44,7 @@ func IsUpper(str string) bool {
 func IsLower(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
-		if ascii < 97 || ascii > 122 {
+		if !(ascii > 96 && ascii < 123) {
 			return false
 		}
 	}
@@ -149,4 +149,31 @@ func ExtractString(data *string, first, last string) string {
 		}
 	}
 	return ""
+}
+
+// ReplaceAtIndex is delegated to replace the character related to the index with the input rune
+func ReplaceAtIndex(str string, replacement rune, index int) string {
+	return str[:index] + string(replacement) + str[index+1:]
+}
+
+// UpperizeString is delegated to upperize the case of a lower case character
+func UpperizeString(str *string) string {
+	for i, c := range *str {
+		ascii := int(c)
+		if !(ascii > 64 && ascii < 91) {
+			*str = ReplaceAtIndex(*str, rune(ascii-32), i)
+		}
+	}
+	return *str
+}
+
+// LowerizeString is delegated to lowerize the case of an upper case character
+func LowerizeString(str *string) string {
+	for i, c := range *str {
+		ascii := int(c)
+		if !(ascii > 96 && ascii < 123) {
+			*str = ReplaceAtIndex(*str, rune(ascii+32), i)
+		}
+	}
+	return *str
 }
