@@ -1,6 +1,8 @@
 package stringutils
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestIsUpper(t *testing.T) {
 	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
@@ -43,20 +45,6 @@ func TestContainsLetter(t *testing.T) {
 		if ContainsLetter(dataKO[i]) {
 			t.Fail()
 		}
-	}
-}
-
-func TestUpperizeString(t *testing.T) {
-	dataOK := []string{`AAA`, `AbbbA`, `aBBBBa`}
-	for _, item := range dataOK {
-		t.Log(UpperizeString(&item))
-	}
-}
-
-func TestLowerizeString(t *testing.T) {
-	dataOK := []string{`AAA`, `AbbbA`, `aBBBBa`}
-	for _, item := range dataOK {
-		t.Log(LowerizeString(&item))
 	}
 }
 
