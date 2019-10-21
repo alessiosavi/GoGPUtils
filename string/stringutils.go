@@ -115,13 +115,6 @@ func IsASCIIRune(r rune) bool {
 	return !(r > 127)
 }
 
-// RemoveFromByte Remove a given element from a string
-// NOTE: Panic in case of index out of bound
-func RemoveFromByte(s []byte, i int) []byte {
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
-}
-
 // RemoveFromString Remove a given element from a string
 func RemoveFromString(data string, i int) string {
 	s := []byte(data)
@@ -168,28 +161,6 @@ func ExtractString(data *string, first, last string) string {
 // ReplaceAtIndex is delegated to replace the character related to the index with the input rune
 func ReplaceAtIndex(str string, replacement rune, index int) string {
 	return str[:index] + string(replacement) + str[index+1:]
-}
-
-// UpperizeString is delegated to upperize the case of a lower case character
-func UpperizeString(str *string) string {
-	for i, c := range *str {
-		ascii := int(c)
-		if !(ascii > 64 && ascii < 91) {
-			*str = ReplaceAtIndex(*str, rune(ascii-32), i)
-		}
-	}
-	return *str
-}
-
-// LowerizeString is delegated to lowerize the case of an upper case character
-func LowerizeString(str *string) string {
-	for i, c := range *str {
-		ascii := int(c)
-		if !(ascii > 96 && ascii < 123) {
-			*str = ReplaceAtIndex(*str, rune(ascii+32), i)
-		}
-	}
-	return *str
 }
 
 // RemoveNonASCII is delegated to clean the text from the NON ASCII character

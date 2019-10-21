@@ -3,8 +3,10 @@ package fileutils
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -102,6 +104,7 @@ func CountLinesFile(fileName string, bufferLenght int) (int, error) {
 	if err != nil {
 		return -1, err
 	}
+	defer file.Close()
 	r := bufio.NewReader(file)
 	// 32K as buffer
 	if bufferLenght == -1 {
@@ -122,4 +125,51 @@ func CountLinesFile(fileName string, bufferLenght int) (int, error) {
 			return count, err
 		}
 	}
+}
+
+func GetFileContentType(fileName string) (string, error) {
+	if !IsFile(fileName) {
+		return "", errors.New("Not a file [" + fileName + "]")
+	}
+	f, err := os.Open(fileName)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	// Only the first 512 bytes are used to sniff the content type.
+	buffer := make([]byte, 128)
+	_, err = f.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+	// Use the net/http package's handy DectectContentType function. Always returns a valid
+	// content-type by returning "application/octet-stream" if no others seemed to match.
+	contentType := http.DetectContentType(buffer)
+	// In case of application/zip, we have to be sure the file type
+	if contentType == "application/zip" {
+		//fmt.Println(string(buffer))
+		if bytes.Contains(buffer, []byte("mimetypeapplication/vnd.oasis.opendocument.tex")) {
+			return "application/odt", nil
+		}
+		if bytes.Contains(buffer, []byte("rels/.rels")) {
+			return "application/docx", nil
+		}
+	} else if contentType == "application/octet-stream" {
+		// A pickle item have an X as 2nd byte
+		if buffer[2] == 88 {
+			return "application/pickle", nil
+		} else if bytes.Contains(buffer, []byte("isomiso2mp41")) ||
+			bytes.Contains(buffer, []byte("isomiso2avc1mp41")) {
+			return "iso/mp4", nil
+		}
+		for {
+			n, err := f.Read(buffer)
+			if err == io.EOF || n == 0 {
+				break
+			} else if bytes.Contains(buffer, []byte("Microsoft Word-D")) {
+				return "application/doc", nil
+			}
+		}
+	}
+	return contentType, nil
 }

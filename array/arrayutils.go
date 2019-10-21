@@ -35,3 +35,10 @@ func JoinStrings(data []string) string {
 	}
 	return sb.String()
 }
+
+// RemoveFromByte Remove a given element from a string
+// NOTE: Panic in case of index out of bound
+func RemoveFromByte(s []byte, i int) []byte {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
