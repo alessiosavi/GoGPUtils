@@ -27,7 +27,7 @@ func RemoveWhiteSpaceArray(data []string) []string {
 	return RemoveElement(data, toDelete)
 }
 
-// JoinArray concatenate every data in the array and return the string content
+// JoinStrings concatenate every data in the array and return the string content
 func JoinStrings(data []string) string {
 	var sb strings.Builder
 	for i := 0; i < len(data); i++ {

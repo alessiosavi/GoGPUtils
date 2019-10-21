@@ -63,6 +63,6 @@ func TestLowerizeString(t *testing.T) {
 func TestRemoveNonAscii(t *testing.T) {
 	dataOK := []string{`AAÀ È Ì Ò Ù Ỳ Ǹ ẀBB`, `CCȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ Ş DD`, `$$♩ ♪ ♫ ♬ ♭ ♮ ♯##`}
 	for _, item := range dataOK {
-		t.Log(RemoveNonAscii(item))
+		t.Log(RemoveNonASCII(item))
 	}
 }

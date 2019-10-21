@@ -1,6 +1,9 @@
 package fileutils
 
 import (
+	"bufio"
+	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,7 +13,7 @@ import (
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 )
 
-// ReadAllFileInArray is delegated to read the file content as tokenize the data by the new line
+// ReadFileInArray is delegated to read the file content as tokenize the data by the new line
 func ReadFileInArray(filePath string) []string {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -91,4 +94,32 @@ func VerifyFilesExists(filePath string, files []string) bool {
 		return true
 	}
 	return false
+}
+
+// CountLinesFile return the number of lines in the given file
+func CountLinesFile(fileName string, bufferLenght int) (int, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return -1, err
+	}
+	r := bufio.NewReader(file)
+	// 32K as buffer
+	if bufferLenght == -1 {
+		bufferLenght = 32
+	}
+	buf := make([]byte, bufferLenght*1024)
+	count := 0
+	lineSep := []byte{'\n'}
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
+
+		switch {
+		case err == io.EOF:
+			return count, nil
+
+		case err != nil:
+			return count, err
+		}
+	}
 }

@@ -9,7 +9,7 @@ func SumIntArray(integers []int) int {
 	return sum
 }
 
-// MaxInt return the index that contains the max value for the given array
+// MaxIntIndex return the index that contains the max value for the given array
 func MaxIntIndex(array []int) int {
 	index := 0
 	lenght := len(array)

@@ -139,8 +139,8 @@ func Split(data string) []string {
 	return linesList
 }
 
-// CountLines return the number of lines in the given string
-func CountLines(fileContet string) int {
+// CountLinesString return the number of lines in the given string
+func CountLinesString(fileContet string) int {
 	scanner := bufio.NewScanner(strings.NewReader(fileContet)) // Create a scanner for iterate the string
 	counter := 0
 	for scanner.Scan() {
@@ -192,8 +192,8 @@ func LowerizeString(str *string) string {
 	return *str
 }
 
-// RemoveNonAscii is delegated to clean the text from the NON ASCII character
-func RemoveNonAscii(str string) string {
+// RemoveNonASCII is delegated to clean the text from the NON ASCII character
+func RemoveNonASCII(str string) string {
 	var b bytes.Buffer
 	b.Grow(len(str))
 	for _, c := range str {
