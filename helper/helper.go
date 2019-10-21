@@ -14,7 +14,7 @@ func Check(e error) {
 	}
 }
 
-// Random initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
