@@ -4,34 +4,33 @@ import (
 	"archive/zip"
 	"errors"
 	"io/ioutil"
-	"log"
 )
 
 // ReadZip is delegated to extract the files and read the content
 func ReadZip(filename string) (map[string]string, error) {
 	var filesContent map[string]string
 
-	log.Println("ReadZip | Opening zipped content from [" + filename + "]")
+	//log.Println("ReadZip | Opening zipped content from [" + filename + "]")
 	zf, err := zip.OpenReader(filename)
 	if err != nil {
-		log.Println("ReadZip | Error during read "+filename+" | Err: ", err)
+		//log.Println("ReadZip | Error during read "+filename+" | Err: ", err)
 		return nil, err
 	}
 	defer zf.Close()
 	filesContent = make(map[string]string)
 	for _, file := range zf.File {
 		if file.Mode().IsRegular() {
-			log.Println("ReadZip | Unzipping regular file " + file.Name)
+			//log.Println("ReadZip | Unzipping regular file " + file.Name)
 			data, err := ReadZipFile(file)
-			if err == nil {
-				log.Println("ReadZip | File unzipped succesfully!")
-				filesContent[file.Name] = data
+			if err != nil {
+				//log.Println("ReadZip | Unable to unzip file " + file.Name)
 			} else {
-				log.Println("ReadZip | Unable to unzip file " + file.Name)
+				//log.Println("ReadZip | File unzipped succesfully!")
+				filesContent[file.Name] = data
 			}
 		}
 	}
-	log.Println("ReadZip | Unzipped ", len(filesContent), " files")
+	//log.Println("ReadZip | Unzipped ", len(filesContent), " files")
 	return filesContent, nil
 }
 
