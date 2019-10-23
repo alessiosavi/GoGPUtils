@@ -25,7 +25,7 @@ func ReadZip(filename string) (map[string]string, error) {
 			if err != nil {
 				//log.Println("ReadZip | Unable to unzip file " + file.Name)
 			} else {
-				//log.Println("ReadZip | File unzipped succesfully!")
+				//log.Println("ReadZip | File unzipped successfully!")
 				filesContent[file.Name] = data
 			}
 		}
