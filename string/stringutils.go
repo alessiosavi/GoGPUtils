@@ -197,7 +197,6 @@ func Trim(str string) string {
 	var b strings.Builder
 	lenght := len(str)
 	for i := 0; i < lenght; i++ {
-		// Convert double space as a single space
 		if str[i] > 32 {
 			b.WriteByte(str[i])
 		} else if i+1 < lenght && (str[i] < 33 && str[i+1] > 32) {
@@ -207,7 +206,7 @@ func Trim(str string) string {
 	var data string
 	data = b.String()
 	lenght = len(data)
-	if str[0] == 32 {
+	if data[0] == 32 {
 		data = data[1:]
 		lenght--
 	}

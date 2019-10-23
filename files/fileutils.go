@@ -127,8 +127,17 @@ func CountLinesFile(fileName string, bufferLenght int) (int, error) {
 	}
 }
 
+// FileExists verify that the file exist
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
+}
+
 // GetFileContentType is delegated to retrieve the filetype for a given file path
 func GetFileContentType(fileName string) (string, error) {
+	if !FileExists(fileName) {
+		return "", errors.New("File " + fileName + " does not exist!")
+	}
 	if !IsFile(fileName) {
 		if IsDir(fileName) {
 			return "directory", nil
