@@ -12,8 +12,8 @@ func SumIntArray(integers []int) int {
 // MaxIntIndex return the index that contains the max value for the given array
 func MaxIntIndex(array []int) int {
 	index := 0
-	lenght := len(array)
-	for i := 1; i < lenght; i++ {
+	length := len(array)
+	for i := 1; i < length; i++ {
 		if array[i] > array[index] {
 			index = i
 		}

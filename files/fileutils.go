@@ -74,7 +74,7 @@ func GetFileDate(filepath string) string {
 // FindFiles is delegated to find the files from the given directory, recursively for each dir
 func FindFiles(path string) []string {
 	fileList := []string{}
-	// Read all the file recursivly
+	// Read all the file recursively
 	filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 		if IsFile(file) {
 			fileList = append(fileList, file)

@@ -68,11 +68,11 @@ func ContainsLetter(str string) bool {
 // CreateJSON is delegated to create a json object for the key pair in input
 func CreateJSON(values ...string) string {
 	json := `{`
-	lenght := len(values)
-	if lenght%2 != 0 {
+	length := len(values)
+	if length%2 != 0 {
 		return ""
 	}
-	for i := 0; i < lenght; i += 2 {
+	for i := 0; i < length; i += 2 {
 		json = Join(json, `"`, values[i], `":"`, values[i+1], `",`)
 	}
 	json = strings.TrimSuffix(json, `,`)
@@ -178,8 +178,9 @@ func RemoveNonASCII(str string) string {
 	return RemoveWhiteSpaceString(b.String())
 }
 
+// IsBlank is delegated to verify that the does not contains only empty char
 func IsBlank(str string) bool {
-	// Check lenght
+	// Check length
 	if len(str) > 0 {
 		// Iterate string
 		for i := range str {
@@ -195,23 +196,23 @@ func IsBlank(str string) bool {
 // Trim is delegated to remove the initial and final whitespace and the double whitespace
 func Trim(str string) string {
 	var b strings.Builder
-	lenght := len(str)
-	for i := 0; i < lenght; i++ {
+	length := len(str)
+	for i := 0; i < length; i++ {
 		if str[i] > 32 {
 			b.WriteByte(str[i])
-		} else if i+1 < lenght && (str[i] < 33 && str[i+1] > 32) {
+		} else if i+1 < length && (str[i] < 33 && str[i+1] > 32) {
 			b.WriteByte(str[i])
 		}
 	}
 	var data string
 	data = b.String()
-	lenght = len(data)
+	length = len(data)
 	if data[0] == 32 {
 		data = data[1:]
-		lenght--
+		length--
 	}
-	if data[lenght-1] == 32 {
-		data = data[:lenght-2]
+	if data[length-1] == 32 {
+		data = data[:length-2]
 	}
 	return data
 }
