@@ -3,8 +3,11 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
+	"math/rand"
 	"regexp"
 	"strings"
+	"time"
+	"unsafe"
 )
 
 // ExtractTextFromQuery is delegated to retrieve the list of string involved in the query
@@ -173,4 +176,65 @@ func RemoveNonASCII(str string) string {
 		}
 	}
 	return RemoveWhiteSpaceString(b.String())
+}
+
+func IsBlank(str string) bool {
+	// Check lenght
+	if len(str) > 0 {
+		// Iterate string
+		for i := range str {
+			// Check about char different from whitespace
+			if str[i] > 32 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func Trim(str string) string {
+	var b strings.Builder
+	lenght := len(str)
+	for i := 0; i < lenght; i++ {
+		// Remove double whitespace
+		if i+1 < lenght && (str[i] < 33 && str[i+1] < 33) {
+			b.WriteRune(32)
+		} else if str[i] > 32 {
+			b.WriteByte(str[i])
+		}
+	}
+	var data string
+	data = b.String()
+	if str[0] == 32 {
+		data = data[1:]
+	}
+	if str[lenght-1] == 32 {
+		data = data[:lenght-2]
+	}
+	return data
+}
+
+const (
+	letterBytes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+func RandomString(n int) string {
+	b := make([]byte, n)
+	var src = rand.NewSource(time.Now().UnixNano())
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i > -1; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+	return *(*string)(unsafe.Pointer(&b))
 }

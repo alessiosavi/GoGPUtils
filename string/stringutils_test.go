@@ -19,6 +19,37 @@ func TestIsUpper(t *testing.T) {
 	}
 }
 
+func BenchmarkTestIsUpperKO(b *testing.B) {
+	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa`
+	for n := 0; n < b.N; n++ {
+		IsUpper(data)
+
+	}
+}
+
+func BenchmarkTestIsUpperOK(b *testing.B) {
+	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+	for n := 0; n < b.N; n++ {
+		IsUpper(data)
+
+	}
+}
+
+func BenchmarkTestIsLowerOK(b *testing.B) {
+	data := `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+	for n := 0; n < b.N; n++ {
+		IsLower(data)
+
+	}
+}
+func BenchmarkTestIsLowerKO(b *testing.B) {
+	data := `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA`
+	for n := 0; n < b.N; n++ {
+		IsLower(data)
+
+	}
+}
+
 func TestIsLower(t *testing.T) {
 	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
 	dataKO := []string{`aaa`, `bbb`, `zzz`}
@@ -53,4 +84,35 @@ func TestRemoveNonAscii(t *testing.T) {
 	for _, item := range dataOK {
 		t.Log(RemoveNonASCII(item))
 	}
+}
+
+func TestIsBlank(t *testing.T) {
+	data := []string{``, ` `, `    `, `	`}
+	for _, item := range data {
+		if !IsBlank(item) {
+			t.Log(item)
+			t.Fail()
+		}
+	}
+}
+
+func TestTrim(t *testing.T) {
+	data := []string{`  test`, `test  `, `t  st`}
+	for _, item := range data {
+		str := Trim(item)
+		if len(str) != 4 {
+			t.Log("Data ->", str, " Len: ", len(str))
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkRandomString(t *testing.B) {
+	for n := 0; n < t.N; n++ {
+		RandomString(5000)
+	}
+}
+
+func TestRandomString(t *testing.T) {
+	t.Log(RandomString(5000))
 }
