@@ -21,6 +21,13 @@ func TestCountLinesFile(t *testing.T) {
 	}
 }
 
+func BenchmarkCountLinesFile(b *testing.B) {
+	file := `../tests/files/test1.txt`
+	for i := 0; i < b.N; i++ {
+		CountLinesFile(file, -1)
+	}
+}
+
 func TestGetFileContentTypeKO(t *testing.T) {
 	file := `../tests/files/test.txt`
 	_, err := GetFileContentType(file)
@@ -148,6 +155,19 @@ func TestGetFileContentTypeMP4(t *testing.T) {
 		t.Fail()
 	}
 	if fileType != "video/mp4" {
+		t.Log(fileType)
+		t.Fail()
+	}
+}
+
+func TestGetFileContentTypeBIN(t *testing.T) {
+	file := `../GoGPUtils`
+	fileType, err := GetFileContentType(file)
+	if err != nil {
+		t.Log("Error -> ", err)
+		t.Fail()
+	}
+	if fileType != "elf/binary" {
 		t.Log(fileType)
 		t.Fail()
 	}

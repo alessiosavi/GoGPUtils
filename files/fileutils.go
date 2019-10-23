@@ -127,16 +127,21 @@ func CountLinesFile(fileName string, bufferLenght int) (int, error) {
 	}
 }
 
+// GetFileContentType is delegated to retrieve the filetype for a given file path
 func GetFileContentType(fileName string) (string, error) {
 	if !IsFile(fileName) {
-		return "", errors.New("Not a file [" + fileName + "]")
+		if IsDir(fileName) {
+			return "directory", nil
+		}
+		// Maybe a link
+		return "not_regular_file", errors.New("Not a regular file [" + fileName + "]")
 	}
 	f, err := os.Open(fileName)
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
-	// Only the first 512 bytes are used to sniff the content type.
+	// Only the first 128 bytes are used to sniff the content type.
 	buffer := make([]byte, 128)
 	_, err = f.Read(buffer)
 	if err != nil {
@@ -161,6 +166,9 @@ func GetFileContentType(fileName string) (string, error) {
 		} else if bytes.Contains(buffer, []byte("isomiso2mp41")) ||
 			bytes.Contains(buffer, []byte("isomiso2avc1mp41")) {
 			return "iso/mp4", nil
+		}
+		if bytes.Equal(buffer[1:4], []byte("ELF")) {
+			return "elf/binary", nil
 		}
 		for {
 			n, err := f.Read(buffer)
