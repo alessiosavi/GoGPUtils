@@ -96,12 +96,22 @@ func TestIsBlank(t *testing.T) {
 	}
 }
 
-func TestTrim(t *testing.T) {
+func TestTrimDoubleSpace(t *testing.T) {
 	data := []string{`  test`, `test  `, `t  st`}
 	for _, item := range data {
 		str := Trim(item)
+		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
 		if len(str) != 4 {
-			t.Log("Data ->", str, " Len: ", len(str))
+			t.Fail()
+		}
+	}
+}
+func TestTrim(t *testing.T) {
+	data := []string{` test`, `test `, `te s`}
+	for _, item := range data {
+		str := Trim(item)
+		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
+		if len(str) != 4 {
 			t.Fail()
 		}
 	}
