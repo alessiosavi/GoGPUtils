@@ -192,23 +192,26 @@ func IsBlank(str string) bool {
 	return true
 }
 
+// Trim is delegated to remove the initial and final whitespace and the double whitespace
 func Trim(str string) string {
 	var b strings.Builder
 	lenght := len(str)
 	for i := 0; i < lenght; i++ {
-		// Remove double whitespace
-		if i+1 < lenght && (str[i] < 33 && str[i+1] < 33) {
-			b.WriteRune(32)
-		} else if str[i] > 32 {
+		// Convert double space as a single space
+		if str[i] > 32 {
+			b.WriteByte(str[i])
+		} else if i+1 < lenght && (str[i] < 33 && str[i+1] > 32) {
 			b.WriteByte(str[i])
 		}
 	}
 	var data string
 	data = b.String()
+	lenght = len(data)
 	if str[0] == 32 {
 		data = data[1:]
+		lenght--
 	}
-	if str[lenght-1] == 32 {
+	if data[lenght-1] == 32 {
 		data = data[:lenght-2]
 	}
 	return data
@@ -221,6 +224,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
+// RandomString is delegated to create a random string with whitespace included as fast as possible
 func RandomString(n int) string {
 	b := make([]byte, n)
 	var src = rand.NewSource(time.Now().UnixNano())
