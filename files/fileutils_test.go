@@ -161,7 +161,7 @@ func TestGetFileContentTypeMP4(t *testing.T) {
 }
 
 func TestGetFileContentTypeBIN(t *testing.T) {
-	file := `../GoGPUtils`
+	file := `../tests/files/test9`
 	fileType, err := GetFileContentType(file)
 	if err != nil {
 		t.Log("Error -> ", err)
