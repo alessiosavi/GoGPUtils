@@ -90,7 +90,7 @@ func Join(strs ...string) string {
 }
 
 // RemoveWhiteSpaceString is delegated to remove the whitespace from the given string
-// FIXME: unefficient, use 2n size, use RemoveFromString method instead
+// FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
 func RemoveWhiteSpaceString(str string) string {
 	var b strings.Builder
 	defer b.Reset()
@@ -105,7 +105,8 @@ func RemoveWhiteSpaceString(str string) string {
 
 // IsASCII is delegated to verify if a given string is ASCII compliant
 func IsASCII(s string) bool {
-	for i := range s {
+	n := len(s)
+	for i := 0; i < n; i++ {
 		if s[i] > 127 {
 			return false
 		}
@@ -115,7 +116,7 @@ func IsASCII(s string) bool {
 
 // IsASCIIRune is delegated to verify if the given character is ASCII compliant
 func IsASCIIRune(r rune) bool {
-	return !(r > 127)
+	return r < 128
 }
 
 // RemoveFromString Remove a given element from a string
@@ -224,10 +225,12 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
+var src = rand.NewSource(time.Now().UnixNano())
+
 // RandomString is delegated to create a random string with whitespace included as fast as possible
 func RandomString(n int) string {
 	b := make([]byte, n)
-	var src = rand.NewSource(time.Now().UnixNano())
+
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
 	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i > -1; {
 		if remain == 0 {
