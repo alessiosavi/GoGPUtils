@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -75,12 +76,16 @@ func GetFileDate(filepath string) string {
 func FindFiles(path string) []string {
 	fileList := []string{}
 	// Read all the file recursively
-	filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 		if IsFile(file) {
 			fileList = append(fileList, file)
 		}
 		return nil
 	})
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	return fileList
 }
 
