@@ -6,7 +6,6 @@ import (
 )
 
 func TestCountLinesFile(t *testing.T) {
-
 	file := `../tests/files/test1.txt`
 	lines, err := CountLinesFile(file, -1)
 	if err != nil || lines != 112 {
@@ -170,5 +169,44 @@ func TestGetFileContentTypeBIN(t *testing.T) {
 	if fileType != "elf/binary" {
 		t.Log(fileType)
 		t.Fail()
+	}
+}
+
+func TestListFile(t *testing.T) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	t.Log(ListFile(path))
+}
+
+func BenchmarkListFile(t *testing.B) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	for n := 0; n < t.N; n++ {
+		ListFile(path)
+	}
+}
+
+func TestFindFilesSensitive(t *testing.T) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	if len(FindFiles(path, `FindMe`, false)) != 2 {
+		t.Fail()
+	}
+}
+
+func TestFindFilesInsensitive(t *testing.T) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	if len(FindFiles(path, `findme`, false)) != 2 {
+		t.Fail()
+	}
+}
+
+func BenchmarkFindFilesSensitive(t *testing.B) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	for n := 0; n < t.N; n++ {
+		FindFiles(path, `FindMe`, true)
+	}
+}
+func BenchmarkFindFilesInsensitive(t *testing.B) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+	for n := 0; n < t.N; n++ {
+		FindFiles(path, `findme`, true)
 	}
 }

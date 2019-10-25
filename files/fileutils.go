@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
@@ -25,7 +26,7 @@ func ReadFileInArray(filePath string) []string {
 	return stringutils.Split(string(data))
 }
 
-//IsFile verify if a give filepath is a directory
+//IsFile verify if the given filepath is a file
 func IsFile(path string) bool {
 	fi, err := os.Stat(path)
 	if os.IsNotExist(err) || err != nil {
@@ -72,8 +73,8 @@ func GetFileDate(filepath string) string {
 	return ""
 }
 
-// FindFiles is delegated to find the files from the given directory, recursively for each dir
-func FindFiles(path string) []string {
+// ListFile is delegated to find the files from the given directory, recursively for each dir
+func ListFile(path string) []string {
 	fileList := []string{}
 	// Read all the file recursively
 	err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
@@ -85,6 +86,42 @@ func FindFiles(path string) []string {
 	if err != nil {
 		log.Println(err)
 		return nil
+	}
+	return fileList
+}
+
+// FindFiles is delegated to find the files from the given directory, recursively for each dir, and extract only the one that match the input
+func FindFiles(path, target string, caseSensitive bool) []string {
+	fileList := []string{}
+	if caseSensitive {
+		// Read all the file recursively, taking care about the case of the string
+		err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
+			if IsFile(file) && strings.Contains(file, target) {
+				fileList = append(fileList, file)
+			}
+			return nil
+		})
+
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+	} else {
+		// Case insensitive
+		// Read all the file recursively, without taking care about the case of the string
+		target = strings.ToLower(target)
+		err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
+			if IsFile(file) && strings.Contains(strings.ToLower(file), target) {
+				fileList = append(fileList, file)
+			}
+			return nil
+		})
+
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+
 	}
 	return fileList
 }
