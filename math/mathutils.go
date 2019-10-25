@@ -1,5 +1,10 @@
 package mathutils
 
+import (
+	"math"
+	"strings"
+)
+
 // SumIntArray return the of every element contained in the array
 func SumIntArray(integers []int) int {
 	sum := 0
@@ -64,4 +69,26 @@ func AverageFloat32(array []float32) float64 {
 		total += array[i]
 	}
 	return float64(total / float32(len(array)))
+}
+
+func ConvertSize(bytes float64, dimension string) float64 {
+	var value float64
+	dimension = strings.ToUpper(dimension)
+	switch dimension {
+	case "KB", "KILOBYTE":
+		value = bytes / 1000
+	case "MB", "MEGABYTE":
+		value = bytes / math.Pow(1000, 2)
+	case "GB", "GIGABYTE":
+		value = bytes / math.Pow(1000, 3)
+	case "TB", "TERABYTE":
+		value = bytes / math.Pow(1000, 4)
+	case "PB", "PETABYTE":
+		value = bytes / math.Pow(1000, 5)
+	case "XB", "EXABYTE":
+		value = bytes / math.Pow(1000, 6)
+	case "ZB", "ZETTABYTE":
+		value = bytes / math.Pow(1000, 7)
+	}
+	return value
 }

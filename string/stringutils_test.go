@@ -106,6 +106,7 @@ func TestTrimDoubleSpace(t *testing.T) {
 		}
 	}
 }
+
 func TestTrim(t *testing.T) {
 	data := []string{` test`, `test `, `te s`}
 	for _, item := range data {
@@ -117,12 +118,12 @@ func TestTrim(t *testing.T) {
 	}
 }
 
+func TestRandomString(t *testing.T) {
+	t.Log(RandomString(5000))
+}
+
 func BenchmarkRandomString(t *testing.B) {
 	for n := 0; n < t.N; n++ {
 		RandomString(5000)
 	}
-}
-
-func TestRandomString(t *testing.T) {
-	t.Log(RandomString(5000))
 }
