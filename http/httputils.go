@@ -10,9 +10,10 @@ import (
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 )
 
-// CreateCookie is delegated to initialize and set a cookie
+// CreateCookie is delegated to initialize and set a cookie with the given value
 func CreateCookie(name, value, domain, path string, maxage int, httpOnly bool) (*http.Cookie, error) {
 
+	// Validate input data
 	if stringutils.IsBlank(name) {
 		return nil, errors.New("cookie name not provided")
 	}
@@ -20,10 +21,9 @@ func CreateCookie(name, value, domain, path string, maxage int, httpOnly bool) (
 		return nil, errors.New("cookie value not provided")
 	}
 	// Override path in case of not provided
-	if path == "" {
+	if stringutils.IsBlank(path) {
 		path = "/"
 	}
-
 	// Set session cookie in case of lesser than 0
 	if maxage < 0 {
 		maxage = 0
@@ -41,6 +41,7 @@ func CreateCookie(name, value, domain, path string, maxage int, httpOnly bool) (
 	return &cookie, nil
 }
 
+// SetHeaders is delegated to set the given (key-value) headers list into the response, the webserver will die once request is parsed
 func SetHeaders(headersList []string, w http.ResponseWriter) error {
 	if headersList == nil {
 		return errors.New("headers list not provided")
@@ -53,7 +54,7 @@ func SetHeaders(headersList []string, w http.ResponseWriter) error {
 	return nil
 }
 
-// ServeHeaders is delegated to spawn a webserver for set  call
+// ServeHeaders is delegated to spawn a webserver for set the input headers into the (request) response
 func ServeHeaders(headersList []string, ip, port, endpoint string) error {
 	// Validate input
 	if stringutils.IsBlank(ip) {
@@ -78,14 +79,20 @@ func ServeHeaders(headersList []string, ip, port, endpoint string) error {
 
 	// Bind the endpoint for instantiate the cookie
 	m.HandleFunc(endpoint, func(w http.ResponseWriter, r *http.Request) {
-		SetHeaders(headersList, w)
+		err := SetHeaders(headersList, w)
+		if err != nil {
+			log.Println("Errors during set headers: " + err.Error())
+		}
 		w.WriteHeader(200)
 		go http.Get(`http://` + ip + `:` + port + `/shutdown`)
 	})
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		s.Shutdown(context.Background())
+		err := s.Shutdown(context.Background())
+		if err != nil {
+			log.Println("Errors during shutdown the headers server: " + err.Error())
+		}
 	})
 
 	// Serve the http webserver
@@ -130,7 +137,10 @@ func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage in
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		s.Shutdown(context.Background())
+		err := s.Shutdown(context.Background())
+		if err != nil {
+			log.Println("Unable to shutdown the server: " + err.Error())
+		}
 	})
 
 	// Serve the http webserver
@@ -165,9 +175,12 @@ func DebugRequest(ip, port, endpoint string) error {
 		data, err := httputil.DumpRequest(r, true)
 		log.Println("Request data -> \n", string(data))
 		if err != nil {
-			log.Println("Errors -> ", err)
+			log.Println("Errors during dump request ", err)
 		}
-		w.Write(data)
+		_, err = w.Write(data)
+		if err != nil {
+			log.Println("Errors during write the data ", err)
+		}
 		go http.Get(`http://` + ip + `:` + port + `/shutdown`)
 	})
 
