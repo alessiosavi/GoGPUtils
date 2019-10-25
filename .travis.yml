@@ -34,8 +34,4 @@ before_script:
 script:
   - golangci-lint run       # run a bunch of code checkers/linters in parallel
   - go test -race -coverprofile=coverage.txt -covermode=atomic ./...  # Run all the tests with the race detector enabled
-  # - for i in $(echo 'string zip files'); do cd $i ; go test -race ; cd ../ ; done
   - for i in $(echo 'string zip files'); do cd $i ; go test -bench=. ; cd ../ ; done
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

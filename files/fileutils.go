@@ -1,3 +1,4 @@
+// Package fileutils provided a set of method for work with files
 package fileutils
 
 import (
@@ -141,20 +142,30 @@ func VerifyFilesExists(filePath string, files []string) bool {
 }
 
 // CountLinesFile return the number of lines in the given file
-func CountLinesFile(fileName string, bufferLenght int) (int, error) {
+// If called with an empty separator, new line will be used as default
+func CountLinesFile(fileName, separator string, bufferLenght int) (int, error) {
+	var lineSep []byte
+	var buf []byte
+	var count int
+
 	file, err := os.Open(fileName)
 	if err != nil {
 		return -1, err
 	}
 	defer file.Close()
-	r := bufio.NewReader(file)
-	// 32K as buffer
+
+	// 32K as buffer in case of not provided
 	if bufferLenght == -1 {
 		bufferLenght = 32
 	}
-	buf := make([]byte, bufferLenght*1024)
-	count := 0
-	lineSep := []byte{'\n'}
+	count = 0
+	if len(separator) == 0 {
+		lineSep = []byte{'\n'}
+	}
+
+	r := bufio.NewReader(file)
+	buf = make([]byte, bufferLenght*1024)
+
 	for {
 		c, err := r.Read(buf)
 		count += bytes.Count(buf[:c], lineSep)
@@ -204,7 +215,7 @@ func GetFileContentType(fileName string) (string, error) {
 	// In case of application/zip, we have to be sure the file type
 	if contentType == "application/zip" {
 		//fmt.Println(string(buffer))
-		if bytes.Contains(buffer, []byte("mimetypeapplication/vnd.oasis.opendocument.tex")) {
+		if bytes.Contains(buffer, []byte("mimetypeapplication/vnd.oasis.opendocument.text")) {
 			return "application/odt", nil
 		}
 		if bytes.Contains(buffer, []byte("rels/.rels")) {
@@ -214,6 +225,7 @@ func GetFileContentType(fileName string) (string, error) {
 		// A pickle item have an X as 2nd byte
 		if buffer[2] == 88 {
 			return "application/pickle", nil
+			// Not necessary, mp4 will be catched by the http.DetectContentType
 		} else if bytes.Contains(buffer, []byte("isomiso2mp41")) ||
 			bytes.Contains(buffer, []byte("isomiso2avc1mp41")) {
 			return "iso/mp4", nil
@@ -221,6 +233,7 @@ func GetFileContentType(fileName string) (string, error) {
 		if bytes.Equal(buffer[1:4], []byte("ELF")) {
 			return "elf/binary", nil
 		}
+		// Read the data until we found Microsoft Word-D
 		for {
 			n, err := f.Read(buffer)
 			if err == io.EOF || n == 0 {
@@ -231,4 +244,28 @@ func GetFileContentType(fileName string) (string, error) {
 		}
 	}
 	return contentType, nil
+}
+
+// GetFileSize is delegated to return the bytes size of the given file
+func GetFileSize(filepath string) (int64, error) {
+	fi, err := os.Stat(filepath)
+	if err != nil {
+		return 0, err
+	}
+	// get the size
+	return fi.Size(), nil
+}
+
+// GetFileSize2 is a less efficent method for calculate the file size
+func GetFileSize2(filepath string) (int64, error) {
+	f, err := os.Open(filepath)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		return 0, err
+	}
+	return fi.Size(), nil
 }

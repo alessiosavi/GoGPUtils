@@ -93,7 +93,6 @@ func Join(strs ...string) string {
 // FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
 func RemoveWhiteSpaceString(str string) string {
 	var b strings.Builder
-	defer b.Reset()
 	b.Grow(len(str))
 	for i := range str {
 		if !(str[i] == 32 && (i+1 < len(str) && str[i+1] == 32)) {
@@ -119,7 +118,7 @@ func IsASCIIRune(r rune) bool {
 	return r < 128
 }
 
-// RemoveFromString Remove a given element from a string
+// RemoveFromString Remove a given character in position i from the input string
 func RemoveFromString(data string, i int) string {
 	s := []byte(data)
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
@@ -197,6 +196,7 @@ func IsBlank(str string) bool {
 // Trim is delegated to remove the initial and final whitespace and the double whitespace
 func Trim(str string) string {
 	var b strings.Builder
+	b.Grow(len(str))
 	length := len(str)
 	for i := 0; i < length; i++ {
 		if str[i] > 32 {
@@ -230,7 +230,6 @@ var src = rand.NewSource(time.Now().UnixNano())
 // RandomString is delegated to create a random string with whitespace included as fast as possible
 func RandomString(n int) string {
 	b := make([]byte, n)
-
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
 	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i > -1; {
 		if remain == 0 {

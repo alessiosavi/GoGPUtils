@@ -154,7 +154,6 @@ func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage in
 
 // DebugRequest is delegated to print the request data for debug purpouse
 func DebugRequest(ip, port, endpoint string) error {
-
 	// Validate input
 	if stringutils.IsBlank(ip) {
 		return errors.New("hostname/ip not provided")
@@ -186,7 +185,10 @@ func DebugRequest(ip, port, endpoint string) error {
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		s.Shutdown(context.Background())
+		err := s.Shutdown(context.Background())
+		if err != nil {
+			log.Println("Unable to shutdown the server: " + err.Error())
+		}
 	})
 
 	// Serve the http webserver

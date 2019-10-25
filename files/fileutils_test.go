@@ -3,17 +3,19 @@ package fileutils
 import (
 	"strings"
 	"testing"
+
+	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
 func TestCountLinesFile(t *testing.T) {
 	file := `../tests/files/test1.txt`
-	lines, err := CountLinesFile(file, -1)
+	lines, err := CountLinesFile(file, "", -1)
 	if err != nil || lines != 112 {
 		t.Log(err)
 		t.Fail()
 	}
 
-	_, err = CountLinesFile(file+"test", -1)
+	_, err = CountLinesFile(file+"test", "", -1)
 	if err == nil {
 		t.Log(err)
 		t.Fail()
@@ -23,7 +25,10 @@ func TestCountLinesFile(t *testing.T) {
 func BenchmarkCountLinesFile(b *testing.B) {
 	file := `../tests/files/test1.txt`
 	for i := 0; i < b.N; i++ {
-		CountLinesFile(file, -1)
+		_, err := CountLinesFile(file, "", -1)
+		if err != nil {
+			b.Fail()
+		}
 	}
 }
 
@@ -208,5 +213,55 @@ func BenchmarkFindFilesInsensitive(t *testing.B) {
 	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
 	for n := 0; n < t.N; n++ {
 		FindFiles(path, `findme`, true)
+	}
+}
+
+func TestGetFileSize(t *testing.T) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+	size, err := GetFileSize(path)
+	if err != nil {
+		t.Fail()
+	}
+
+	kbSize := size / 1024
+	t.Log(helper.ByteCountIEC(size))
+	t.Log(helper.ByteCountSI(size))
+	t.Log(size)
+	t.Log(kbSize, "K")
+}
+
+func TestGetFileSize2(t *testing.T) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+	size, err := GetFileSize2(path)
+	if err != nil {
+		t.Fail()
+	}
+	t.Log(size)
+}
+
+func BenchmarkGetFileSize(t *testing.B) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+	for n := 0; n < t.N; n++ {
+		_, err := GetFileSize(path)
+		if err != nil {
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkGetFileSize2(t *testing.B) {
+	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+	for n := 0; n < t.N; n++ {
+		_, err := GetFileSize2(path)
+		if err != nil {
+			t.Fail()
+		}
+	}
+}
+
+func TestFileExists(t *testing.T) {
+	file := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+	if !FileExists(file) {
+		t.Fail()
 	}
 }
