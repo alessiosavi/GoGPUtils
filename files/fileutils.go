@@ -122,7 +122,6 @@ func FindFiles(path, target string, caseSensitive bool) []string {
 			log.Println(err)
 			return nil
 		}
-
 	}
 	return fileList
 }
@@ -256,7 +255,7 @@ func GetFileSize(filepath string) (int64, error) {
 	return fi.Size(), nil
 }
 
-// GetFileSize2 is a less efficent method for calculate the file size
+// GetFileSize2 is a less efficient method for calculate the file size
 func GetFileSize2(filepath string) (int64, error) {
 	f, err := os.Open(filepath)
 	if err != nil {

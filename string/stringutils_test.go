@@ -23,7 +23,6 @@ func BenchmarkTestIsUpperKO(b *testing.B) {
 	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa`
 	for n := 0; n < b.N; n++ {
 		IsUpper(data)
-
 	}
 }
 
@@ -31,7 +30,6 @@ func BenchmarkTestIsUpperOK(b *testing.B) {
 	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
 	for n := 0; n < b.N; n++ {
 		IsUpper(data)
-
 	}
 }
 
@@ -79,10 +77,43 @@ func TestContainsLetter(t *testing.T) {
 	}
 }
 
+func TestContainsOnlyLetter(t *testing.T) {
+	dataOK := []string{`baaaa`, `baaaaa`, `baaa`, `a`}
+	dataKO := []string{`....`, `,,,,,`, `,,, ,,,,`, `<<<`, `!!!`, `2`}
+	for i := range dataOK {
+		if !ContainsOnlyLetter(dataOK[i]) {
+			t.Fail()
+		}
+	}
+	for i := range dataKO {
+		if ContainsOnlyLetter(dataKO[i]) {
+			t.Fail()
+		}
+	}
+}
+
 func TestRemoveNonAscii(t *testing.T) {
-	dataOK := []string{`AAÀ È Ì Ò Ù Ỳ Ǹ ẀBB`, `CCȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ Ş DD`, `$$♩ ♪ ♫ ♬ ♭ ♮ ♯##`}
+	dataOK := []string{`AÀ È Ì Ò Ù Ỳ Ǹ ẀA`, `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`, `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`}
 	for _, item := range dataOK {
 		t.Log(RemoveNonASCII(item))
+	}
+}
+
+func TestRemoveFromString(t *testing.T) {
+	data := []string{`test1`, `another test`, `another another test`}
+	for _, item := range data {
+		res := RemoveFromString(item, len(item)-1)
+		if res != item[:len(item)-1] {
+			t.Log(item)
+			t.Error(res)
+		}
+	}
+}
+
+func BenchmarkRemoveFromString(t *testing.B) {
+	data := `another another test`
+	for n := 0; n < t.N; n++ {
+		RemoveFromString(data, len(data)-1)
 	}
 }
 
@@ -116,10 +147,6 @@ func TestTrim(t *testing.T) {
 			t.Fail()
 		}
 	}
-}
-
-func TestRandomString(t *testing.T) {
-	t.Log(RandomString(5000))
 }
 
 func BenchmarkRandomString(t *testing.B) {
