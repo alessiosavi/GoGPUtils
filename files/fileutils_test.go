@@ -7,6 +7,9 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
+const gogputils string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
+const codeFolder string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+
 func TestCountLinesFile(t *testing.T) {
 	file := `../tests/files/test1.txt`
 	lines, err := CountLinesFile(file, "", -1)
@@ -178,47 +181,40 @@ func TestGetFileContentTypeBIN(t *testing.T) {
 }
 
 func TestListFile(t *testing.T) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
-	t.Log(ListFile(path))
+	t.Log(ListFile(codeFolder))
 }
 
 func BenchmarkListFile(t *testing.B) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
 	for n := 0; n < t.N; n++ {
-		ListFile(path)
+		ListFile(codeFolder)
 	}
 }
 
 func TestFindFilesSensitive(t *testing.T) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
-	if len(FindFiles(path, `FindMe`, false)) != 2 {
+	if len(FindFiles(codeFolder, `FindMe`, false)) != 2 {
 		t.Fail()
 	}
 }
 
 func TestFindFilesInsensitive(t *testing.T) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
-	if len(FindFiles(path, `findme`, false)) != 2 {
+	if len(FindFiles(codeFolder, `findme`, false)) != 2 {
 		t.Fail()
 	}
 }
 
 func BenchmarkFindFilesSensitive(t *testing.B) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
 	for n := 0; n < t.N; n++ {
-		FindFiles(path, `FindMe`, true)
+		FindFiles(codeFolder, `FindMe`, true)
 	}
 }
 func BenchmarkFindFilesInsensitive(t *testing.B) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
 	for n := 0; n < t.N; n++ {
-		FindFiles(path, `findme`, true)
+		FindFiles(codeFolder, `findme`, true)
 	}
 }
 
 func TestGetFileSize(t *testing.T) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
-	size, err := GetFileSize(path)
+	size, err := GetFileSize(gogputils)
 	if err != nil {
 		t.Fail()
 	}
@@ -231,8 +227,7 @@ func TestGetFileSize(t *testing.T) {
 }
 
 func TestGetFileSize2(t *testing.T) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
-	size, err := GetFileSize2(path)
+	size, err := GetFileSize2(gogputils)
 	if err != nil {
 		t.Fail()
 	}
@@ -240,9 +235,8 @@ func TestGetFileSize2(t *testing.T) {
 }
 
 func BenchmarkGetFileSize(t *testing.B) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
 	for n := 0; n < t.N; n++ {
-		_, err := GetFileSize(path)
+		_, err := GetFileSize(gogputils)
 		if err != nil {
 			t.Fail()
 		}
@@ -250,9 +244,8 @@ func BenchmarkGetFileSize(t *testing.B) {
 }
 
 func BenchmarkGetFileSize2(t *testing.B) {
-	path := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
 	for n := 0; n < t.N; n++ {
-		_, err := GetFileSize2(path)
+		_, err := GetFileSize2(gogputils)
 		if err != nil {
 			t.Fail()
 		}
@@ -260,8 +253,7 @@ func BenchmarkGetFileSize2(t *testing.B) {
 }
 
 func TestFileExists(t *testing.T) {
-	file := `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
-	if !FileExists(file) {
+	if !FileExists(gogputils) {
 		t.Fail()
 	}
 }

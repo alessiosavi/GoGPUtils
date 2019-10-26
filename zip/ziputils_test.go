@@ -118,7 +118,6 @@ func BenchmarkReadZipFile(t *testing.B) {
 		}
 		zf.Close()
 	}
-
 }
 
 func BenchmarkReadZip01(b *testing.B) {

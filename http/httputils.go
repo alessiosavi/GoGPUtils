@@ -12,7 +12,6 @@ import (
 
 // CreateCookie is delegated to initialize and set a cookie with the given value
 func CreateCookie(name, value, domain, path string, maxage int, httpOnly bool) (*http.Cookie, error) {
-
 	// Validate input data
 	if stringutils.IsBlank(name) {
 		return nil, errors.New("cookie name not provided")
@@ -106,7 +105,6 @@ func ServeHeaders(headersList []string, ip, port, endpoint string) error {
 
 // ServeCookie is delegated to set a cookie and shutdown the server after the first call
 func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage int, httpOnly bool) error {
-
 	// Validate input
 	if stringutils.IsBlank(ip) {
 		return errors.New("hostname/ip not provided")

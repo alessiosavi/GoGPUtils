@@ -33,7 +33,7 @@ func CheckPresence(target string, array []string) bool {
 	return false
 }
 
-// IsUpper verify that a string does contains only upper char
+// IsUpper verify that a string does contains only upper character
 func IsUpper(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -44,7 +44,7 @@ func IsUpper(str string) bool {
 	return true
 }
 
-// IsLower verify that a string does contains only lower char
+// IsLower verify that a string does contains only lower character
 func IsLower(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -55,7 +55,7 @@ func IsLower(str string) bool {
 	return true
 }
 
-// ContainsLetter verity that the given string contains, at least, an ASCII character
+// ContainsLetter verity that the given string contains, at least, an ASCII alphabet characters
 func ContainsLetter(str string) bool {
 	for i := range str {
 		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') {
@@ -65,10 +65,22 @@ func ContainsLetter(str string) bool {
 	return false
 }
 
+// ContainsOnlyLetter verity that the given string contains, only, ASCII alphabet characters
+func ContainsOnlyLetter(str string) bool {
+	for i := range str {
+		if !((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z')) {
+			return false
+		}
+	}
+	return true
+}
+
 // CreateJSON is delegated to create a json object for the key pair in input
 func CreateJSON(values ...string) string {
 	json := `{`
 	length := len(values)
+
+	// Not a key-value list
 	if length%2 != 0 {
 		return ""
 	}
@@ -120,6 +132,9 @@ func IsASCIIRune(r rune) bool {
 
 // RemoveFromString Remove a given character in position i from the input string
 func RemoveFromString(data string, i int) string {
+	if i >= len(data) {
+		return data
+	}
 	s := []byte(data)
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return string(s[:len(s)-1])
@@ -193,7 +208,7 @@ func IsBlank(str string) bool {
 	return true
 }
 
-// Trim is delegated to remove the initial and final whitespace and the double whitespace
+// Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
 func Trim(str string) string {
 	var b strings.Builder
 	b.Grow(len(str))

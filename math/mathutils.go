@@ -48,7 +48,7 @@ func AverageFloat64(array []float64) float64 {
 	if array == nil {
 		return 0
 	} else if len(array) == 1 {
-		return float64(array[0])
+		return array[0]
 	}
 
 	for i := range array {
