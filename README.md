@@ -66,10 +66,10 @@ ok      github.com/alessiosavi/GoGPUtils/math   64.910s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/search
-BenchmarkLinearSearchInt-8                  8690            485949 ns/op               0 B/op          0 allocs/op
-BenchmarkLinearSearchParallelInt-8         22028            156982 ns/op             306 B/op          7 allocs/op
+BenchmarkLinearSearchInt-8                 10312            349655 ns/op               0 B/op          0 allocs/op
+BenchmarkLinearSearchParallelInt-8         27259            150256 ns/op              96 B/op          2 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/search 12.212s
+ok      github.com/alessiosavi/GoGPUtils/search 11.485s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/string
