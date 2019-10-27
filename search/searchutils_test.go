@@ -1,6 +1,7 @@
 package searchutils
 
 import (
+	"io/ioutil"
 	"math"
 	"testing"
 
@@ -68,5 +69,37 @@ func BenchmarkLinearSearchParallelInt(t *testing.B) {
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
 		LinearSearchParallelInt(array, length-1, thread)
+	}
+}
+
+func BenchmarkContainsStringByte(t *testing.B) {
+	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	if err != nil {
+		return
+	}
+	for i := 0; i < t.N; i++ {
+		ContainsStringByte(data, "amor")
+	}
+}
+
+func BenchmarkContainsStringsByte(t *testing.B) {
+	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	if err != nil {
+		return
+	}
+	target := []string{"amor", "Beatrice"}
+	for i := 0; i < t.N; i++ {
+		ContainsStringsByte(data, target)
+	}
+}
+
+func BenchmarkContainsWhichStrings(t *testing.B) {
+	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	if err != nil {
+		return
+	}
+	target := []string{"amor", "Beatrice"}
+	for i := 0; i < t.N; i++ {
+		ContainsWhichStringsByte(data, target)
 	}
 }

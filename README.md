@@ -68,6 +68,9 @@ goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/search
 BenchmarkLinearSearchInt-8                 10312            349655 ns/op               0 B/op          0 allocs/op
 BenchmarkLinearSearchParallelInt-8         27259            150256 ns/op              96 B/op          2 allocs/op
+BenchmarkContainsStringByte-8             111829              9653 ns/op           22157 B/op         15 allocs/op
+BenchmarkContainsStringsByte-8             51841             22829 ns/op           58203 B/op         33 allocs/op
+BenchmarkContainsWhichStrings-8             1048           1137795 ns/op           58795 B/op         36 allocs/op
 PASS
 ok      github.com/alessiosavi/GoGPUtils/search 11.485s
 goos: linux
