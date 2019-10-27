@@ -40,7 +40,7 @@ func CreateCookie(name, value, domain, path string, maxage int, httpOnly bool) (
 	return &cookie, nil
 }
 
-// SetHeaders is delegated to set the given (key-value) headers list into the response, the webserver will die once request is parsed
+// SetHeaders is delegated to set the given (key-value) headers list into the response
 func SetHeaders(headersList []string, w http.ResponseWriter) error {
 	if headersList == nil {
 		return errors.New("headers list not provided")
@@ -192,8 +192,6 @@ func DebugRequest(ip, port, endpoint string) error {
 	// Serve the http webserver
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
-		return err
 	}
-
 	return nil
 }
