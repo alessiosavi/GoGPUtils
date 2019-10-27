@@ -7,8 +7,8 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
-const gogputils string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
-const codeFolder string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
+const gogputils string = `../testdata/files/test9`
+const codeFolder string = `../`
 
 func TestCountLinesFile(t *testing.T) {
 	file := `../testdata/files/test1.txt`

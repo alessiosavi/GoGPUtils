@@ -7,10 +7,12 @@ import (
 	"time"
 )
 
+// RandomGenerator is delegated to generate random without call seed every time
 type RandomGenerator struct {
 	randomizer *rand.Rand
 }
 
+// InitRandomizer initialize a new RandomGenerator
 func InitRandomizer() RandomGenerator {
 	var random RandomGenerator
 	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -49,7 +51,7 @@ func (rander RandomGenerator) RandomFloat64(min, max float64) float64 {
 	return min + rander.randomizer.Float64()*(max-min)
 }
 
-// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomIntArray return a new array with random number from min to max of length len
 func (rander RandomGenerator) RandomIntArray(min, max, len int) []int {
 	array := make([]int, len)
 	for i := 0; i < len; i++ {
@@ -58,7 +60,7 @@ func (rander RandomGenerator) RandomIntArray(min, max, len int) []int {
 	return array
 }
 
-// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt32Array return a new array with random number from min to max of length len
 func (rander RandomGenerator) RandomInt32Array(min, max int32, len int) []int32 {
 	array := make([]int32, len)
 	for i := 0; i < len; i++ {
@@ -67,7 +69,7 @@ func (rander RandomGenerator) RandomInt32Array(min, max int32, len int) []int32 
 	return array
 }
 
-// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt64Array return a new array with random number from min to max of length len
 func (rander RandomGenerator) RandomInt64Array(min, max int64, len int) []int64 {
 	array := make([]int64, len)
 	for i := 0; i < len; i++ {
@@ -76,7 +78,7 @@ func (rander RandomGenerator) RandomInt64Array(min, max int64, len int) []int64 
 	return array
 }
 
-// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+// RandomFloat32Array return a new array with random number from min to max of length len
 func (rander RandomGenerator) RandomFloat32Array(min, max float32, len int) []float32 {
 	array := make([]float32, len)
 	for i := 0; i < len; i++ {
@@ -85,7 +87,7 @@ func (rander RandomGenerator) RandomFloat32Array(min, max float32, len int) []fl
 	return array
 }
 
-// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+// RandomFloat64Array return a new array with random number from min to max of length len
 func (rander RandomGenerator) RandomFloat64Array(min, max float64, len int) []float64 {
 	array := make([]float64, len)
 	for i := 0; i < len; i++ {
@@ -122,6 +124,24 @@ func RandomFloat64(min, max float64) float64 {
 func RandomFloat32(min, max float32) float32 {
 	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float32()*(max-min)
+}
+
+// GenerateSequentialIntArray is delegated to generate an array of sequential number
+func GenerateSequentialIntArray(length int) []int {
+	array := make([]int, length)
+	for i := 0; i < length; i++ {
+		array[i] = i
+	}
+	return array
+}
+
+// GenerateSequentialFloat32Array is delegated to generate an array of sequential number
+func GenerateSequentialFloat32Array(length int) []float32 {
+	array := make([]float32, length)
+	for i := 0; i < length; i++ {
+		array[i] = float32(i)
+	}
+	return array
 }
 
 // ByteCountSI convert the byte in input to MB/KB/TB ecc
