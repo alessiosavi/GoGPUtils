@@ -7,6 +7,16 @@ import (
 	"time"
 )
 
+type RandomGenerator struct {
+	randomizer *rand.Rand
+}
+
+func InitRandomizer() RandomGenerator {
+	var random RandomGenerator
+	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return random
+}
+
 // Check is a helper function which streamlines error checking
 func Check(e error) {
 	if e != nil {
@@ -15,15 +25,103 @@ func Check(e error) {
 }
 
 // RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomInt(min, max int) int {
+	return rander.randomizer.Intn(max-min) + min
+}
+
+// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomInt32(min, max int32) int32 {
+	return rander.randomizer.Int31n(max-min) + min
+}
+
+// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomInt64(min, max int64) int64 {
+	return rander.randomizer.Int63n(max-min) + min
+}
+
+// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+func (rander RandomGenerator) RandomFloat32(min, max float32) float32 {
+	return min + rander.randomizer.Float32()*(max-min)
+}
+
+// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+func (rander RandomGenerator) RandomFloat64(min, max float64) float64 {
+	return min + rander.randomizer.Float64()*(max-min)
+}
+
+// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomIntArray(min, max, len int) []int {
+	array := make([]int, len)
+	for i := 0; i < len; i++ {
+		array[i] = rander.RandomInt(min, max)
+	}
+	return array
+}
+
+// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomInt32Array(min, max int32, len int) []int32 {
+	array := make([]int32, len)
+	for i := 0; i < len; i++ {
+		array[i] = rander.RandomInt32(min, max)
+	}
+	return array
+}
+
+// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func (rander RandomGenerator) RandomInt64Array(min, max int64, len int) []int64 {
+	array := make([]int64, len)
+	for i := 0; i < len; i++ {
+		array[i] = rander.RandomInt64(min, max)
+	}
+	return array
+}
+
+// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+func (rander RandomGenerator) RandomFloat32Array(min, max float32, len int) []float32 {
+	array := make([]float32, len)
+	for i := 0; i < len; i++ {
+		array[i] = rander.RandomFloat32(min, max)
+	}
+	return array
+}
+
+// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+func (rander RandomGenerator) RandomFloat64Array(min, max float64, len int) []float64 {
+	array := make([]float64, len)
+	for i := 0; i < len; i++ {
+		array[i] = rander.RandomFloat64(min, max)
+	}
+	return array
+}
+
+// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
-// RandomFloat initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
-func RandomFloat(min, max float64) float64 {
+// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func RandomInt32(min, max int32) int32 {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int31n(max-min) + min
+}
+
+// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+func RandomInt64(min, max int64) int64 {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int63n(max-min) + min
+}
+
+// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+func RandomFloat64(min, max float64) float64 {
 	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float64()*(max-min)
+}
+
+// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+func RandomFloat32(min, max float32) float32 {
+	rand.Seed(time.Now().UnixNano())
+	return min + rand.Float32()*(max-min)
 }
 
 // ByteCountSI convert the byte in input to MB/KB/TB ecc
