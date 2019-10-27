@@ -146,7 +146,7 @@ func AverageInt32(array []int32) float64 {
 	return float64(total / int32(len(array)))
 }
 
-// AverageInt is delegated to calculate the average of an int array
+// AverageInt64 is delegated to calculate the average of an int array
 func AverageInt64(array []int64) float64 {
 	var total int64
 	// Same as len(array) == 0
@@ -191,6 +191,7 @@ func AverageFloat64(array []float64) float64 {
 	return total / float64(len(array))
 }
 
+// ConvertSize is delegated to return the dimension related to the input byte size
 func ConvertSize(bytes float64, dimension string) float64 {
 	var value float64
 	dimension = strings.ToUpper(dimension)
