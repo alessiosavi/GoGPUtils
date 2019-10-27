@@ -6,13 +6,11 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
-const length int = 100000
+const length int = 1000000
 
 func TestLinearSearchInt(t *testing.T) {
 	array := helper.GenerateSequentialIntArray(length)
-	result := make(chan int)
-	go LinearSearchInt(array, length-1, result)
-	data := <-result
+	data := LinearSearchInt(array, length-1)
 	t.Log(data)
 }
 
@@ -27,11 +25,9 @@ func TestLinearSearchParallelInt(t *testing.T) {
 
 func BenchmarkLinearSearchInt(t *testing.B) {
 	array := helper.GenerateSequentialIntArray(length)
-	result := make(chan int)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		go LinearSearchInt(array, length-1, result)
-		<-result
+		LinearSearchInt(array, length-1)
 	}
 }
 func BenchmarkLinearSearchParallelInt(t *testing.B) {
