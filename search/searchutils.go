@@ -19,11 +19,11 @@ func LinearSearchParallelInt(data []int, target int, thread int) int {
 		return -1
 	}
 	wg := sync.WaitGroup{}
-	result := make([]int, 0)
+	result := make([]int, thread)
 	//var result []int
 	wg.Add(thread)
 	for i := 0; i < thread; i++ {
-		go LinearSearchParallelIntHelper(&wg, data[i*dataXThread:(i+1)*dataXThread], target, &result)
+		go LinearSearchParallelIntHelper(&wg, data[i*dataXThread:(i+1)*dataXThread], target, i, result)
 	}
 	wg.Wait()
 	// log.Println(result)
@@ -36,9 +36,9 @@ func LinearSearchParallelInt(data []int, target int, thread int) int {
 }
 
 // LinearSearchParallelIntHelper is delegated to search the number and append to the given result array
-func LinearSearchParallelIntHelper(wg *sync.WaitGroup, data []int, target int, result *[]int) {
+func LinearSearchParallelIntHelper(wg *sync.WaitGroup, data []int, target, i int, result []int) {
 	defer wg.Done()
-	*result = append(*result, LinearSearchInt(data, target))
+	result[i] = LinearSearchInt(data, target)
 }
 
 // LinearSearchInt is a simple for delegated to find the target value
