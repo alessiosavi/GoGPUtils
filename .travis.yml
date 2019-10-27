@@ -25,4 +25,4 @@ script:
   - go clean
   - go build
   - go test -race -coverprofile=coverage.txt -covermode=atomic ./...  # Run all the tests with the race detector enabled
-  - go test . ./...  -bench=. -benchmem -benchtime=3s # Run all the benchmark for 3s and print memory information
+  - go test -bench=. -benchmem ./... # Run all the benchmark for 3s and print memory information
