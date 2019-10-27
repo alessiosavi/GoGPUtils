@@ -124,6 +124,24 @@ func RandomFloat32(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
 }
 
+// GenerateSequentialIntArray is delegated to generate an array of sequential number
+func GenerateSequentialIntArray(length int) []int {
+	array := make([]int, length)
+	for i := 0; i < length; i++ {
+		array[i] = i
+	}
+	return array
+}
+
+// GenerateSequentialFloat32Array is delegated to generate an array of sequential number
+func GenerateSequentialFloat32Array(length int) []float32 {
+	array := make([]float32, length)
+	for i := 0; i < length; i++ {
+		array[i] = float32(i)
+	}
+	return array
+}
+
 // ByteCountSI convert the byte in input to MB/KB/TB ecc
 func ByteCountSI(b int64) string {
 	const unit = 1000
