@@ -8,19 +8,50 @@ import (
 
 const length int = 1000000
 
-func TestLinearSearchInt(t *testing.T) {
+func TestLinearSearchIntOK(t *testing.T) {
 	array := helper.GenerateSequentialIntArray(length)
 	data := LinearSearchInt(array, length-1)
-	t.Log(data)
+	if data == -1 {
+		t.Error(data)
+	}
+}
+func TestLinearSearchIntKO(t *testing.T) {
+	array := helper.GenerateSequentialIntArray(length)
+	data := LinearSearchInt(array, -1)
+	if data != -1 {
+		t.Error(data)
+	}
 }
 
-func TestOddLinearSearchParallelInt(t *testing.T) {
+func TestOddLinearSearchParallelIntOK(t *testing.T) {
 	array := helper.GenerateSequentialIntArray(length + 23)
-	t.Log(LinearSearchParallelInt(array, length+22, 10))
+	data := LinearSearchParallelInt(array, length+22, 10)
+	if data != length+22 {
+		t.Error(data)
+	}
 }
-func TestLinearSearchParallelInt(t *testing.T) {
+func TestOddLinearSearchParallelIntKO(t *testing.T) {
+	array := helper.GenerateSequentialIntArray(length + 23)
+	data := LinearSearchParallelInt(array, -1, 10)
+	if data != -1 {
+		t.Error(data)
+	}
+}
+
+func TestLinearSearchParallelIntOK(t *testing.T) {
 	array := helper.GenerateSequentialIntArray(length)
-	t.Log(LinearSearchParallelInt(array, length-1, 10))
+	data := LinearSearchParallelInt(array, length-1, 10)
+	if data != length-1 {
+		t.Error(data)
+	}
+}
+
+func TestLinearSearchParallelIntKO(t *testing.T) {
+	array := helper.GenerateSequentialIntArray(length)
+	data := LinearSearchParallelInt(array, -1, 10)
+	if data != -1 {
+		t.Error(data)
+	}
 }
 
 func BenchmarkLinearSearchInt(t *testing.B) {

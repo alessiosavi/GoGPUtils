@@ -26,9 +26,9 @@ func LinearSearchParallelInt(data []int, target int, thread int) int {
 		go LinearSearchParallelIntHelper(&wg, data[i*dataXThread:(i+1)*dataXThread], target, i, result)
 	}
 	wg.Wait()
-	// log.Println(result)
+	//log.Println(result)
 	for i := range result {
-		if i != -1 {
+		if result[i] != -1 {
 			return result[i] + i*dataXThread
 		}
 	}
