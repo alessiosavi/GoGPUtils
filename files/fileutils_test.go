@@ -11,7 +11,7 @@ const gogputils string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils/GoGPUtils`
 const codeFolder string = `/opt/DEVOPS/WORKSPACE/Golang/GoGPUtils`
 
 func TestCountLinesFile(t *testing.T) {
-	file := `../tests/files/test1.txt`
+	file := `../testdata/files/test1.txt`
 	lines, err := CountLinesFile(file, "", -1)
 	if err != nil || lines != 112 {
 		t.Log(err)
@@ -26,7 +26,7 @@ func TestCountLinesFile(t *testing.T) {
 }
 
 func BenchmarkCountLinesFile(b *testing.B) {
-	file := `../tests/files/test1.txt`
+	file := `../testdata/files/test1.txt`
 	for i := 0; i < b.N; i++ {
 		_, err := CountLinesFile(file, "", -1)
 		if err != nil {
@@ -36,7 +36,7 @@ func BenchmarkCountLinesFile(b *testing.B) {
 }
 
 func TestGetFileContentTypeKO(t *testing.T) {
-	file := `../tests/files/test.txt`
+	file := `../testdata/files/test.txt`
 	_, err := GetFileContentType(file)
 
 	if err == nil {
@@ -47,7 +47,7 @@ func TestGetFileContentTypeKO(t *testing.T) {
 }
 
 func TestGetFileContentTypeTXT(t *testing.T) {
-	file := `../tests/files/test1.txt`
+	file := `../testdata/files/test1.txt`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -61,7 +61,7 @@ func TestGetFileContentTypeTXT(t *testing.T) {
 }
 
 func TestGetFileContentTypePDF(t *testing.T) {
-	file := `../tests/files/test2.pdf`
+	file := `../testdata/files/test2.pdf`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -72,7 +72,7 @@ func TestGetFileContentTypePDF(t *testing.T) {
 }
 
 func TestGetFileContentTypeZIP(t *testing.T) {
-	file := `../tests/ziputils/test1.zip`
+	file := `../testdata/ziputils/test1.zip`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -86,7 +86,7 @@ func TestGetFileContentTypeZIP(t *testing.T) {
 }
 
 func TestGetFileContentTypeODT(t *testing.T) {
-	file := `../tests/files/test3.odt`
+	file := `../testdata/files/test3.odt`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -100,7 +100,7 @@ func TestGetFileContentTypeODT(t *testing.T) {
 }
 
 func TestGetFileContentTypeDOCX(t *testing.T) {
-	file := `../tests/files/test4.docx`
+	file := `../testdata/files/test4.docx`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -114,7 +114,7 @@ func TestGetFileContentTypeDOCX(t *testing.T) {
 }
 
 func TestGetFileContentTypeDOC(t *testing.T) {
-	file := `../tests/files/test5.doc`
+	file := `../testdata/files/test5.doc`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -128,7 +128,7 @@ func TestGetFileContentTypeDOC(t *testing.T) {
 }
 
 func TestGetFileContentTypePickle(t *testing.T) {
-	file := `../tests/files/test6.pkl`
+	file := `../testdata/files/test6.pkl`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -142,7 +142,7 @@ func TestGetFileContentTypePickle(t *testing.T) {
 }
 
 func TestGetFileContentTypeMP4(t *testing.T) {
-	file := `../tests/files/test7.mp4`
+	file := `../testdata/files/test7.mp4`
 	fileType, err := GetFileContentType(file)
 
 	if err != nil {
@@ -154,7 +154,7 @@ func TestGetFileContentTypeMP4(t *testing.T) {
 		t.Fail()
 	}
 
-	file = `../tests/files/test8.mp4`
+	file = `../testdata/files/test8.mp4`
 	fileType, err = GetFileContentType(file)
 
 	if err != nil {
@@ -168,7 +168,7 @@ func TestGetFileContentTypeMP4(t *testing.T) {
 }
 
 func TestGetFileContentTypeBIN(t *testing.T) {
-	file := `../tests/files/test9`
+	file := `../testdata/files/test9`
 	fileType, err := GetFileContentType(file)
 	if err != nil {
 		t.Log("Error -> ", err)

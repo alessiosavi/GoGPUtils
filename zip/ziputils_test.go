@@ -7,7 +7,7 @@ import (
 
 func TestReadZip01(t *testing.T) {
 	t.Log("----TestReadZip01---")
-	file := `../tests/ziputils/test1.zip`
+	file := `../testdata/ziputils/test1.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
@@ -20,7 +20,7 @@ func TestReadZip01(t *testing.T) {
 
 func TestReadZip02(t *testing.T) {
 	t.Log("----TestReadZip02---")
-	file := `../tests/ziputils/test1.zip_error`
+	file := `../testdata/ziputils/test1.zip_error`
 	data, err := ReadZip(file)
 	if err == nil {
 		t.Fail()
@@ -32,7 +32,7 @@ func TestReadZip02(t *testing.T) {
 
 func TestReadZip03(t *testing.T) {
 	t.Log("----TestReadZip03---")
-	file := `../tests/ziputils/test2.zip`
+	file := `../testdata/ziputils/test2.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
@@ -44,7 +44,7 @@ func TestReadZip03(t *testing.T) {
 
 func TestReadZip04(t *testing.T) {
 	t.Log("----TestReadZip04---")
-	file := `../tests/ziputils/test3.zip`
+	file := `../testdata/ziputils/test3.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
@@ -56,7 +56,7 @@ func TestReadZip04(t *testing.T) {
 
 func TestReadZip05(t *testing.T) {
 	t.Log("----TestReadZip05---")
-	file := `../tests/ziputils/test4.zip`
+	file := `../testdata/ziputils/test4.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
@@ -68,7 +68,7 @@ func TestReadZip05(t *testing.T) {
 
 func TestReadZip06(t *testing.T) {
 	t.Log("----TestReadZip06---")
-	file := `../tests/ziputils/test5.zip`
+	file := `../testdata/ziputils/test5.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
@@ -79,7 +79,7 @@ func TestReadZip06(t *testing.T) {
 }
 
 func TestReadZipFile(t *testing.T) {
-	filename := `../tests/ziputils/test1.zip`
+	filename := `../testdata/ziputils/test1.zip`
 	zf, err := zip.OpenReader(filename)
 	if err != nil {
 		t.Log("Error! ", err)
@@ -99,7 +99,7 @@ func TestReadZipFile(t *testing.T) {
 }
 
 func BenchmarkReadZipFile(t *testing.B) {
-	filename := `../tests/ziputils/test1.zip`
+	filename := `../testdata/ziputils/test1.zip`
 	for n := 0; n < t.N; n++ {
 		zf, err := zip.OpenReader(filename)
 		if err != nil {
@@ -121,7 +121,7 @@ func BenchmarkReadZipFile(t *testing.B) {
 }
 
 func BenchmarkReadZip01(b *testing.B) {
-	file := `../tests/ziputils/test1.zip`
+	file := `../testdata/ziputils/test1.zip`
 	for n := 0; n < b.N; n++ {
 		data, err := ReadZip(file)
 		if err != nil {
