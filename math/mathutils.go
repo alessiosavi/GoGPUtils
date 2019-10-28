@@ -1,17 +1,44 @@
 package mathutils
 
 import (
-	"math"
-	"strings"
+	"log"
+	"strconv"
+
+	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
-// SumIntArray return the of every element contained in the array
+func InitIntArray(dimension, value int) []int {
+	if dimension <= 0 {
+		return nil
+	}
+
+	array := make([]int, dimension)
+	for i := 0; i < dimension; i++ {
+		array[i] = value
+	}
+	return array
+}
+
+// SumIntArray return the sum of every element contained in the array
 func SumIntArray(integers []int) int {
 	sum := 0
 	for i := range integers {
 		sum += integers[i]
 	}
 	return sum
+}
+
+// SumIntArrays is delegated to sum the two given array
+func SumIntArrays(a1, a2 []int) []int {
+	if a1 == nil || a2 == nil || len(a1) != len(a2) {
+		return nil
+	}
+	total := make([]int, len(a1))
+	length := len(a1)
+	for i := 0; i < length; i++ {
+		total[i] = a1[i] + a2[i]
+	}
+	return total
 }
 
 // SumInt32Array return the of every element contained in the array
@@ -191,25 +218,57 @@ func AverageFloat64(array []float64) float64 {
 	return total / float64(len(array))
 }
 
-// ConvertSize is delegated to return the dimension related to the input byte size
-func ConvertSize(bytes float64, dimension string) float64 {
-	var value float64
-	dimension = strings.ToUpper(dimension)
-	switch dimension {
-	case "KB", "KILOBYTE":
-		value = bytes / 1000
-	case "MB", "MEGABYTE":
-		value = bytes / math.Pow(1000, 2)
-	case "GB", "GIGABYTE":
-		value = bytes / math.Pow(1000, 3)
-	case "TB", "TERABYTE":
-		value = bytes / math.Pow(1000, 4)
-	case "PB", "PETABYTE":
-		value = bytes / math.Pow(1000, 5)
-	case "XB", "EXABYTE":
-		value = bytes / math.Pow(1000, 6)
-	case "ZB", "ZETTABYTE":
-		value = bytes / math.Pow(1000, 7)
+// CreateMatrix is delegated to initialize a new empty matrix
+func CreateEmptyMatrix(r, c int) [][]int {
+	if r <= 1 || c <= 1 {
+		return nil
 	}
-	return value
+	matrix := make([][]int, r)
+	for rowsIndex := range matrix {
+		matrix[rowsIndex] = make([]int, c)
+	}
+	return matrix
+}
+
+// DumpMatrix is delegated to print the given matrix
+func DumpMatrix(m [][]int) {
+	if m == nil {
+		return
+	}
+	for i := range m {
+		log.Println(m[i])
+	}
+	log.Println("Rows: " + strconv.Itoa(len(m)) + " Columns: " + strconv.Itoa(len(m[0])))
+}
+
+// InitRandomMatrix is delegated to initialize a random matrix with the given dimension
+func InitRandomMatrix(r, c int) [][]int {
+	m := CreateEmptyMatrix(r, c)
+	randomizer := helper.InitRandomizer()
+	for i := range m {
+		m[i] = randomizer.RandomIntArray(0, 100, c)
+	}
+	return m
+}
+
+// InitStaticMatrix is delegated to initialize a matrix with the given dimension using the same value for each field
+func InitStaticMatrix(r, c, value int) [][]int {
+	m := CreateEmptyMatrix(r, c)
+	for i := range m {
+		m[i] = InitIntArray(c, value)
+	}
+	return m
+}
+
+// SumMatrix is delegated to sum the given matrix
+func SumMatrix(m1, m2 [][]int) [][]int {
+	if m1 == nil || m2 == nil || len(m1) != len(m2) {
+		return nil
+	}
+	sum := make([][]int, len(m1))
+	length := len(m1)
+	for i := 0; i < length; i++ {
+		sum[i] = SumIntArrays(m1[i], m2[i])
+	}
+	return sum
 }

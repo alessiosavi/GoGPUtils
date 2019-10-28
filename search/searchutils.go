@@ -59,25 +59,25 @@ func ContainsString(data, target string) bool {
 	return matcher.Contains([]byte(data))
 }
 
-// ContainsString is delegated to verify if the given string is present in the data
+// ContainsStringByte is delegated to verify if the given string is present in the data
 func ContainsStringByte(data []byte, target string) bool {
 	matcher := ahocorasick.NewStringMatcher([]string{target})
 	return matcher.Contains(data)
 }
 
-// ContainsString is delegated to verify if the given array of string are present in the data
+// ContainsStrings is delegated to verify if the given array of string are present in the data
 func ContainsStrings(data string, targets []string) bool {
 	matcher := ahocorasick.NewStringMatcher(targets)
 	return matcher.Contains([]byte(data))
 }
 
-// ContainsString is delegated to verify if the given array of string are present in the data
+// ContainsStringsByte is delegated to verify if the given array of string are present in the data
 func ContainsStringsByte(data []byte, targets []string) bool {
 	matcher := ahocorasick.NewStringMatcher(targets)
 	return matcher.Contains(data)
 }
 
-// ContainsString is delegated to verify which strings are present in the data
+// ContainsWhichStrings is delegated to verify which strings are present in the data
 func ContainsWhichStrings(data string, target []string) []string {
 	matcher := ahocorasick.NewStringMatcher(target)
 	hits := matcher.Match([]byte(data))
@@ -88,7 +88,7 @@ func ContainsWhichStrings(data string, target []string) []string {
 	return found
 }
 
-// ContainsString is delegated to verify which strings are present in the data
+// ContainsWhichStringsByte is delegated to verify which strings are present in the data
 func ContainsWhichStringsByte(data []byte, target []string) []string {
 	matcher := ahocorasick.NewStringMatcher(target)
 	hits := matcher.Match(data)

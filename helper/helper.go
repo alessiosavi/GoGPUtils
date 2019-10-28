@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -194,4 +195,27 @@ func RecognizeFormat(input string) (string, string) {
 		contentDisposition = `inline; filename="` + input + `"`
 	}
 	return mimeType, contentDisposition
+}
+
+// ConvertSize is delegated to return the dimension related to the input byte size
+func ConvertSize(bytes float64, dimension string) float64 {
+	var value float64
+	dimension = strings.ToUpper(dimension)
+	switch dimension {
+	case "KB", "KILOBYTE":
+		value = bytes / 1000
+	case "MB", "MEGABYTE":
+		value = bytes / math.Pow(1000, 2)
+	case "GB", "GIGABYTE":
+		value = bytes / math.Pow(1000, 3)
+	case "TB", "TERABYTE":
+		value = bytes / math.Pow(1000, 4)
+	case "PB", "PETABYTE":
+		value = bytes / math.Pow(1000, 5)
+	case "XB", "EXABYTE":
+		value = bytes / math.Pow(1000, 6)
+	case "ZB", "ZETTABYTE":
+		value = bytes / math.Pow(1000, 7)
+	}
+	return value
 }

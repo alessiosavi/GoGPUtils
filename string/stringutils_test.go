@@ -1,8 +1,13 @@
 package stringutils
 
 import (
+	"bytes"
+	"io/ioutil"
+	"strings"
 	"testing"
 )
+
+const danteDataset string = `../testdata/files/dante.txt`
 
 func TestIsUpper(t *testing.T) {
 	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
@@ -19,30 +24,73 @@ func TestIsUpper(t *testing.T) {
 	}
 }
 
-func BenchmarkTestIsUpperKO(b *testing.B) {
-	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa`
+func BenchmarkTestIsUpperByteOK(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	content = bytes.ToUpper(content)
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		IsUpper(data)
+		IsUpperByte(content)
 	}
 }
 
 func BenchmarkTestIsUpperOK(b *testing.B) {
-	data := `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.ToUpper(string(content))
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		IsUpper(data)
 	}
 }
 
 func BenchmarkTestIsLowerOK(b *testing.B) {
-	data := `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.ToLower(string(content))
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		IsLower(data)
 	}
 }
-func BenchmarkTestIsLowerKO(b *testing.B) {
-	data := `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA`
+func BenchmarkTestIsLowerByteKO(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		IsLower(data)
+		IsLowerByte(content)
+	}
+}
+
+func BenchmarkCreateJSON(t *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.Split(string(content), "\n")
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		CreateJSON(data)
+	}
+}
+
+func BenchmarkJoin(t *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.Split(string(content), "\n")
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		Join(data)
 	}
 }
 
@@ -62,7 +110,7 @@ func TestIsLower(t *testing.T) {
 }
 func TestContainsLetter(t *testing.T) {
 	dataOK := []string{`baaaa`, `baa!aaa`, `baa aaa`, `!!!!a!!!`}
-	dataKO := []string{`....`, `,,,,,`, `,,, ,,,,`, `<<<`, `!!!`}
+	dataKO := []string{`....`, `,,,,,`, `,,,,,,,`, `<<<`, `!!!`}
 	for i := range dataOK {
 		if !ContainsLetter(dataOK[i]) {
 			t.Fail()
@@ -77,16 +125,28 @@ func TestContainsLetter(t *testing.T) {
 
 func TestContainsOnlyLetter(t *testing.T) {
 	dataOK := []string{`baaaa`, `baaaaa`, `baaa`, `a`}
-	dataKO := []string{`....`, `,,,,,`, `,,, ,,,,`, `<<<`, `!!!`, `2`}
+	dataKO := []string{`....`, `,,,,,`, `<<<`, `!!!`, `2`}
 	for i := range dataOK {
 		if !ContainsOnlyLetter(dataOK[i]) {
-			t.Fail()
+			t.Error(dataOK[i])
 		}
 	}
 	for i := range dataKO {
 		if ContainsOnlyLetter(dataKO[i]) {
-			t.Fail()
+			t.Error(dataKO[i])
 		}
+	}
+}
+
+func BenchmarkContainsOnlyLetter(t *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		ContainsOnlyLetter(data)
 	}
 }
 
