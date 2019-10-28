@@ -14,8 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	stringutils "github.com/alessiosavi/GoGPUtils/string"
 )
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
@@ -24,7 +22,7 @@ func ReadFileInArray(filePath string) []string {
 	if err != nil {
 		return nil
 	}
-	return stringutils.Split(string(data))
+	return strings.Split(string(data), "\n")
 }
 
 //IsFile verify if the given filepath is a file
@@ -43,6 +41,15 @@ func IsDir(path string) bool {
 		return false
 	}
 	return info.IsDir()
+}
+
+// CreateDir is delegated to create a new directory if not present
+func CreateDir(path string) error {
+	var err error
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		os.Mkdir(path, os.ModePerm)
+	}
+	return err
 }
 
 // GetFileModification return the last modification time of the file in input in a UNIX time format
@@ -267,4 +274,38 @@ func GetFileSize2(filepath string) (int64, error) {
 		return 0, err
 	}
 	return fi.Size(), nil
+}
+
+// FilterFromFile is delegated to retrieve the lines that contain the target
+func FilterFromFile(filename, target string, ignorecase bool) []string {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	if len(data) == 0 {
+		return nil
+	}
+
+	var result []string
+	if ignorecase {
+		target = strings.ToLower(target)
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
+	for scanner.Scan() {
+		data := strings.ToLower(scanner.Text())
+		if strings.Contains(data, target) {
+			result = append(result, data)
+		}
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
+func FilterNotMatch(data []string, notMatch string) {
+
 }

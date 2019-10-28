@@ -212,3 +212,91 @@ func BenchmarkRandomString(t *testing.B) {
 		RandomString(5000)
 	}
 }
+
+func TestExtractTextFromQuery(t *testing.T) {}
+func BenchmarkExtractTextFromQuery(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestCheckPresence(t *testing.T) {}
+func BenchmarkCheckPresence(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkIsUpper(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestIsUpperByte(t *testing.T) {}
+func BenchmarkIsUpperByte(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkIsLower(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestIsLowerByte(t *testing.T) {}
+func BenchmarkIsLowerByte(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkContainsLetter(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+
+func TestCreateJSON(t *testing.T) {}
+
+func TestJoin(t *testing.T) {}
+
+func TestRemoveWhiteSpaceString(t *testing.T) {}
+func BenchmarkRemoveWhiteSpaceString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestIsASCII(t *testing.T) {}
+func BenchmarkIsASCII(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestIsASCIIRune(t *testing.T) {}
+func BenchmarkIsASCIIRune(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+
+func TestSplit(t *testing.T) {}
+func BenchmarkSplit(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestCountLinesString(t *testing.T) {}
+func BenchmarkCountLinesString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestExtractString(t *testing.T) {}
+func BenchmarkExtractString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestReplaceAtIndex(t *testing.T) {}
+func BenchmarkReplaceAtIndex(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestRemoveNonASCII(t *testing.T) {}
+func BenchmarkRemoveNonASCII(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkIsBlank(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkTrim(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestRandomString(t *testing.T) {}

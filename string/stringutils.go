@@ -66,7 +66,7 @@ func IsLower(str string) bool {
 	return true
 }
 
-// IsLower verify that a string does contains only lower character
+// IsLowerByte verify that a string does contains only lower character
 func IsLowerByte(str []byte) bool {
 	for i := range str {
 		ascii := str[i]

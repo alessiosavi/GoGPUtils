@@ -7,6 +7,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
+// InitIntArray is delegated to initialize a new array of the given dimension, populated with the same input value
 func InitIntArray(dimension, value int) []int {
 	if dimension <= 0 {
 		return nil
@@ -240,7 +241,7 @@ func AverageFloat64(array []float64) float64 {
 	return total / float64(len(array))
 }
 
-// CreateMatrix is delegated to initialize a new empty matrix
+// CreateEmptyMatrix is delegated to initialize a new empty matrix
 func CreateEmptyMatrix(r, c int) [][]int {
 	if r <= 1 || c <= 1 {
 		return nil
@@ -308,6 +309,7 @@ func SubtractMatrix(m1, m2 [][]int) [][]int {
 	return total
 }
 
+// MultiplyMatrix is delegated to execute the multiplication between the given matrix
 func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	if m1 == nil || m2 == nil {
 		return nil
@@ -340,27 +342,11 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	return total
 }
 
+// MultiplySumArray is delegated to multiply the given array and sum every number of the result array
 func MultiplySumArray(a, b []int) int {
 	total := make([]int, len(a))
 	for i := range a {
 		total[i] = a[i] * b[i]
 	}
 	return SumIntArray(total)
-}
-
-func GenerateTestMatrix1() [][]int {
-	matrix := make([][]int, 2)
-
-	matrix[0] = []int{1, 2, 3}
-	matrix[1] = []int{4, 5, 6}
-	return matrix
-}
-
-func GenerateTestMatrix2() [][]int {
-	matrix := make([][]int, 3)
-
-	matrix[0] = []int{1, 4, 7}
-	matrix[1] = []int{2, 5, 8}
-	matrix[2] = []int{3, 6, 9}
-	return matrix
 }

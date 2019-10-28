@@ -152,3 +152,49 @@ func TestConvertSize(t *testing.T) {
 	t.Log(ConvertSize(1000000, "MB"))
 	t.Log(ConvertSize(1024, "GB"))
 }
+
+func TestInitRandomizer(t *testing.T) {}
+func BenchmarkInitRandomizer(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestCheck(t *testing.T) {}
+func BenchmarkCheck(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestRandomInt(t *testing.T) {}
+func BenchmarkRandomInt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+
+func TestGenerateSequentialIntArray(t *testing.T) {}
+func BenchmarkGenerateSequentialIntArray(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestGenerateSequentialFloat32Array(t *testing.T) {}
+func BenchmarkGenerateSequentialFloat32Array(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestByteCountSI(t *testing.T) {}
+func BenchmarkByteCountSI(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestByteCountIEC(t *testing.T) {}
+func BenchmarkByteCountIEC(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestRecognizeFormat(t *testing.T) {}
+func BenchmarkRecognizeFormat(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkConvertSize(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
