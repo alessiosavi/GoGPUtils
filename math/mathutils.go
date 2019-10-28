@@ -28,6 +28,15 @@ func SumIntArray(integers []int) int {
 	return sum
 }
 
+// SubtractIntArray return the subtract of every element contained in the array
+func SubtractIntArray(integers []int) int {
+	subtract := 0
+	for i := range integers {
+		subtract -= integers[i]
+	}
+	return subtract
+}
+
 // SumIntArrays is delegated to sum the two given array
 func SumIntArrays(a1, a2 []int) []int {
 	if a1 == nil || a2 == nil || len(a1) != len(a2) {
@@ -37,6 +46,19 @@ func SumIntArrays(a1, a2 []int) []int {
 	length := len(a1)
 	for i := 0; i < length; i++ {
 		total[i] = a1[i] + a2[i]
+	}
+	return total
+}
+
+// SubtractIntArrays is delegated to sum the two given array
+func SubtractIntArrays(a1, a2 []int) []int {
+	if a1 == nil || a2 == nil || len(a1) != len(a2) {
+		return nil
+	}
+	total := make([]int, len(a1))
+	length := len(a1)
+	for i := 0; i < length; i++ {
+		total[i] = a1[i] - a2[i]
 	}
 	return total
 }
@@ -271,4 +293,74 @@ func SumMatrix(m1, m2 [][]int) [][]int {
 		sum[i] = SumIntArrays(m1[i], m2[i])
 	}
 	return sum
+}
+
+// SubtractMatrix is delegated to sum the given matrix
+func SubtractMatrix(m1, m2 [][]int) [][]int {
+	if m1 == nil || m2 == nil || len(m1) != len(m2) {
+		return nil
+	}
+	total := make([][]int, len(m1))
+	length := len(m1)
+	for i := 0; i < length; i++ {
+		total[i] = SubtractIntArrays(m1[i], m2[i])
+	}
+	return total
+}
+
+func MultiplyMatrix(m1, m2 [][]int) [][]int {
+	if m1 == nil || m2 == nil {
+		return nil
+	}
+
+	if len(m1) == 0 || len(m2) == 0 {
+		log.Println("Matrix empty")
+		return nil
+	}
+	if len(m1[0]) != len(m2) {
+		log.Println("Different size\nM1:")
+		DumpMatrix(m1)
+		log.Println("M2:")
+		DumpMatrix(m2)
+		return nil
+	}
+	total := InitStaticMatrix(len(m1), len(m2[0]), -1)
+	for i := range m1 {
+		arrayM1 := m1[i]
+		for k := 0; k < len(m2); k++ {
+			arrayM2 := make([]int, len(arrayM1))
+			for j := range m2 {
+				arrayM2[j] = m2[j][k]
+			}
+			data := MultiplySumArray(arrayM1, arrayM2)
+			total[i][k] = data
+		}
+	}
+	//DumpMatrix(total)
+	return total
+}
+
+func MultiplySumArray(a, b []int) int {
+	total := make([]int, len(a))
+	for i := range a {
+		total[i] = a[i] * b[i]
+	}
+	return SumIntArray(total)
+}
+
+func GenerateTestMatrix1() [][]int {
+	matrix := make([][]int, 2)
+
+	matrix[0] = []int{1, 2, 3}
+	matrix[1] = []int{4, 5, 6}
+	return matrix
+}
+
+func GenerateTestMatrix2() [][]int {
+	matrix := make([][]int, 3)
+
+	matrix[0] = []int{1, 4, 7}
+	matrix[1] = []int{2, 5, 8}
+	matrix[2] = []int{3, 6, 9}
+	return matrix
 }
