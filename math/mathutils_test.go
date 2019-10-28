@@ -11,10 +11,11 @@ const total int = 1000
 
 var randomizer helper.RandomGenerator = helper.InitRandomizer()
 
-func TestConvertSize(t *testing.T) {
-	t.Log(ConvertSize(1024, "KB"))
-	t.Log(ConvertSize(1000000, "MB"))
-	t.Log(ConvertSize(1024, "GB"))
+func TestInitInitArray(t *testing.T) {
+	array := InitIntArray(10, 1)
+	if SumIntArray(array) != 10 {
+		t.Fail()
+	}
 }
 
 func BenchmarkSumIntArray(t *testing.B) {
@@ -134,4 +135,31 @@ func BenchmarkAverageFloat64(t *testing.B) {
 	for n := 0; n < t.N; n++ {
 		AverageFloat64(array)
 	}
+}
+
+func TestCreateEmptyMatrix(t *testing.T) {
+	m := CreateEmptyMatrix(5, 10)
+	DumpMatrix(m)
+}
+
+func TestInitRandomMatrix(t *testing.T) {
+	m := InitRandomMatrix(5, 10)
+	DumpMatrix(m)
+}
+
+func TestInitStaticMatrix(t *testing.T) {
+	m := InitStaticMatrix(5, 10, 1)
+	DumpMatrix(m)
+}
+func BenchmarkInitRandomMatrix(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		InitRandomMatrix(5, 10)
+	}
+}
+
+func TestSumMatrix(t *testing.T) {
+	m1 := InitStaticMatrix(5, 10, 1)
+	m2 := InitStaticMatrix(5, 10, 1)
+	m3 := SumMatrix(m1, m2)
+	DumpMatrix(m3)
 }

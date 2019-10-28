@@ -44,6 +44,17 @@ func IsUpper(str string) bool {
 	return true
 }
 
+// IsUpperByte verify that a string does contains only upper character
+func IsUpperByte(str []byte) bool {
+	for i := range str {
+		ascii := str[i]
+		if !(ascii > 64 && ascii < 91) {
+			return false
+		}
+	}
+	return true
+}
+
 // IsLower verify that a string does contains only lower character
 func IsLower(str string) bool {
 	for i := range str {
@@ -55,10 +66,22 @@ func IsLower(str string) bool {
 	return true
 }
 
+// IsLower verify that a string does contains only lower character
+func IsLowerByte(str []byte) bool {
+	for i := range str {
+		ascii := str[i]
+		if !(ascii > 96 && ascii < 123) {
+			return false
+		}
+	}
+	return true
+}
+
 // ContainsLetter verity that the given string contains, at least, an ASCII alphabet characters
+// Note, whitespace is allowed
 func ContainsLetter(str string) bool {
 	for i := range str {
-		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') {
+		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == ' ' {
 			return true
 		}
 	}
@@ -66,9 +89,10 @@ func ContainsLetter(str string) bool {
 }
 
 // ContainsOnlyLetter verity that the given string contains, only, ASCII alphabet characters
+// Note, whitespace is allowed
 func ContainsOnlyLetter(str string) bool {
 	for i := range str {
-		if !((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z')) {
+		if !((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == ' ') {
 			return false
 		}
 	}
@@ -76,7 +100,7 @@ func ContainsOnlyLetter(str string) bool {
 }
 
 // CreateJSON is delegated to create a json object for the key pair in input
-func CreateJSON(values ...string) string {
+func CreateJSON(values []string) string {
 	json := `{`
 	length := len(values)
 
@@ -85,7 +109,7 @@ func CreateJSON(values ...string) string {
 		return ""
 	}
 	for i := 0; i < length; i += 2 {
-		json = Join(json, `"`, values[i], `":"`, values[i+1], `",`)
+		json = Join([]string{json, `"`, values[i], `":"`, values[i+1], `",`})
 	}
 	json = strings.TrimSuffix(json, `,`)
 	json += `}`
@@ -93,7 +117,7 @@ func CreateJSON(values ...string) string {
 }
 
 // Join is a quite efficient string concatenator
-func Join(strs ...string) string {
+func Join(strs []string) string {
 	var sb strings.Builder
 	for i := range strs {
 		sb.WriteString(strs[i])
