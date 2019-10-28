@@ -3,13 +3,35 @@ package arrayutils
 import "strings"
 
 //RemoveElement delete the element of the indexes contained in j of the data in input
-func RemoveElement(data []string, j []int) []string {
+func RemoveElements(data []string, j []int) []string {
 	for i := 0; i < len(j); i++ {
 		data[j[i]] = data[len(data)-1] // Copy last element to index i.
 		data[len(data)-1] = ""         // Erase last element (write zero value).
 		data = data[:len(data)-1]      // Truncate slice.
 	}
 	return data
+}
+
+func RemoveElement(s []string, i int) []string {
+	if i < len(s) {
+		s[len(s)-1], s[i] = s[i], s[len(s)-1]
+		return s[:len(s)-1]
+	}
+	return s
+}
+
+func RemoveElementsTuned(s []string, index []int) []string {
+	if len(index) <= len(s) {
+		for i := range index {
+			s[len(s)-1], s[i] = s[i], s[len(s)-1]
+			s = s[:len(s)-1]
+			if i+1 < len(index) {
+				index[i+1] = index[i+1] - 1
+			}
+		}
+	}
+	return s
+
 }
 
 // RemoveWhiteSpaceArray is delegated to iterate every array item and remove the whitespace from the given string
@@ -24,7 +46,7 @@ func RemoveWhiteSpaceArray(data []string) []string {
 			}
 		}
 	}
-	return RemoveElement(data, toDelete)
+	return RemoveElements(data, toDelete)
 }
 
 // JoinStrings concatenate every data in the array and return the string content

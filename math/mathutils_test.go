@@ -165,24 +165,130 @@ func TestSumMatrix(t *testing.T) {
 }
 
 func TestMultiplyMatrix(t *testing.T) {
-	m1 := GenerateTestMatrix1()
-	m2 := GenerateTestMatrix2()
+	m1 := generateTestMatrix1()
+	m2 := generateTestMatrix2()
 	MultiplyMatrix(m1, m2)
 }
 
-func TestMultiplySumArray(t *testing.T) {
-	matrix := []int{1, 2, 3}
-	t.Log(MultiplySumArray(matrix, matrix))
+func TestMultiplySumArray1000(t *testing.T) {
+	randomizer := helper.InitRandomizer()
+	data := randomizer.RandomIntArray(0, 100, 1000)
+	t.Log(MultiplySumArray(data, data))
+}
+func BenchmarkMultiplySumArray1000(t *testing.B) {
+	randomizer := helper.InitRandomizer()
+	data := randomizer.RandomIntArray(0, 100, 1000)
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		t.Log(MultiplySumArray(data, data))
+	}
 }
 
-func BenchmarkMultiplyMatrix(t *testing.B) {
-	// m1 := GenerateTestMatrix1()
-	// m2 := GenerateTestMatrix2()
-
+func BenchmarkMultiplyMatrix100x100(t *testing.B) {
 	m1 := InitRandomMatrix(100, 100)
 	m2 := InitRandomMatrix(100, 100)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
 		MultiplyMatrix(m1, m2)
+	}
+}
+
+// generateTestMatrix1 is delegated to generate a matrix for test purpouse
+func generateTestMatrix1() [][]int {
+	matrix := make([][]int, 2)
+	matrix[0] = []int{1, 2, 3}
+	matrix[1] = []int{4, 5, 6}
+	return matrix
+}
+
+// generateTestMatrix2 is delegated to generate a matrix for test purpouse
+func generateTestMatrix2() [][]int {
+	matrix := make([][]int, 3)
+	matrix[0] = []int{1, 4, 7}
+	matrix[1] = []int{2, 5, 8}
+	matrix[2] = []int{3, 6, 9}
+	return matrix
+}
+
+func TestInitIntArray(t *testing.T) {}
+func BenchmarkInitIntArray(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestSumIntArray(t *testing.T) {}
+
+func TestSubtractIntArray(t *testing.T) {}
+func BenchmarkSubtractIntArray(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestSumIntArrays(t *testing.T) {}
+func BenchmarkSumIntArrays(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestSubtractIntArrays(t *testing.T) {}
+func BenchmarkSubtractIntArrays(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestSumInt32Array(t *testing.T) {}
+
+func TestSumInt64Array(t *testing.T) {}
+
+func TestSumFloat32Array(t *testing.T) {}
+
+func TestSumFloat64Array(t *testing.T) {}
+
+func TestMaxIntIndex(t *testing.T) {}
+
+func TestMaxInt32Index(t *testing.T) {}
+
+func TestMaxInt64Index(t *testing.T) {}
+
+func TestMaxFloat32Index(t *testing.T) {}
+
+func TestMaxFloat64Index(t *testing.T) {}
+
+func TestAverageInt(t *testing.T) {}
+
+func TestAverageInt32(t *testing.T) {}
+
+func TestAverageInt64(t *testing.T) {}
+
+func TestAverageFloat32(t *testing.T) {}
+
+func TestAverageFloat64(t *testing.T) {}
+
+func BenchmarkCreateEmptyMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestDumpMatrix(t *testing.T) {}
+func BenchmarkDumpMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+
+func BenchmarkInitStaticMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkSumMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestSubtractMatrix(t *testing.T) {}
+func BenchmarkSubtractMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func BenchmarkMultiplyMatrix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+	}
+}
+func TestMultiplySumArray(t *testing.T) {}
+func BenchmarkMultiplySumArray(b *testing.B) {
+	for i := 0; i < b.N; i++ {
 	}
 }
