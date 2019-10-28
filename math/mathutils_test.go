@@ -163,3 +163,26 @@ func TestSumMatrix(t *testing.T) {
 	m3 := SumMatrix(m1, m2)
 	DumpMatrix(m3)
 }
+
+func TestMultiplyMatrix(t *testing.T) {
+	m1 := GenerateTestMatrix1()
+	m2 := GenerateTestMatrix2()
+	MultiplyMatrix(m1, m2)
+}
+
+func TestMultiplySumArray(t *testing.T) {
+	matrix := []int{1, 2, 3}
+	t.Log(MultiplySumArray(matrix, matrix))
+}
+
+func BenchmarkMultiplyMatrix(t *testing.B) {
+	// m1 := GenerateTestMatrix1()
+	// m2 := GenerateTestMatrix2()
+
+	m1 := InitRandomMatrix(100, 100)
+	m2 := InitRandomMatrix(100, 100)
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		MultiplyMatrix(m1, m2)
+	}
+}
