@@ -25,6 +25,7 @@ func BenchmarkTestIsLowerByteKO(b *testing.B) {
 	if err != nil {
 		return
 	}
+	content = bytes.ToLower(content)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		IsLowerByte(content)

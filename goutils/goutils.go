@@ -90,7 +90,7 @@ func GenerateTestSignature(fileFolder, outFolder string) error {
 			folder := codeFolder + "/" + item
 			f, err := os.Create(folder)
 			if err != nil {
-				log.Println(err)
+				log.Println("Error during folder creation", err)
 			} else {
 				_, err = f.WriteString(data)
 				if err != nil {

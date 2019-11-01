@@ -220,32 +220,53 @@ func BenchmarkRandomString(t *testing.B) {
 func TestExtractTextFromQuery(t *testing.T) {}
 
 func BenchmarkExtractTextFromQuery(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		ExtractTextFromQuery(data, nil)
 	}
 }
 func TestCheckPresence(t *testing.T) {}
 func BenchmarkCheckPresence(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		CheckPresence(data, []string{"amor, Beatrice"})
 	}
 }
 func BenchmarkIsUpper(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.ToUpper(string(content))
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsUpper(data)
 	}
 }
-func TestIsUpperByte(t *testing.T) {}
-func BenchmarkIsUpperByte(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
+
 func BenchmarkIsLower(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
 	}
-}
-func TestIsLowerByte(t *testing.T) {}
-func BenchmarkIsLowerByte(b *testing.B) {
+	data := strings.ToLower(string(content))
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsLower(data)
 	}
+
 }
+
 func BenchmarkContainsLetter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 	}
@@ -255,14 +276,28 @@ func TestCreateJSON(t *testing.T) {}
 
 func TestJoin(t *testing.T) {}
 
-func TestRemoveWhiteSpaceString(t *testing.T) {}
-func BenchmarkRemoveWhiteSpaceString(b *testing.B) {
+func TestRemoveWhiteSpace(t *testing.T) {}
+func BenchmarkRemoveWhiteSpace(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		RemoveWhiteSpace(data)
 	}
 }
 func TestIsASCII(t *testing.T) {}
 func BenchmarkIsASCII(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsASCII(data)
 	}
 }
 func TestIsASCIIRune(t *testing.T) {}
@@ -273,17 +308,52 @@ func BenchmarkIsASCIIRune(b *testing.B) {
 
 func TestSplit(t *testing.T) {}
 func BenchmarkSplit(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		Split(data)
 	}
 }
+func BenchmarkSplitBuiltin(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		strings.Split(data, "\n")
+	}
+}
+
 func TestCountLinesString(t *testing.T) {}
 func BenchmarkCountLinesString(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		CountLines(data)
 	}
 }
 func TestExtractString(t *testing.T) {}
 func BenchmarkExtractString(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	initial := "LA DIVINA COMMEDIA"
+	final := "altre stelle."
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		ExtractString(&data, initial, final)
 	}
 }
 func TestReplaceAtIndex(t *testing.T) {}
@@ -293,7 +363,14 @@ func BenchmarkReplaceAtIndex(b *testing.B) {
 }
 func TestRemoveNonASCII(t *testing.T) {}
 func BenchmarkRemoveNonASCII(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		RemoveNonASCII(data)
 	}
 }
 func BenchmarkIsBlank(b *testing.B) {
@@ -301,7 +378,14 @@ func BenchmarkIsBlank(b *testing.B) {
 	}
 }
 func BenchmarkTrim(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		Trim(data)
 	}
 }
 func TestRandomString(t *testing.T) {}
