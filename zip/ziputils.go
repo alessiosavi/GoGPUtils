@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"errors"
 	"io/ioutil"
-	"testing"
 )
 
 // ReadZip is delegated to extract the files and read the content
@@ -52,10 +51,4 @@ func ReadZipFile(file *zip.File) (string, error) {
 		return "", err
 	}
 	return string(content), nil
-}
-
-func TestReadZip(t *testing.T) {}
-func BenchmarkReadZip(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
 }

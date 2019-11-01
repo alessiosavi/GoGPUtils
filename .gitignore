@@ -13,3 +13,5 @@
 GoGPUtils
 coverage.txt
 .vscode
+bench_old.txt
+bench_new.txt

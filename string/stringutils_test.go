@@ -1,7 +1,6 @@
 package stringutils
 
 import (
-	"bytes"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -21,18 +20,6 @@ func TestIsUpper(t *testing.T) {
 		if IsUpper(dataKO[i]) {
 			t.Fail()
 		}
-	}
-}
-
-func BenchmarkTestIsUpperByteOK(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	content = bytes.ToUpper(content)
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		IsUpperByte(content)
 	}
 }
 
@@ -59,16 +46,6 @@ func BenchmarkTestIsLowerOK(b *testing.B) {
 		IsLower(data)
 	}
 }
-func BenchmarkTestIsLowerByteKO(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		IsLowerByte(content)
-	}
-}
 
 func BenchmarkCreateJSON(t *testing.B) {
 	content, err := ioutil.ReadFile(danteDataset)
@@ -90,7 +67,7 @@ func BenchmarkJoin(t *testing.B) {
 	data := strings.Split(string(content), "\n")
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		Join(data)
+		Join(data, " ")
 	}
 }
 
@@ -206,6 +183,33 @@ func TestTrim(t *testing.T) {
 		}
 	}
 }
+func TestTrimNewLine(t *testing.T) {
+	data := []string{"test\n", "\ntest", "\ntest\n", "\ntest \n"}
+	for _, item := range data {
+		str := Trim(item)
+		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
+		if len(str) != 4 {
+			t.Fail()
+		}
+	}
+}
+
+func TestCheckPalindrome(t *testing.T) {
+	data := []string{`aba`, `abba`, `abcba`}
+	for _, item := range data {
+		if !CheckPalindrome(item) {
+			t.Fail()
+		}
+	}
+}
+
+func TestReverseString(t *testing.T) {
+	data := "Golang is better than Java <3"
+	test := `3< avaJ naht retteb si gnaloG`
+	if ReverseString(data) != test {
+		t.Fail()
+	}
+}
 
 func BenchmarkRandomString(t *testing.B) {
 	for n := 0; n < t.N; n++ {
@@ -214,33 +218,55 @@ func BenchmarkRandomString(t *testing.B) {
 }
 
 func TestExtractTextFromQuery(t *testing.T) {}
+
 func BenchmarkExtractTextFromQuery(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		ExtractTextFromQuery(data, nil)
 	}
 }
 func TestCheckPresence(t *testing.T) {}
 func BenchmarkCheckPresence(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		CheckPresence(data, []string{"amor, Beatrice"})
 	}
 }
 func BenchmarkIsUpper(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := strings.ToUpper(string(content))
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsUpper(data)
 	}
 }
-func TestIsUpperByte(t *testing.T) {}
-func BenchmarkIsUpperByte(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
+
 func BenchmarkIsLower(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
 	}
-}
-func TestIsLowerByte(t *testing.T) {}
-func BenchmarkIsLowerByte(b *testing.B) {
+	data := strings.ToLower(string(content))
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsLower(data)
 	}
+
 }
+
 func BenchmarkContainsLetter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 	}
@@ -250,14 +276,28 @@ func TestCreateJSON(t *testing.T) {}
 
 func TestJoin(t *testing.T) {}
 
-func TestRemoveWhiteSpaceString(t *testing.T) {}
-func BenchmarkRemoveWhiteSpaceString(b *testing.B) {
+func TestRemoveWhiteSpace(t *testing.T) {}
+func BenchmarkRemoveWhiteSpace(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		RemoveWhiteSpace(data)
 	}
 }
 func TestIsASCII(t *testing.T) {}
 func BenchmarkIsASCII(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		IsASCII(data)
 	}
 }
 func TestIsASCIIRune(t *testing.T) {}
@@ -268,17 +308,52 @@ func BenchmarkIsASCIIRune(b *testing.B) {
 
 func TestSplit(t *testing.T) {}
 func BenchmarkSplit(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		Split(data)
 	}
 }
+func BenchmarkSplitBuiltin(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		strings.Split(data, "\n")
+	}
+}
+
 func TestCountLinesString(t *testing.T) {}
 func BenchmarkCountLinesString(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		CountLines(data)
 	}
 }
 func TestExtractString(t *testing.T) {}
 func BenchmarkExtractString(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	initial := "LA DIVINA COMMEDIA"
+	final := "altre stelle."
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		ExtractString(&data, initial, final)
 	}
 }
 func TestReplaceAtIndex(t *testing.T) {}
@@ -288,7 +363,14 @@ func BenchmarkReplaceAtIndex(b *testing.B) {
 }
 func TestRemoveNonASCII(t *testing.T) {}
 func BenchmarkRemoveNonASCII(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		RemoveNonASCII(data)
 	}
 }
 func BenchmarkIsBlank(b *testing.B) {
@@ -296,7 +378,14 @@ func BenchmarkIsBlank(b *testing.B) {
 	}
 }
 func BenchmarkTrim(b *testing.B) {
+	content, err := ioutil.ReadFile(danteDataset)
+	if err != nil {
+		return
+	}
+	data := string(content)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		Trim(data)
 	}
 }
 func TestRandomString(t *testing.T) {}

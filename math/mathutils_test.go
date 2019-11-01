@@ -9,6 +9,8 @@ import (
 
 const total int = 1000
 
+var prime []int = []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199}
+
 var randomizer helper.RandomGenerator = helper.InitRandomizer()
 
 func TestInitInitArray(t *testing.T) {
@@ -138,18 +140,18 @@ func BenchmarkAverageFloat64(t *testing.B) {
 }
 
 func TestCreateEmptyMatrix(t *testing.T) {
-	m := CreateEmptyMatrix(5, 10)
-	DumpMatrix(m)
+	/*m := */ CreateEmptyMatrix(5, 10)
+	//DumpMatrix(m)
 }
 
 func TestInitRandomMatrix(t *testing.T) {
-	m := InitRandomMatrix(5, 10)
-	DumpMatrix(m)
+	/*m := */ InitRandomMatrix(5, 10)
+	//	DumpMatrix(m)
 }
 
 func TestInitStaticMatrix(t *testing.T) {
-	m := InitStaticMatrix(5, 10, 1)
-	DumpMatrix(m)
+	/*m :=*/ InitStaticMatrix(5, 10, 1)
+	//DumpMatrix(m)
 }
 func BenchmarkInitRandomMatrix(t *testing.B) {
 	for i := 0; i < t.N; i++ {
@@ -160,14 +162,15 @@ func BenchmarkInitRandomMatrix(t *testing.B) {
 func TestSumMatrix(t *testing.T) {
 	m1 := InitStaticMatrix(5, 10, 1)
 	m2 := InitStaticMatrix(5, 10, 1)
-	m3 := SumMatrix(m1, m2)
-	DumpMatrix(m3)
+	/*m3 :=*/ SumMatrix(m1, m2)
+	// DumpMatrix(m3)
 }
 
 func TestMultiplyMatrix(t *testing.T) {
 	m1 := generateTestMatrix1()
 	m2 := generateTestMatrix2()
-	MultiplyMatrix(m1, m2)
+	/*m3 :=*/ MultiplyMatrix(m1, m2)
+	//DumpMatrix(m3)
 }
 
 func TestMultiplySumArray1000(t *testing.T) {
@@ -180,7 +183,7 @@ func BenchmarkMultiplySumArray1000(t *testing.B) {
 	data := randomizer.RandomIntArray(0, 100, 1000)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		t.Log(MultiplySumArray(data, data))
+		MultiplySumArray(data, data)
 	}
 }
 
@@ -291,4 +294,34 @@ func TestMultiplySumArray(t *testing.T) {}
 func BenchmarkMultiplySumArray(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 	}
+}
+
+func TestIsPrime(t *testing.T) {
+	for _, item := range prime {
+		if !IsPrime(item) {
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkIsPrime(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		for _, item := range prime {
+			if !IsPrime(item) {
+				t.Fail()
+			}
+		}
+	}
+}
+
+func TestPadArray(t *testing.T) {
+	array := []int{1, 2, 3, 4}
+	t.Log(PadArray(array, 5))
+}
+
+func TestSumArrays(t *testing.T) {
+	array1 := []int{1, 1, 2, 3, 4}
+	array2 := []int{9, 3, 3, 3}
+	// 10567
+	t.Log(SumArrays(array1, array2))
 }

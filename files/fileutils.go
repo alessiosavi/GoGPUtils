@@ -47,7 +47,10 @@ func IsDir(path string) bool {
 func CreateDir(path string) error {
 	var err error
 	if _, err = os.Stat(path); os.IsNotExist(err) {
-		os.Mkdir(path, os.ModePerm)
+		err = os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			log.Println("Error during creation of folder ", err)
+		}
 	}
 	return err
 }

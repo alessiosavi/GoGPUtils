@@ -50,7 +50,7 @@ func CreateBenchmarkSignature(codeFile string) (string, error) {
 }
 
 // GenerateTestSignature is delegated to generate the test signature for every golang code file in the subdirectory
-func GenerateTestSignature(fileFolder, outFolder string) {
+func GenerateTestSignature(fileFolder, outFolder string) error {
 	files := fileutils.FindFiles(fileFolder, ".go", true)
 	i := 0
 	for _, file := range files {
@@ -60,7 +60,10 @@ func GenerateTestSignature(fileFolder, outFolder string) {
 		}
 	}
 	files = files[:i]
-	fileutils.CreateDir(outFolder)
+	err := fileutils.CreateDir(outFolder)
+	if err != nil {
+		return err
+	}
 	for _, item := range files {
 		//t.Log("=======" + item + "=======")
 		data, err := CreateBenchmarkSignature(item)
@@ -80,14 +83,21 @@ func GenerateTestSignature(fileFolder, outFolder string) {
 				item = strings.Replace(item, ".go", "_test.go", -1)
 			}
 			log.Println(outFolder, item, codeFolder)
-			fileutils.CreateDir(codeFolder)
+			err = fileutils.CreateDir(codeFolder)
+			if err != nil {
+				return err
+			}
 			folder := codeFolder + "/" + item
 			f, err := os.Create(folder)
 			if err != nil {
-				log.Println(err)
+				log.Println("Error during folder creation", err)
 			} else {
-				f.WriteString(data)
+				_, err = f.WriteString(data)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }

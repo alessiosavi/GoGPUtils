@@ -1,6 +1,8 @@
 package arrayutils
 
-import "strings"
+import (
+	"strings"
+)
 
 //RemoveElement delete the element of the indexes contained in j of the data in input
 func RemoveElements(data []string, j []int) []string {
@@ -63,4 +65,15 @@ func JoinStrings(data []string) string {
 func RemoveFromByte(s []byte, i int) []byte {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]
+}
+
+// ReverseArray is delegated to return the inverse rappresentation of the array
+func ReverseArray(n1 []int) []int {
+	var result []int = make([]int, len(n1))
+	for i := len(n1) - 1; i >= 0; i-- {
+		v := n1[i]
+		j := len(n1) - 1 - i
+		result[j] = v
+	}
+	return result
 }
