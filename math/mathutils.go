@@ -360,7 +360,7 @@ func SumArrays(n1, n2 []int) []int {
 	var result []int
 	var odd int = 0
 	var length int
-	var sum int = 0
+	var sum int
 	if len(n1) > len(n2) {
 		length = len(n1)
 	} else {
@@ -442,7 +442,7 @@ func GenerateFibonacci(max int64) []int64 {
 	return array
 }
 
-// Is delegated to extract only the even number from the input array
+// ExtractEvenValuedNumber Is delegated to extract only the even number from the input array
 func ExtractEvenValuedNumber(array []int64) []int64 {
 	var result []int64
 	for i := range array {

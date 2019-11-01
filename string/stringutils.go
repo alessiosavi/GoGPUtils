@@ -108,7 +108,7 @@ func Join(strs []string, delimiter string) string {
 	return strings.TrimSuffix(sb.String(), " ")
 }
 
-// RemoveDoubleWhiteSpaceString is delegated to remove the whitespace from the given string
+// RemoveDoubleWhiteSpace is delegated to remove the whitespace from the given string
 // FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
 func RemoveDoubleWhiteSpace(str string) string {
 	var b strings.Builder
@@ -121,7 +121,7 @@ func RemoveDoubleWhiteSpace(str string) string {
 	return b.String()
 }
 
-// RemoveWhiteSpaceString is delegated to remove the whitespace from the given string
+// RemoveWhiteSpace is delegated to remove the whitespace from the given string
 // FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
 func RemoveWhiteSpace(str string) string {
 	var b strings.Builder
