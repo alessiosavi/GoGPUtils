@@ -3,6 +3,7 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
+	"log"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -10,7 +11,8 @@ import (
 	"unsafe"
 )
 
-// ExtractTextFromQuery is delegated to retrieve the list of string involved in the query
+// ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
+// It can be viewed as a tokenzier that use whitespace for delimit the word
 func ExtractTextFromQuery(target string, ignore []string) []string {
 	var queries []string
 	rgxp := regexp.MustCompile(`(\w+)`)
@@ -44,17 +46,6 @@ func IsUpper(str string) bool {
 	return true
 }
 
-// IsUpperByte verify that a string does contains only upper character
-func IsUpperByte(str []byte) bool {
-	for i := range str {
-		ascii := str[i]
-		if !(ascii > 64 && ascii < 91) {
-			return false
-		}
-	}
-	return true
-}
-
 // IsLower verify that a string does contains only lower character
 func IsLower(str string) bool {
 	for i := range str {
@@ -66,19 +57,8 @@ func IsLower(str string) bool {
 	return true
 }
 
-// IsLowerByte verify that a string does contains only lower character
-func IsLowerByte(str []byte) bool {
-	for i := range str {
-		ascii := str[i]
-		if !(ascii > 96 && ascii < 123) {
-			return false
-		}
-	}
-	return true
-}
-
 // ContainsLetter verity that the given string contains, at least, an ASCII alphabet characters
-// Note, whitespace is allowed
+// Note: whitespace is allowed
 func ContainsLetter(str string) bool {
 	for i := range str {
 		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == ' ' {
@@ -99,39 +79,55 @@ func ContainsOnlyLetter(str string) bool {
 	return true
 }
 
-// CreateJSON is delegated to create a json object for the key pair in input
+// CreateJSON is delegated to create a simple json object for the key pair in input
 func CreateJSON(values []string) string {
 	json := `{`
 	length := len(values)
 
 	// Not a key-value list
 	if length%2 != 0 {
+		log.Fatal("Not a key-value list")
 		return ""
 	}
 	for i := 0; i < length; i += 2 {
-		json = Join([]string{json, `"`, values[i], `":"`, values[i+1], `",`})
+		json = Join([]string{json, `"`, values[i], `":"`, values[i+1], `",`}, "")
 	}
 	json = strings.TrimSuffix(json, `,`)
 	json += `}`
 	return json
 }
 
-// Join is a quite efficient string concatenator
-func Join(strs []string) string {
+// Join use a strings.Builder for concatenate the input string array.
+// It concatenate the strings among the delimiter in input
+func Join(strs []string, delimiter string) string {
 	var sb strings.Builder
 	for i := range strs {
 		sb.WriteString(strs[i])
+		sb.WriteString(delimiter)
 	}
-	return sb.String()
+	return strings.TrimSuffix(sb.String(), " ")
 }
 
-// RemoveWhiteSpaceString is delegated to remove the whitespace from the given string
+// RemoveDoubleWhiteSpaceString is delegated to remove the whitespace from the given string
 // FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
-func RemoveWhiteSpaceString(str string) string {
+func RemoveDoubleWhiteSpace(str string) string {
 	var b strings.Builder
 	b.Grow(len(str))
 	for i := range str {
 		if !(str[i] == 32 && (i+1 < len(str) && str[i+1] == 32)) {
+			b.WriteRune(rune(str[i]))
+		}
+	}
+	return b.String()
+}
+
+// RemoveWhiteSpaceString is delegated to remove the whitespace from the given string
+// FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
+func RemoveWhiteSpace(str string) string {
+	var b strings.Builder
+	b.Grow(len(str))
+	for i := range str {
+		if str[i] != 32 {
 			b.WriteRune(rune(str[i]))
 		}
 	}
@@ -175,8 +171,8 @@ func Split(data string) []string {
 }
 
 // CountLinesString return the number of lines in the given string
-func CountLinesString(fileContet string) int {
-	scanner := bufio.NewScanner(strings.NewReader(fileContet)) // Create a scanner for iterate the string
+func CountLines(str string) int {
+	scanner := bufio.NewScanner(strings.NewReader(str)) // Create a scanner for iterate the string
 	counter := 0
 	for scanner.Scan() {
 		counter++
@@ -201,8 +197,8 @@ func ExtractString(data *string, first, last string) string {
 }
 
 // ReplaceAtIndex is delegated to replace the character related to the index with the input rune
-func ReplaceAtIndex(str string, replacement rune, index int) string {
-	return str[:index] + string(replacement) + str[index+1:]
+func ReplaceAtIndex(str, replacement string, index int) string {
+	return str[:index] + replacement + str[index+1:]
 }
 
 // RemoveNonASCII is delegated to clean the text from the NON ASCII character
@@ -214,7 +210,7 @@ func RemoveNonASCII(str string) string {
 			b.WriteRune(c)
 		}
 	}
-	return RemoveWhiteSpaceString(b.String())
+	return RemoveDoubleWhiteSpace(b.String())
 }
 
 // IsBlank is delegated to verify that the does not contains only empty char
@@ -233,26 +229,31 @@ func IsBlank(str string) bool {
 }
 
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
+// It also convert every new line in a space
 func Trim(str string) string {
 	var b strings.Builder
 	b.Grow(len(str))
 	length := len(str)
 	for i := 0; i < length; i++ {
+		// Write character
 		if str[i] > 32 {
 			b.WriteByte(str[i])
+			// Convert new line in space
+		} else if str[i] == 10 {
+			b.WriteByte(32)
+			// Print the space only if followed by an ASCII character
 		} else if i+1 < length && (str[i] < 33 && str[i+1] > 32) {
 			b.WriteByte(str[i])
 		}
 	}
-	var data string
-	data = b.String()
+	var data string = b.String()
 	length = len(data)
 	if data[0] == 32 {
 		data = data[1:]
 		length--
 	}
 	if data[length-1] == 32 {
-		data = data[:length-2]
+		data = data[:length-1]
 	}
 	return data
 }
@@ -282,4 +283,25 @@ func RandomString(n int) string {
 		remain--
 	}
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+// CheckPalindrome is delegated to verify if the given string is palindrome
+func CheckPalindrome(str string) bool {
+	length := len(str) - 1
+	for i := range str {
+		if str[i] != str[length-i] {
+			return false
+		}
+	}
+	return true
+}
+
+// ReverseString is delegated to return the reverse of the input string
+func ReverseString(str string) string {
+	length := len(str) - 1
+	var builder strings.Builder
+	for i := length; i >= 0; i-- {
+		builder.WriteByte(str[i])
+	}
+	return builder.String()
 }

@@ -1,7 +1,6 @@
 package stringutils
 
 import (
-	"bytes"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -21,18 +20,6 @@ func TestIsUpper(t *testing.T) {
 		if IsUpper(dataKO[i]) {
 			t.Fail()
 		}
-	}
-}
-
-func BenchmarkTestIsUpperByteOK(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	content = bytes.ToUpper(content)
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		IsUpperByte(content)
 	}
 }
 
@@ -59,16 +46,6 @@ func BenchmarkTestIsLowerOK(b *testing.B) {
 		IsLower(data)
 	}
 }
-func BenchmarkTestIsLowerByteKO(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		IsLowerByte(content)
-	}
-}
 
 func BenchmarkCreateJSON(t *testing.B) {
 	content, err := ioutil.ReadFile(danteDataset)
@@ -90,7 +67,7 @@ func BenchmarkJoin(t *testing.B) {
 	data := strings.Split(string(content), "\n")
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		Join(data)
+		Join(data, " ")
 	}
 }
 
@@ -206,6 +183,33 @@ func TestTrim(t *testing.T) {
 		}
 	}
 }
+func TestTrimNewLine(t *testing.T) {
+	data := []string{"test\n", "\ntest", "\ntest\n", "\ntest \n"}
+	for _, item := range data {
+		str := Trim(item)
+		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
+		if len(str) != 4 {
+			t.Fail()
+		}
+	}
+}
+
+func TestCheckPalindrome(t *testing.T) {
+	data := []string{`aba`, `abba`, `abcba`}
+	for _, item := range data {
+		if !CheckPalindrome(item) {
+			t.Fail()
+		}
+	}
+}
+
+func TestReverseString(t *testing.T) {
+	data := "Golang is better than Java <3"
+	test := `3< avaJ naht retteb si gnaloG`
+	if ReverseString(data) != test {
+		t.Fail()
+	}
+}
 
 func BenchmarkRandomString(t *testing.B) {
 	for n := 0; n < t.N; n++ {
@@ -214,6 +218,7 @@ func BenchmarkRandomString(t *testing.B) {
 }
 
 func TestExtractTextFromQuery(t *testing.T) {}
+
 func BenchmarkExtractTextFromQuery(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 	}

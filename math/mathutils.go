@@ -2,6 +2,7 @@ package mathutils
 
 import (
 	"log"
+	"math"
 	"strconv"
 
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -311,14 +312,11 @@ func SubtractMatrix(m1, m2 [][]int) [][]int {
 
 // MultiplyMatrix is delegated to execute the multiplication between the given matrix
 func MultiplyMatrix(m1, m2 [][]int) [][]int {
-	if m1 == nil || m2 == nil {
-		return nil
-	}
-
-	if len(m1) == 0 || len(m2) == 0 {
+	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
 		return nil
 	}
+
 	if len(m1[0]) != len(m2) {
 		log.Println("Different size\nM1:")
 		DumpMatrix(m1)
@@ -326,6 +324,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 		DumpMatrix(m2)
 		return nil
 	}
+
 	total := InitStaticMatrix(len(m1), len(m2[0]), -1)
 	for i := range m1 {
 		arrayM1 := m1[i]
@@ -338,7 +337,6 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 			total[i][k] = data
 		}
 	}
-	//DumpMatrix(total)
 	return total
 }
 
@@ -349,4 +347,41 @@ func MultiplySumArray(a, b []int) int {
 		total[i] = a[i] * b[i]
 	}
 	return SumIntArray(total)
+}
+
+// CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the input number
+func CalculateMaxPrimeFactor(n int64) int64 {
+	var maxPrime int64 = -1
+	var i int64
+	for n%2 == 0 {
+		n /= 2
+	}
+
+	for i = 3; float64(i) <= math.Sqrt(float64(n)); i += 2 {
+		for n%i == 0 {
+			n = n / i
+		}
+	}
+	if n > 2 {
+		maxPrime = n
+	}
+	return maxPrime
+}
+
+// IsPrime is delegated to verify if the given number is Prime
+func IsPrime(n int) bool {
+	if n <= 3 {
+		return n > 1
+	} else if n%2 == 0 || n%3 == 0 {
+		return false
+	}
+	i := 5
+	mult := float64(2)
+	for int(math.Pow(float64(i), mult)) <= n {
+		if n%i == 0 || n%(i+2) == 0 {
+			return false
+		}
+		i += 6
+	}
+	return true
 }

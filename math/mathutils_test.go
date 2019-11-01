@@ -9,6 +9,8 @@ import (
 
 const total int = 1000
 
+var prime []int = []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199}
+
 var randomizer helper.RandomGenerator = helper.InitRandomizer()
 
 func TestInitInitArray(t *testing.T) {
@@ -167,7 +169,8 @@ func TestSumMatrix(t *testing.T) {
 func TestMultiplyMatrix(t *testing.T) {
 	m1 := generateTestMatrix1()
 	m2 := generateTestMatrix2()
-	MultiplyMatrix(m1, m2)
+	m3 := MultiplyMatrix(m1, m2)
+	DumpMatrix(m3)
 }
 
 func TestMultiplySumArray1000(t *testing.T) {
@@ -290,5 +293,23 @@ func BenchmarkMultiplyMatrix(b *testing.B) {
 func TestMultiplySumArray(t *testing.T) {}
 func BenchmarkMultiplySumArray(b *testing.B) {
 	for i := 0; i < b.N; i++ {
+	}
+}
+
+func TestIsPrime(t *testing.T) {
+	for _, item := range prime {
+		if !IsPrime(item) {
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkIsPrime(t *testing.B) {
+	for i := 0; i < t.N; i++ {
+		for _, item := range prime {
+			if !IsPrime(item) {
+				t.Fail()
+			}
+		}
 	}
 }
