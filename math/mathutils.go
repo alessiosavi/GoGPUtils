@@ -3,8 +3,10 @@ package mathutils
 import (
 	"log"
 	"math"
+	"sort"
 	"strconv"
 
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
@@ -342,11 +344,48 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 
 // MultiplySumArray is delegated to multiply the given array and sum every number of the result array
 func MultiplySumArray(a, b []int) int {
+	if len(a) != len(b) {
+		log.Println("Different lenght ...")
+		return -1
+	}
 	total := make([]int, len(a))
 	for i := range a {
 		total[i] = a[i] * b[i]
 	}
 	return SumIntArray(total)
+}
+
+// SumArrays is delegated to sum 2 array of different lenght
+func SumArrays(n1, n2 []int) []int {
+	var result []int
+	var odd int = 0
+	var length int
+	var sum int = 0
+	if len(n1) > len(n2) {
+		length = len(n1)
+	} else {
+		length = len(n2)
+	}
+	n1 = PadArray(n1, length)
+	n2 = PadArray(n2, length)
+
+	log.Println("Arrays: ", n1, n2)
+	for i := length - 1; i >= 0; i-- {
+		sum = n1[i] + n2[i] + odd
+		if sum > 9 {
+			odd = 1
+			sum -= 10
+		} else {
+			odd = 0
+		}
+		result = append(result, sum)
+	}
+	if odd != 0 {
+		result = append(result, odd)
+	}
+	reversed := arrayutils.ReverseArray(result)
+	return reversed
+
 }
 
 // CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the input number
@@ -411,5 +450,44 @@ func ExtractEvenValuedNumber(array []int64) []int64 {
 			result = append(result, array[i])
 		}
 	}
+	return result
+}
+
+// FindDivisor is delegated to find every divisor for the input number
+func FindDivisor(n int) []int {
+	var count int = 0
+	var divisor []int
+	max := int(math.Sqrt(float64(n)))
+	for i := 1; i <= max; i++ {
+		if n%i == 0 {
+			div := n / i
+			divisor = append(divisor, div)
+			if div != i {
+				count += 2
+			} else {
+
+				count++
+			}
+			divisor = append(divisor, i)
+		}
+	}
+	sort.Ints(divisor)
+	return divisor
+}
+
+// PadArray is delegated to return a new padded array with lenght n
+func PadArray(array []int, n int) []int {
+	var result []int
+	length := len(array)
+	if n != length {
+		result = make([]int, n-length)
+		for i := 0; i < n-length; i++ {
+			result[i] = 0
+		}
+		result = append(result, array...)
+	} else {
+		return array
+	}
+	//log.Println("Input: ", result, " Output: ", array)
 	return result
 }

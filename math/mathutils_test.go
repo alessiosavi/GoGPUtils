@@ -313,3 +313,15 @@ func BenchmarkIsPrime(t *testing.B) {
 		}
 	}
 }
+
+func TestPadArray(t *testing.T) {
+	array := []int{1, 2, 3, 4}
+	t.Log(PadArray(array, 5))
+}
+
+func TestSumArrays(t *testing.T) {
+	array1 := []int{1, 1, 2, 3, 4}
+	array2 := []int{9, 3, 3, 3}
+	// 10567
+	t.Log(SumArrays(array1, array2))
+}
