@@ -14,5 +14,7 @@ func TestCreateBenchmarkSignature(t *testing.T) {
 }
 
 func TestCreateBenchmarkSignature1(t *testing.T) {
-	GenerateTestSignature("../", "/tmp/gotest")
+	if GenerateTestSignature("../", "/tmp/gotest") != nil {
+		t.Fail()
+	}
 }
