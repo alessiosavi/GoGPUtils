@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 	"unsafe"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
@@ -90,22 +92,11 @@ func CreateJSON(values []string) string {
 		return ""
 	}
 	for i := 0; i < length; i += 2 {
-		json = Join([]string{json, `"`, values[i], `":"`, values[i+1], `",`}, "")
+		json = arrayutils.JoinStrings([]string{json, `"`, values[i], `":"`, values[i+1], `",`}, "")
 	}
 	json = strings.TrimSuffix(json, `,`)
 	json += `}`
 	return json
-}
-
-// Join use a strings.Builder for concatenate the input string array.
-// It concatenate the strings among the delimiter in input
-func Join(strs []string, delimiter string) string {
-	var sb strings.Builder
-	for i := range strs {
-		sb.WriteString(strs[i])
-		sb.WriteString(delimiter)
-	}
-	return strings.TrimSuffix(sb.String(), " ")
 }
 
 // RemoveDoubleWhiteSpace is delegated to remove the whitespace from the given string
@@ -170,7 +161,7 @@ func Split(data string) []string {
 	return linesList
 }
 
-// CountLinesString return the number of lines in the given string
+// CountLines return the number of lines in the given string
 func CountLines(str string) int {
 	scanner := bufio.NewScanner(strings.NewReader(str)) // Create a scanner for iterate the string
 	counter := 0

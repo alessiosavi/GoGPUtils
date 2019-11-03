@@ -2,19 +2,23 @@ package goutils
 
 import (
 	"testing"
-	//arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
+// const testFile string = `/tmp/GoGPUtils/array/arrayutils.go`
+const testFile string = `../array/arrayutils.go`
+
 func TestCreateBenchmarkSignature(t *testing.T) {
-	data, err := CreateBenchmarkSignature("../math/mathutils.go")
+	data, err := CreateBenchmarkSignature(testFile)
 	if err != nil {
 		t.Error(err)
 	}
 	t.Log(data)
 }
 
-func TestCreateBenchmarkSignature1(t *testing.T) {
-	if GenerateTestSignature("../", "/tmp/gotest") != nil {
-		t.Fail()
+func TestCreateTestSignature(t *testing.T) {
+	data, err := CreateTestSignature(testFile)
+	if err != nil {
+		t.Error(err)
 	}
+	t.Log(data)
 }
