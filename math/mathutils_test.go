@@ -325,3 +325,9 @@ func TestSumArrays(t *testing.T) {
 	// 10567
 	t.Log(SumArrays(array1, array2))
 }
+func TestSortMaxIndex(t *testing.T) {
+	var array []int = []int{1, 2, 3, 4, 5, 6, 7}
+	// var array []int = []int{7, 6, 5, 4, 3, 2, 1}
+	//var array []int = []int{1, 9, 2, 10, 3}
+	t.Log(SortMaxIndex(array))
+}

@@ -308,7 +308,3 @@ func FilterFromFile(filename, target string, ignorecase bool) []string {
 	}
 	return result
 }
-
-func FilterNotMatch(data []string, notMatch string) {
-
-}

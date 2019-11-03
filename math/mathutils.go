@@ -358,7 +358,7 @@ func MultiplySumArray(a, b []int) int {
 // SumArrays is delegated to sum 2 array of different lenght
 func SumArrays(n1, n2 []int) []int {
 	var result []int
-	var odd int = 0
+	var odd int
 	var length int
 	var sum int
 	if len(n1) > len(n2) {
@@ -383,7 +383,7 @@ func SumArrays(n1, n2 []int) []int {
 	if odd != 0 {
 		result = append(result, odd)
 	}
-	reversed := arrayutils.ReverseArray(result)
+	reversed := arrayutils.ReverseArrayInt(result)
 	return reversed
 
 }
@@ -465,7 +465,6 @@ func FindDivisor(n int) []int {
 			if div != i {
 				count += 2
 			} else {
-
 				count++
 			}
 			divisor = append(divisor, i)
@@ -489,5 +488,39 @@ func PadArray(array []int, n int) []int {
 		return array
 	}
 	//log.Println("Input: ", result, " Output: ", array)
+	return result
+}
+
+// FindIndexValue is delegated to retrieve the index of the given value into the input array.
+// NOTE: FIXME in case of multiple value, only the first will be returned
+func FindIndexValue(array []int, value int) int {
+	index := -1
+	for i := range array {
+		if array[i] == value {
+			index = i
+			break
+		}
+	}
+	return index
+}
+
+// SortMaxIndex is delegated to return an array that contains the position of the order value (from max to min) of the given array
+// {1, 9, 2, 10, 3} -> [3 1 4 2 0] || {7, 6, 5, 4, 3, 2, 1} -> [0 1 2 3 4 5 6] || {1, 2, 3, 4, 5, 6, 7} -> [6 5 4 3 2 1 0]
+func SortMaxIndex(array []int) []int {
+	var result []int
+	var additional int
+	var arrayCopy []int = make([]int, len(array))
+	copy(arrayCopy, array)
+	for i := 0; len(array) > 0; i++ {
+		index := MaxIntIndex(array)
+		if index != -1 {
+			additional = FindIndexValue(arrayCopy, array[index])
+			if additional == -1 {
+				additional = 0
+			}
+			result = append(result, additional)
+			array = arrayutils.RemoveIntByIndex(array, index)
+		}
+	}
 	return result
 }

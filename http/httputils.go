@@ -130,7 +130,7 @@ func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage in
 	m.HandleFunc(endpoint, func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 		w.WriteHeader(200)
-		go http.Get(`http://` + ip + `:` + port + `/shutdown`)
+		/* go */ http.Get(`http://` + ip + `:` + port + `/shutdown`)
 	})
 
 	// Bind the endpoint for shutdown the server

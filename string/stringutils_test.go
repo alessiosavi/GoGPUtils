@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 const danteDataset string = `../testdata/files/dante.txt`
@@ -67,7 +69,7 @@ func BenchmarkJoin(t *testing.B) {
 	data := strings.Split(string(content), "\n")
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		Join(data, " ")
+		arrayutils.JoinStrings(data, " ")
 	}
 }
 
