@@ -20,7 +20,7 @@ func ExtractTextFromQuery(target string, ignore []string) []string {
 	rgxp := regexp.MustCompile(`(\w+)`)
 	// Extract the list of word
 	for _, item := range rgxp.FindAllString(target, -1) {
-		if !CheckPresence(item, ignore) {
+		if !CheckPresence(ignore, item) {
 			queries = append(queries, item)
 		}
 	}
@@ -28,7 +28,7 @@ func ExtractTextFromQuery(target string, ignore []string) []string {
 }
 
 // CheckPresence verify that the given array contains the target string
-func CheckPresence(target string, array []string) bool {
+func CheckPresence(array []string, target string) bool {
 	for i := range array {
 		if array[i] == target {
 			return true
