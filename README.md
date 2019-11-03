@@ -9,86 +9,104 @@ A simple Go general purpouse utility repository for avoid to reinvent the wheel 
 ## Benchmark
 
 ```text
-$ go test -bench=. -benchmem -benchtime=3s ./...
-?       github.com/alessiosavi/GoGPUtils        [no test files]
-?       github.com/alessiosavi/GoGPUtils/array  [no test files]
+$ go test -bench=. -benchmem -benchtime=5s ./...
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/files
-BenchmarkCountLinesFile-8                 339223             10205 ns/op           37008 B/op          6 allocs/op
-BenchmarkListFile-8                         2773           1250014 ns/op          776674 B/op       1658 allocs/op
-BenchmarkFindFilesSensitive-8               2760           1254085 ns/op          772610 B/op       1651 allocs/op
-BenchmarkFindFilesInsensitive-8             2761           1255753 ns/op          772609 B/op       1651 allocs/op
-BenchmarkGetFileSize-8                   2662074              1351 ns/op             240 B/op          2 allocs/op
-BenchmarkGetFileSize2-8                   631066              5298 ns/op             352 B/op          5 allocs/op
+BenchmarkCountLinesFile-8         	  465236	     12395 ns/op	   37008 B/op	       6 allocs/op
+BenchmarkListFile-8               	    3960	   1443884 ns/op	  747355 B/op	    1672 allocs/op
+BenchmarkFindFilesSensitive-8     	    4386	   1436463 ns/op	  743291 B/op	    1665 allocs/op
+BenchmarkFindFilesInsensitive-8   	    4170	   1430643 ns/op	  743291 B/op	    1665 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/files  22.747s
+ok  	github.com/alessiosavi/GoGPUtils/files	30.439s
+2019/11/03 20:02:32 Function before filter ->  [ExtractTextFromQuery CheckPresence IsUpper IsLower ContainsLetter ContainsOnlyLetter CreateJSON RemoveDoubleWhiteSpace RemoveWhiteSpace IsASCII IsASCIIRune RemoveFromString Split CountLines ExtractString ReplaceAtIndex RemoveNonASCII IsBlank Trim RandomString CheckPalindrome ReverseString] Len: 22
+2019/11/03 20:02:32 Function after filter ->  [ContainsLetter IsASCIIRune ReplaceAtIndex IsBlank CheckPalindrome] Len: 5
+PASS
+ok  	github.com/alessiosavi/GoGPUtils/goutils	0.005s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/helper
-BenchmarkRandomIntn-8                     391386              8512 ns/op               0 B/op          0 allocs/op
-BenchmarkRandomInt32-8                    398005              8544 ns/op               0 B/op          0 allocs/op
-BenchmarkRandomInt64-8                    398162              8477 ns/op               0 B/op          0 allocs/op
-BenchmarkRandomFloat32-8                  395895              8658 ns/op               0 B/op          0 allocs/op
-BenchmarkRandomFloat64-8                  396686              8446 ns/op               0 B/op          0 allocs/op
-BenchmarkRandomIntnR-8                  336818254               10.6 ns/op             0 B/op          0 allocs/op
-BenchmarkRandomInt32R-8                 434283892                8.28 ns/op            0 B/op          0 allocs/op
-BenchmarkRandomInt64R-8                 182885812               19.7 ns/op             0 B/op          0 allocs/op
-BenchmarkRandomFloat32R-8               576148489                6.20 ns/op            0 B/op          0 allocs/op
-BenchmarkRandomFloat64R-8               530354978                6.71 ns/op            0 B/op          0 allocs/op
-BenchmarkRandomIntnRArray-8               228712             13251 ns/op            8192 B/op          1 allocs/op
-BenchmarkRandomInt32RArray-8              296588             10312 ns/op            4096 B/op          1 allocs/op
-BenchmarkRandomInt64RArray-8              159220             22409 ns/op            8192 B/op          1 allocs/op
-BenchmarkRandomFloat32Array-8             418146              9088 ns/op            4096 B/op          1 allocs/op
-BenchmarkRandomFloat64RArray-8            390234              9184 ns/op            8192 B/op          1 allocs/op
+BenchmarkRandomIntn-8                       	  662750	      9232 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomInt32-8                      	  662794	      9219 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomInt64-8                      	  641769	      9249 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomFloat32-8                    	  639522	      9203 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomFloat64-8                    	  659672	      9216 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomIntnR-8                      	514047970	        12.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomInt32R-8                     	614509504	         9.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomInt64R-8                     	277488235	        21.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomFloat32R-8                   	861068836	         7.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomFloat64R-8                   	788966076	         7.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRandomIntnRArray-8                 	  382156	     14776 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkRandomInt32RArray-8                	  540450	     11214 ns/op	    4096 B/op	       1 allocs/op
+BenchmarkRandomInt64RArray-8                	  259094	     23550 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkRandomFloat32Array-8               	  707756	      9149 ns/op	    4096 B/op	       1 allocs/op
+BenchmarkRandomFloat64RArray-8              	  655885	      9764 ns/op	    8192 B/op	       1 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/helper 58.265s
+ok  	github.com/alessiosavi/GoGPUtils/helper	102.007s
+2019/11/03 20:04:15 listen tcp 127.0.0.1:8080: bind: address already in use
+exit status 1
+FAIL	github.com/alessiosavi/GoGPUtils/http	0.452s
+2019/11/03 20:04:15 Arrays:  [1 1 2 3 4] [0 9 3 3 3]
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/math
-BenchmarkSumIntArray-8           9276975               395 ns/op               0 B/op          0 allocs/op
-BenchmarkSumInt32Array-8         9423216               357 ns/op               0 B/op          0 allocs/op
-BenchmarkSumInt64Array-8         6312278               558 ns/op               0 B/op          0 allocs/op
-BenchmarkSumFloat32Array-8       3388503              1054 ns/op               0 B/op          0 allocs/op
-BenchmarkSumFloat64Array-8       3265048              1091 ns/op               0 B/op          0 allocs/op
-BenchmarkMaxIntIndex-8           4166944               849 ns/op               0 B/op          0 allocs/op
-BenchmarkMaxInt32Index-8         4221096               884 ns/op               0 B/op          0 allocs/op
-BenchmarkMaxInt64Index-8         4009416               889 ns/op               0 B/op          0 allocs/op
-BenchmarkMaxFloat32Index-8       3231303              1122 ns/op               0 B/op          0 allocs/op
-BenchmarkMaxFloat64Index-8       3533840               993 ns/op               0 B/op          0 allocs/op
-BenchmarkAverageInt-8            9468012               367 ns/op               0 B/op          0 allocs/op
-BenchmarkAverageInt32-8          8188119               379 ns/op               0 B/op          0 allocs/op
-BenchmarkAverageInt64-8          9241965               388 ns/op               0 B/op          0 allocs/op
-BenchmarkAverageFloat32-8        3039806              1174 ns/op               0 B/op          0 allocs/op
-BenchmarkAverageFloat64-8        3183806              1119 ns/op               0 B/op          0 allocs/op
+BenchmarkSumIntArray-8             	13760162	       392 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumInt32Array-8           	15577788	       385 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumInt64Array-8           	 9920103	       604 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumFloat32Array-8         	 5285958	      1147 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumFloat64Array-8         	 5295811	      1134 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMaxIntIndex-8             	 6041853	       934 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMaxInt32Index-8           	 6419010	       920 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMaxInt64Index-8           	 5319060	      1005 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMaxFloat32Index-8         	 5110430	      1206 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMaxFloat64Index-8         	 5772138	       996 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAverageInt-8              	15230282	       381 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAverageInt32-8            	16072452	       382 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAverageInt64-8            	15377040	       389 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAverageFloat32-8          	 5311312	      1122 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAverageFloat64-8          	 5419072	      1112 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInitRandomMatrix-8        	  532336	     11199 ns/op	    6352 B/op	      13 allocs/op
+BenchmarkMultiplySumArray1000-8    	 3155178	      1944 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkMultiplyMatrix100x100-8   	    1134	   4874564 ns/op	18101931 B/op	   20201 allocs/op
+BenchmarkIsPrime-8                 	 1441786	      4136 ns/op	       0 B/op	       0 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/math   64.910s
+ok  	github.com/alessiosavi/GoGPUtils/math	135.749s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/search
-BenchmarkLinearSearchInt-8                 10312            349655 ns/op               0 B/op          0 allocs/op
-BenchmarkLinearSearchParallelInt-8         27259            150256 ns/op              96 B/op          2 allocs/op
-BenchmarkContainsStringByte-8             111829              9653 ns/op           22157 B/op         15 allocs/op
-BenchmarkContainsStringsByte-8             51841             22829 ns/op           58203 B/op         33 allocs/op
-BenchmarkContainsWhichStrings-8             1048           1137795 ns/op           58795 B/op         36 allocs/op
+BenchmarkLinearSearchInt-8                 	  288487	     20348 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLinearSearchParallelInt-8         	367461364	        16.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkContainsStringByte-8              	  569611	      9844 ns/op	   22153 B/op	      15 allocs/op
+BenchmarkContainsStringsByte-8             	  259568	     23238 ns/op	   58194 B/op	      33 allocs/op
+BenchmarkContainsWhichStrings-8            	    5176	   1145881 ns/op	   58365 B/op	      36 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/search 11.485s
+ok  	github.com/alessiosavi/GoGPUtils/search	32.975s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/string
-BenchmarkTestIsUpperKO-8        18917581               181 ns/op               0 B/op          0 allocs/op
-BenchmarkTestIsUpperOK-8        19360959               185 ns/op               0 B/op          0 allocs/op
-BenchmarkTestIsLowerOK-8        18706875               182 ns/op               0 B/op          0 allocs/op
-BenchmarkTestIsLowerKO-8        19025580               190 ns/op               0 B/op          0 allocs/op
-BenchmarkRemoveFromString-8     311516538               11.9 ns/op             0 B/op          0 allocs/op
-BenchmarkRandomString-8           160533             21311 ns/op            5376 B/op          1 allocs/op
+BenchmarkContainsOnlyLetter-8       	249640588	        24.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRemoveFromString-8         	   58827	    103743 ns/op	 1114116 B/op	       2 allocs/op
+BenchmarkRandomString-8             	  258217	     22776 ns/op	    5376 B/op	       1 allocs/op
+BenchmarkExtractTextFromQuery-8     	      80	  66453374 ns/op	21759789 B/op	  102049 allocs/op
+BenchmarkRemoveWhiteSpace-8         	    2109	   2828598 ns/op	  557057 B/op	       1 allocs/op
+BenchmarkIsASCII-8                  	162925543	        35.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSplit-8                    	    3993	   1547392 ns/op	 2447640 B/op	   14363 allocs/op
+BenchmarkSplitBuiltin-8             	   17044	    354168 ns/op	  319488 B/op	       1 allocs/op
+BenchmarkExtractString-8            	   10000	    522806 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRemoveNonASCII-8           	     996	   5905851 ns/op	 1589252 B/op	       3 allocs/op
+BenchmarkCreateJSON-8               	      15	 348614019 ns/op	2998418187 B/op	    9916 allocs/op
+BenchmarkJoin-8                     	   10000	    621044 ns/op	 2930657 B/op	      29 allocs/op
+BenchmarkTrim-8                     	    3049	   1984919 ns/op	  557063 B/op	       1 allocs/op
+BenchmarkRemoveDoubleWhiteSpace-8   	    1935	   3060925 ns/op	  557057 B/op	       1 allocs/op
+BenchmarkCountLines-8               	   18690	    332069 ns/op	    4128 B/op	       2 allocs/op
+BenchmarkReverseString-8            	    4476	   1299330 ns/op	 2914327 B/op	      32 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/string 23.358s
+ok  	github.com/alessiosavi/GoGPUtils/string	132.674s
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/zip
-BenchmarkReadZipFile-8            252720             12148 ns/op            7808 B/op         29 allocs/op
-BenchmarkReadZip01-8              271430             12680 ns/op            8144 B/op         31 allocs/op
+BenchmarkReadZipFile-8   	  419516	     13929 ns/op	    7808 B/op	      29 allocs/op
+BenchmarkReadZip01-8     	  412348	     14240 ns/op	    8144 B/op	      31 allocs/op
 PASS
-ok      github.com/alessiosavi/GoGPUtils/zip    6.801s
+ok  	github.com/alessiosavi/GoGPUtils/zip	12.016s
 ```
