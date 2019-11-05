@@ -16,3 +16,4 @@ coverage.txt
 bench_old.txt
 bench_new.txt
 .bench.txt
+testdata/files/dante.txt

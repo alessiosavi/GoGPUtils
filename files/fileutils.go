@@ -16,6 +16,76 @@ import (
 	"time"
 )
 
+func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) {
+
+	// list of strings readed
+	var stringsArray []string = make([]string, N_STRING)
+	// Contains the data
+	var buff []byte = make([]byte, -BUFF_BYTE)
+	file, err := os.Open(FILE)
+	if err != nil {
+		log.Println("Unable to open file: " + FILE + " ERR: " + err.Error())
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Go to end of file
+	_, err = file.Seek(BUFF_BYTE, START_POS)
+	if err != nil {
+		log.Println("Unable to seek to the end of the file: " + FILE + " ERR: " + err.Error())
+		log.Fatal(err)
+	}
+	var linesReaded int = 0
+	var nByte int           // Number of byte readed
+	var stringBuffer string // Contains the string until we don't found the new line
+	var iteration int64 = 1
+	var n int64 = -BUFF_BYTE // Just for pass the first check
+	var lastPosition int64
+	// Until we haven't read all the string
+	for linesReaded < N_STRING {
+		// Read the string related to the buffer
+		nByte, err = file.Read(buff)
+		if err != nil {
+			log.Println("1) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
+			log.Fatal(err)
+		}
+		// Append the string in initial position
+		stringBuffer = string(buff) + stringBuffer
+		if strings.Contains(stringBuffer, "\n") {
+			log.Println("Strings found ! -> " + stringBuffer)
+			stringsArray[N_STRING-linesReaded-1] = stringBuffer
+			stringBuffer = ""
+			linesReaded++
+			// Continue to read, we have not found a new line and we have enough file to read
+		}
+		if n >= -BUFF_BYTE {
+			n, err = file.Seek(iteration*BUFF_BYTE, START_POS)
+			if err != nil {
+				log.Println("2) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
+				log.Fatal(err)
+			}
+			lastPosition = n
+		} else {
+			// We have not enought data for fill the buffer, seeking to the start of the file
+			file.Seek(0, 0)
+			log.Println("Reading starting from start to -> ", lastPosition)
+			buff = make([]byte, lastPosition)
+			_, err = file.Read(buff)
+			if err != nil {
+				log.Println("3) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
+				log.Fatal(err)
+			}
+			log.Println("Readed ->" + string(buff))
+			stringBuffer = string(buff) + stringBuffer
+			stringsArray[N_STRING-linesReaded-1] = stringBuffer
+			break
+		}
+		iteration++
+	}
+	stringsArray = stringsArray[linesReaded-1:]
+	log.Println("Final strings -> ", stringsArray, " len: ", len(stringsArray))
+}
+
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
 func ReadFileInArray(filePath string) []string {
 	data, err := ioutil.ReadFile(filePath)
