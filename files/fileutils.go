@@ -14,15 +14,22 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 // Tail is delegated to read the latest lines of the file.
 // NOTE: buffer have to be lesser than the minimum string lenght
-func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) {
+func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 	// list of strings readed
 	var stringsArray []string = make([]string, N_STRING)
 	// Contains the data
 	var buff []byte = make([]byte, -BUFF_BYTE)
+
+	if !(START_POS >= 0 && START_POS <= 2) {
+		log.Fatal("Wrong argument for Seek ...")
+	}
+
 	file, err := os.Open(FILE)
 	if err != nil {
 		log.Println("Unable to open file: " + FILE + " ERR: " + err.Error())
@@ -54,14 +61,12 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) {
 		} else {
 			// We have not enought data for fill the buffer, seeking to the start of the file
 			file.Seek(0, 0)
-			log.Println("Reading starting from start to -> ", lastPosition)
 			buff = make([]byte, lastPosition)
 			_, err = file.Read(buff)
 			if err != nil {
 				log.Println("3) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
 				log.Fatal(err)
 			}
-			log.Println("Readed ->" + string(buff))
 			stringBuffer = string(buff) + stringBuffer
 			stringsArray[N_STRING-linesReaded-1] = stringBuffer
 			break
@@ -75,9 +80,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) {
 		}
 		// Append the string in initial position
 		stringBuffer = string(buff) + stringBuffer
-		log.Println("DATA READED -> " + stringBuffer)
 		if strings.Contains(stringBuffer, "\n") {
-			log.Println("Strings found ! -> " + stringBuffer)
 			stringsArray[N_STRING-linesReaded-1] = stringBuffer
 			stringBuffer = ""
 			linesReaded++
@@ -86,7 +89,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) {
 		iteration++
 	}
 	stringsArray = stringsArray[linesReaded-1:]
-	log.Println("Final strings -> ", stringsArray, " len: ", len(stringsArray))
+	return arrayutils.JoinStrings(stringsArray, "")
 }
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
