@@ -88,7 +88,13 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 		}
 		iteration++
 	}
-	stringsArray = stringsArray[linesReaded-1:]
+	err = file.Close()
+	if err != nil {
+		log.Println("Error! -> " + err.Error())
+	}
+	if linesReaded > 0 {
+		stringsArray = stringsArray[linesReaded-1:]
+	}
 	return arrayutils.JoinStrings(stringsArray, "")
 }
 
