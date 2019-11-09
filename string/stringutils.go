@@ -11,6 +11,7 @@ import (
 	"unsafe"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	mathutils "github.com/alessiosavi/GoGPUtils/math"
 )
 
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
@@ -295,4 +296,78 @@ func ReverseString(str string) string {
 		builder.WriteByte(str[i])
 	}
 	return builder.String()
+}
+
+// LevenshteinDistanceLegacy is delegated to calculate the Levenshtein distance for the given string
+func LevenshteinDistanceLegacy(str1, str2 string) int {
+	d := make([][]int, len(str1)+1)
+	for i := range d {
+		d[i] = make([]int, len(str2)+1)
+	}
+	for i := range d {
+		d[i][0] = i
+	}
+	for j := range d[0] {
+		d[0][j] = j
+	}
+	for j := 1; j <= len(str2); j++ {
+		for i := 1; i <= len(str1); i++ {
+			if str1[i-1] == str2[j-1] {
+				d[i][j] = d[i-1][j-1]
+			} else {
+				min := d[i-1][j]
+				if d[i][j-1] < min {
+					min = d[i][j-1]
+				}
+				if d[i-1][j-1] < min {
+					min = d[i-1][j-1]
+				}
+				d[i][j] = min + 1
+			}
+		}
+	}
+	return d[len(str1)][len(str2)]
+}
+
+// LevenshteinDistance is the
+func LevenshteinDistance(str1, str2 string) int {
+	var n, m int = len(str1), len(str2)
+	if n == 0 {
+		return m
+	} else if m == 0 {
+		return n
+	}
+
+	var p []int = make([]int, n+1)
+	var d []int = make([]int, n+1)
+	var _d []int
+
+	var i, j, cost int
+	var t_j byte
+
+	for i = 0; i <= n; i++ {
+		p[i] = i
+	}
+
+	for j = 1; j <= m; j++ {
+		t_j = str2[j-1]
+		d[0] = j
+
+		for i = 1; i <= n; i++ {
+			if str1[i-1] == t_j {
+				cost = 0
+			} else {
+				cost = 1
+			}
+
+			// minimum of cell to the left+1, to the top+1, diagonally left and up +cost
+			d[i] = mathutils.MinInt(mathutils.MinInt(d[i-1]+1, p[i]+1), p[i-1]+cost)
+		}
+
+		// copy current distance counts to 'previous row' distance counts
+		_d = p
+		p = d
+		d = _d
+	}
+	return p[n]
 }

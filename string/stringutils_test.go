@@ -195,6 +195,40 @@ func TestCheckPresence(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestLevenshteinDistanceLegacy(t *testing.T) {
+	str1 := `kitten kitten kitten kitten kitten kitten`
+	str2 := `sitting sitting sitting sitting sitting`
+	distance := LevenshteinDistanceLegacy(str1, str2)
+	if distance != 21 {
+		t.Error(distance)
+	}
+}
+
+func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
+	str1 := `kitten kitten kitten kitten kitten kitten`
+	str2 := `sitting sitting sitting sitting sitting`
+	for i := 0; i < t.N; i++ {
+		LevenshteinDistanceLegacy(str1, str2)
+	}
+}
+func BenchmarkLevenshteinDistance(t *testing.B) {
+	str1 := `kitten kitten kitten kitten kitten kitten`
+	str2 := `sitting sitting sitting sitting sitting`
+	for i := 0; i < t.N; i++ {
+		LevenshteinDistance(str1, str2)
+	}
+}
+
+func TestLevenshteinDistance(t *testing.T) {
+	str1 := `kitten kitten kitten kitten kitten kitten`
+	str2 := `sitting sitting sitting sitting sitting`
+	distance := LevenshteinDistance(str1, str2)
+	if distance != 21 {
+		t.Error(distance)
+	}
+}
+
 func BenchmarkContainsOnlyLetter(t *testing.B) {
 	content, err := ioutil.ReadFile(danteDataset)
 	if err != nil {
