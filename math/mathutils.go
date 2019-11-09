@@ -524,3 +524,38 @@ func SortMaxIndex(array []int) []int {
 	}
 	return result
 }
+
+// CosineSimilarity is delegated to calculate the Cosine Similarity for the given array
+func CosineSimilarity(a, b []float64) float64 {
+
+	if len(a) == 0 || len(b) == 0 {
+		log.Fatal("CosineSimilarity | Nil input data")
+	}
+
+	if len(a) != len(b) {
+		log.Fatal("CosineSimilarity | Input vectors have different size")
+	}
+
+	// Calculate numerator
+	var numerator float64
+	for i := range a {
+		numerator += a[i] * b[i]
+	}
+
+	// Caluclate first term of denominator
+	var den1 float64
+	for i := range a {
+		den1 += math.Pow(a[i], 2)
+	}
+	den1 = math.Sqrt(den1)
+
+	// Caluclate second term of denominator
+	var den2 float64
+	for i := range b {
+		den2 += math.Pow(b[i], 2)
+	}
+	den2 = math.Sqrt(den2)
+
+	result := numerator / (den1 * den2)
+	return result
+}

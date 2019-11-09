@@ -331,3 +331,17 @@ func TestSortMaxIndex(t *testing.T) {
 	//var array []int = []int{1, 9, 2, 10, 3}
 	t.Log(SortMaxIndex(array))
 }
+
+func TestCosineSimilarity(t *testing.T) {
+	a := []float64{2, 0, 1, 1, 0, 2, 1, 1}
+	b := []float64{2, 1, 1, 0, 1, 1, 1, 1}
+	t.Log(CosineSimilarity(a, b))
+}
+
+func BenchmarkCosineSimilarity(t *testing.B) {
+	a := []float64{2, 0, 1, 1, 0, 2, 1, 1}
+	b := []float64{2, 1, 1, 0, 1, 1, 1, 1}
+	for i := 0; i < t.N; i++ {
+		CosineSimilarity(a, b)
+	}
+}
