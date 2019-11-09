@@ -525,15 +525,25 @@ func SortMaxIndex(array []int) []int {
 	return result
 }
 
-// CosineSimilarity is delegated to calculate the Cosine Similarity for the given array
-func CosineSimilarity(a, b []float64) float64 {
-
+// SimilarityPreCheck is delegated to verify that the given array have the correct size
+func SimilarityPreCheck(a, b []float64) bool {
 	if len(a) == 0 || len(b) == 0 {
-		log.Fatal("CosineSimilarity | Nil input data")
+		log.Println("CosineSimilarity | Nil input data")
+		return false
 	}
 
 	if len(a) != len(b) {
-		log.Fatal("CosineSimilarity | Input vectors have different size")
+		log.Printf("CosineSimilarity | Input vectors have different size")
+		return false
+	}
+
+	return true
+}
+
+// CosineSimilarity is delegated to calculate the Cosine Similarity for the given array
+func CosineSimilarity(a, b []float64) float64 {
+	if !SimilarityPreCheck(a, b) {
+		return -1
 	}
 
 	// Calculate numerator
@@ -558,4 +568,28 @@ func CosineSimilarity(a, b []float64) float64 {
 
 	result := numerator / (den1 * den2)
 	return result
+}
+
+// EuclideanDistance is delegated to calculate the euclidean distance for the given array
+func EuclideanDistance(v1, v2 []float64) float64 {
+	if !SimilarityPreCheck(v1, v2) {
+		return -1
+	}
+	var euclidean float64
+	for i := range v1 {
+		euclidean += math.Pow(v1[i]-v2[i], 2)
+	}
+	return math.Sqrt(euclidean)
+}
+
+// ManhattanDistance is delegated to calculate the Manhattan norm for the given array
+func ManhattanDistance(v1, v2 []float64) float64 {
+	if !SimilarityPreCheck(v1, v2) {
+		return -1
+	}
+	var taxicab float64
+	for i := range v1 {
+		taxicab += math.Abs(v2[i] - v1[i])
+	}
+	return taxicab
 }
