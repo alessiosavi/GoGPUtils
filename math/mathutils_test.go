@@ -335,7 +335,10 @@ func TestSortMaxIndex(t *testing.T) {
 func TestCosineSimilarity(t *testing.T) {
 	a := []float64{2, 0, 1, 1, 0, 2, 1, 1}
 	b := []float64{2, 1, 1, 0, 1, 1, 1, 1}
-	t.Log(CosineSimilarity(a, b))
+	similarity := CosineSimilarity(a, b)
+	if !(similarity < 0.822 && similarity > 0.821) {
+		t.Fail()
+	}
 }
 
 func BenchmarkCosineSimilarity(t *testing.B) {
@@ -343,5 +346,23 @@ func BenchmarkCosineSimilarity(t *testing.B) {
 	b := []float64{2, 1, 1, 0, 1, 1, 1, 1}
 	for i := 0; i < t.N; i++ {
 		CosineSimilarity(a, b)
+	}
+}
+
+func TestManhattanDistance(t *testing.T) {
+	var x []float64 = []float64{1, 2, 3}
+	var y []float64 = []float64{2, 4, 6}
+	taxiNorm := ManhattanDistance(x, y)
+	if taxiNorm != 6 {
+		t.Error(taxiNorm)
+	}
+}
+
+func TestEuclideanDistance(t *testing.T) {
+	var x []float64 = []float64{1, 2, 3}
+	var y []float64 = []float64{2, 4, 6}
+	distance := EuclideanDistance(x, y)
+	if !(distance > 3.741 && distance < 3.742) {
+		t.Error(distance)
 	}
 }
