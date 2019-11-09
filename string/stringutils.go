@@ -329,7 +329,7 @@ func LevenshteinDistanceLegacy(str1, str2 string) int {
 	return d[len(str1)][len(str2)]
 }
 
-// LevenshteinDistance is the
+// LevenshteinDistance is an optimized version for calculate the levenstein distance
 func LevenshteinDistance(str1, str2 string) int {
 	var n, m int = len(str1), len(str2)
 	if n == 0 {
@@ -370,4 +370,99 @@ func LevenshteinDistance(str1, str2 string) int {
 		d = _d
 	}
 	return p[n]
+}
+
+// JaroDistance is delegated to calculate the Jaro distance from the two given string
+func JaroDistance(str1, str2 string) float64 {
+	if str1 == str2 {
+		return 1
+	}
+
+	if len(str1) == 0 || len(str2) == 0 {
+		return 0
+	}
+
+	match_distance := len(str1)
+	if len(str2) > match_distance {
+		match_distance = len(str2)
+	}
+	match_distance = match_distance/2 - 1
+	str1_matches := make([]bool, len(str1))
+	str2_matches := make([]bool, len(str2))
+	matches := 0.
+	transpositions := 0.
+	for i := range str1 {
+		start := i - match_distance
+		if start < 0 {
+			start = 0
+		}
+		end := i + match_distance + 1
+		if end > len(str2) {
+			end = len(str2)
+		}
+		for k := start; k < end; k++ {
+			if str2_matches[k] {
+				continue
+			}
+			if str1[i] != str2[k] {
+				continue
+			}
+			str1_matches[i] = true
+			str2_matches[k] = true
+			matches++
+			break
+		}
+	}
+	if matches == 0 {
+		return 0
+	}
+	k := 0
+	for i := range str1 {
+		if !str1_matches[i] {
+			continue
+		}
+		for !str2_matches[k] {
+			k++
+		}
+		if str1[i] != str2[k] {
+			transpositions++
+		}
+		k++
+	}
+	transpositions /= 2
+	return (matches/float64(len(str1)) +
+		matches/float64(len(str2)) +
+		(matches-transpositions)/matches) / 3
+}
+
+// DiceCoefficient is bigram position dependent implementation of the Dice coefficient
+func DiceCoefficient(string1, string2 string) float64 {
+	// Check for nil or empty string
+	if len(string1) == 0 && len(string2) == 0 {
+		return 0
+	}
+	if string1 == string2 {
+		return 1
+	}
+
+	strlen1 := len(string1) - 1
+	strlen2 := len(string2) - 1
+	if strlen1 < 1 || strlen2 < 1 {
+		return 0
+	}
+
+	var matches float64 = 0
+	var i, j int = 0, 0
+
+	//get bigrams and compare
+	for i < strlen1 && j < strlen2 {
+		a := string(string1[i] + string1[i+1])
+		b := string(string2[j] + string2[j+1])
+		if strings.EqualFold(a, b) {
+			matches += 2
+		}
+		i++
+		j++
+	}
+	return matches / float64(strlen1+strlen2)
 }

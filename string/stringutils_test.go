@@ -471,3 +471,16 @@ func BenchmarkReverseString(b *testing.B) {
 		ReverseString(data)
 	}
 }
+
+func TestJaroDistance(t *testing.T) {
+	var str1, str2 string = "MARTHA", "MARHTA"
+	t.Log(JaroDistance(str1, str2))
+}
+
+func TestDiceCoefficient(t *testing.T) {
+	str1, str2 := "prova1", "prova2"
+	diceCoeffiecnt := DiceCoefficient(str1, str2)
+	if diceCoeffiecnt != 0.8 {
+		t.Error(diceCoeffiecnt)
+	}
+}
