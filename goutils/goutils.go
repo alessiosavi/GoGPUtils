@@ -60,9 +60,7 @@ func CreateBenchmarkSignature(codeFile string) (string, error) {
 	for i := range benchAlredyPresent {
 		benchAlredyPresent[i] = strings.TrimPrefix(benchAlredyPresent[i], "Benchmark")
 	}
-	log.Println("Function before filter -> ", functions, "Len:", len(functions))
 	functions = arrayutils.RemoveStrings(functions, benchAlredyPresent)
-	log.Println("Function after filter -> ", functions, "Len:", len(functions))
 	var testfileContent strings.Builder
 
 	if len(functions) > 0 {
