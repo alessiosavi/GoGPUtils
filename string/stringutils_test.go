@@ -8,6 +8,8 @@ import (
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
+const distance1 string = `../testdata/files/testDistance.txt`
+const distance2 string = `../testdata/files/testDistance1.txt`
 const danteDataset string = `../testdata/files/dante.txt`
 
 func TestIsUpper(t *testing.T) {
@@ -205,18 +207,16 @@ func TestLevenshteinDistanceLegacy(t *testing.T) {
 	}
 }
 
-func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
-	str1 := `kitten kitten kitten kitten kitten kitten`
-	str2 := `sitting sitting sitting sitting sitting`
-	for i := 0; i < t.N; i++ {
-		LevenshteinDistanceLegacy(str1, str2)
-	}
+func TestJaroDistance(t *testing.T) {
+	var str1, str2 string = "MARTHA", "MARHTA"
+	t.Log(JaroDistance(str1, str2))
 }
-func BenchmarkLevenshteinDistance(t *testing.B) {
-	str1 := `kitten kitten kitten kitten kitten kitten`
-	str2 := `sitting sitting sitting sitting sitting`
-	for i := 0; i < t.N; i++ {
-		LevenshteinDistance(str1, str2)
+
+func TestDiceCoefficient(t *testing.T) {
+	str1, str2 := "prova1", "prova2"
+	diceCoeffiecnt := DiceCoefficient(str1, str2)
+	if diceCoeffiecnt != 0.8 {
+		t.Error(diceCoeffiecnt)
 	}
 }
 
@@ -226,6 +226,72 @@ func TestLevenshteinDistance(t *testing.T) {
 	distance := LevenshteinDistance(str1, str2)
 	if distance != 21 {
 		t.Error(distance)
+	}
+}
+
+func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
+	content, err := ioutil.ReadFile(distance1)
+	if err != nil {
+		return
+	}
+	data1 := strings.ToUpper(string(content))
+	content, err = ioutil.ReadFile(distance2)
+	if err != nil {
+		return
+	}
+	data2 := strings.ToUpper(string(content))
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		LevenshteinDistanceLegacy(data1, data2)
+	}
+}
+func BenchmarkLevenshteinDistance(t *testing.B) {
+	content, err := ioutil.ReadFile(distance1)
+	if err != nil {
+		return
+	}
+	data1 := strings.ToUpper(string(content))
+	content, err = ioutil.ReadFile(distance2)
+	if err != nil {
+		return
+	}
+	data2 := strings.ToUpper(string(content))
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		LevenshteinDistance(data1, data2)
+	}
+}
+
+func BenchmarkDiceCoefficient(t *testing.B) {
+	content, err := ioutil.ReadFile(distance1)
+	if err != nil {
+		return
+	}
+	data1 := strings.ToUpper(string(content))
+	content, err = ioutil.ReadFile(distance2)
+	if err != nil {
+		return
+	}
+	data2 := strings.ToUpper(string(content))
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		DiceCoefficient(data1, data2)
+	}
+}
+func BenchmarkJaroDistance(t *testing.B) {
+	content, err := ioutil.ReadFile(distance1)
+	if err != nil {
+		return
+	}
+	data1 := strings.ToUpper(string(content))
+	content, err = ioutil.ReadFile(distance2)
+	if err != nil {
+		return
+	}
+	data2 := strings.ToUpper(string(content))
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		JaroDistance(data1, data2)
 	}
 }
 
@@ -469,18 +535,5 @@ func BenchmarkReverseString(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ReverseString(data)
-	}
-}
-
-func TestJaroDistance(t *testing.T) {
-	var str1, str2 string = "MARTHA", "MARHTA"
-	t.Log(JaroDistance(str1, str2))
-}
-
-func TestDiceCoefficient(t *testing.T) {
-	str1, str2 := "prova1", "prova2"
-	diceCoeffiecnt := DiceCoefficient(str1, str2)
-	if diceCoeffiecnt != 0.8 {
-		t.Error(diceCoeffiecnt)
 	}
 }
