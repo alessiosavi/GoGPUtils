@@ -104,8 +104,10 @@ func CreateJSON(values []string) string {
 // FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
 func RemoveDoubleWhiteSpace(str string) string {
 	var b strings.Builder
+	var i int
+
 	b.Grow(len(str))
-	for i := range str {
+	for i = range str {
 		if !(str[i] == 32 && (i+1 < len(str) && str[i+1] == 32)) {
 			b.WriteRune(rune(str[i]))
 		}
@@ -382,33 +384,33 @@ func JaroDistance(str1, str2 string) float64 {
 		return 0
 	}
 
-	match_distance := len(str1)
-	if len(str2) > match_distance {
-		match_distance = len(str2)
+	matchDistance := len(str1)
+	if len(str2) > matchDistance {
+		matchDistance = len(str2)
 	}
-	match_distance = match_distance/2 - 1
-	str1_matches := make([]bool, len(str1))
-	str2_matches := make([]bool, len(str2))
+	matchDistance = matchDistance/2 - 1
+	str1Matches := make([]bool, len(str1))
+	str2Matches := make([]bool, len(str2))
 	matches := 0.
 	transpositions := 0.
 	for i := range str1 {
-		start := i - match_distance
+		start := i - matchDistance
 		if start < 0 {
 			start = 0
 		}
-		end := i + match_distance + 1
+		end := i + matchDistance + 1
 		if end > len(str2) {
 			end = len(str2)
 		}
 		for k := start; k < end; k++ {
-			if str2_matches[k] {
+			if str2Matches[k] {
 				continue
 			}
 			if str1[i] != str2[k] {
 				continue
 			}
-			str1_matches[i] = true
-			str2_matches[k] = true
+			str1Matches[i] = true
+			str2Matches[k] = true
 			matches++
 			break
 		}
@@ -418,10 +420,10 @@ func JaroDistance(str1, str2 string) float64 {
 	}
 	k := 0
 	for i := range str1 {
-		if !str1_matches[i] {
+		if !str1Matches[i] {
 			continue
 		}
-		for !str2_matches[k] {
+		for !str2Matches[k] {
 			k++
 		}
 		if str1[i] != str2[k] {

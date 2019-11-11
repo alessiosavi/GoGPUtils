@@ -47,9 +47,11 @@ func SetHeaders(headersList []string, w http.ResponseWriter) error {
 	} else if len(headersList)%2 != 0 {
 		return errors.New("headers are not a key-value list")
 	}
+
 	for i := 0; i < len(headersList); i += 2 {
 		w.Header().Set(headersList[i], headersList[i+1])
 	}
+
 	return nil
 }
 

@@ -119,6 +119,18 @@ func MaxIntIndex(array []int) int {
 	return index
 }
 
+// MinIntIndex return the index that contains the min value for the given array
+func MinIntIndex(array []int) int {
+	index := 0
+	length := len(array)
+	for i := 1; i < length; i++ {
+		if array[i] < array[index] {
+			index = i
+		}
+	}
+	return index
+}
+
 // MaxInt32Index return the index that contains the max value for the given array
 func MaxInt32Index(array []int32) int {
 	index := 0
@@ -345,7 +357,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 // MultiplySumArray is delegated to multiply the given array and sum every number of the result array
 func MultiplySumArray(a, b []int) int {
 	if len(a) != len(b) {
-		log.Println("Different lenght ...")
+		log.Println("Different length ...")
 		return -1
 	}
 	total := make([]int, len(a))
@@ -355,7 +367,7 @@ func MultiplySumArray(a, b []int) int {
 	return SumIntArray(total)
 }
 
-// SumArrays is delegated to sum 2 array of different lenght
+// SumArrays is delegated to sum 2 array of different length
 func SumArrays(n1, n2 []int) []int {
 	var result []int
 	var odd int
@@ -398,7 +410,7 @@ func CalculateMaxPrimeFactor(n int64) int64 {
 
 	for i = 3; float64(i) <= math.Sqrt(float64(n)); i += 2 {
 		for n%i == 0 {
-			n = n / i
+			n /= i
 		}
 	}
 	if n > 2 {
@@ -474,10 +486,10 @@ func FindDivisor(n int) []int {
 	return divisor
 }
 
-// PadArray is delegated to return a new padded array with lenght n
+// PadArray is delegated to return a new padded array with length n
 func PadArray(array []int, n int) []int {
 	var result []int
-	length := len(array)
+	var length int = len(array)
 	if n != length {
 		result = make([]int, n-length)
 		for i := 0; i < n-length; i++ {
@@ -494,7 +506,8 @@ func PadArray(array []int, n int) []int {
 // FindIndexValue is delegated to retrieve the index of the given value into the input array.
 // NOTE: FIXME in case of multiple value, only the first will be returned
 func FindIndexValue(array []int, value int) int {
-	index := -1
+	var index int = -1
+
 	for i := range array {
 		if array[i] == value {
 			index = i
@@ -507,12 +520,15 @@ func FindIndexValue(array []int, value int) int {
 // SortMaxIndex is delegated to return an array that contains the position of the order value (from max to min) of the given array
 // {1, 9, 2, 10, 3} -> [3 1 4 2 0] || {7, 6, 5, 4, 3, 2, 1} -> [0 1 2 3 4 5 6] || {1, 2, 3, 4, 5, 6, 7} -> [6 5 4 3 2 1 0]
 func SortMaxIndex(array []int) []int {
-	var result []int
-	var additional int
-	var arrayCopy []int = make([]int, len(array))
+	var (
+		result               []int
+		additional, i, index int
+		arrayCopy            []int = make([]int, len(array))
+	)
+
 	copy(arrayCopy, array)
-	for i := 0; len(array) > 0; i++ {
-		index := MaxIntIndex(array)
+	for i = 0; len(array) > 0; i++ {
+		index = MaxIntIndex(array)
 		if index != -1 {
 			additional = FindIndexValue(arrayCopy, array[index])
 			if additional == -1 {
@@ -552,14 +568,14 @@ func CosineSimilarity(a, b []float64) float64 {
 		numerator += a[i] * b[i]
 	}
 
-	// Caluclate first term of denominator
+	// Calculate first term of denominator
 	var den1 float64
 	for i := range a {
 		den1 += math.Pow(a[i], 2)
 	}
 	den1 = math.Sqrt(den1)
 
-	// Caluclate second term of denominator
+	// Calculate second term of denominator
 	var den2 float64
 	for i := range b {
 		den2 += math.Pow(b[i], 2)
@@ -594,6 +610,7 @@ func ManhattanDistance(v1, v2 []float64) float64 {
 	return taxicab
 }
 
+// MaxInt is delegated to return the max int from the two given int
 func MaxInt(a, b int) int {
 	if a > b {
 		return a
@@ -602,10 +619,21 @@ func MaxInt(a, b int) int {
 	}
 }
 
+// MinInt is delegated to return the min int from the two given int
 func MinInt(a, b int) int {
 	if a < b {
 		return a
 	} else {
 		return b
 	}
+}
+
+// MaxIntMultiple is delegated to return the max value with a variable number of input int
+func MaxIntMultiple(a ...int) int {
+	return a[MaxIntIndex(a)]
+}
+
+// MaxIntMultiple is delegated to return the min value with a variable number of input int
+func MinIntMultiple(a ...int) int {
+	return a[MinIntIndex(a)]
 }

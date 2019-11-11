@@ -8,20 +8,28 @@ import (
 
 // LinearSearchParallelInt is delegated to parallelize the execution of search method
 func LinearSearchParallelInt(data []int, target int, thread int) int {
-	length := len(data)
-	dataXThread := length / thread
-	oddment := length % thread
+	var (
+		length      int = len(data)
+		dataXThread int = length / thread
+		oddment     int = length % thread
+		found       int
+		wg          sync.WaitGroup
+		result      []int
+	)
 
 	if oddment != 0 {
 		oddment += thread * dataXThread
-		found := LinearSearchInt(data[thread*dataXThread:oddment], target)
+		found = LinearSearchInt(data[thread*dataXThread:oddment], target)
+
 		if found != -1 {
 			return found + thread*dataXThread
 		} // else
+
 		return -1
 	}
-	wg := sync.WaitGroup{}
-	result := make([]int, thread)
+
+	wg = sync.WaitGroup{}
+	result = make([]int, thread)
 	//var result []int
 	wg.Add(thread)
 	for i := 0; i < thread; i++ {
@@ -45,7 +53,8 @@ func LinearSearchParallelIntHelper(wg *sync.WaitGroup, data []int, target, i int
 
 // LinearSearchInt is a simple for delegated to find the target value
 func LinearSearchInt(data []int, target int) int {
-	for i := range data {
+	var i int
+	for i = range data {
 		if target == data[i] {
 			return i
 		}

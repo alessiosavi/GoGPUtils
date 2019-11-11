@@ -92,7 +92,6 @@ func TestReverseArrayString(t *testing.T) {
 			t.Fail()
 		}
 	}
-
 }
 func TestRemoveIntByIndex(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}

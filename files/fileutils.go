@@ -19,7 +19,7 @@ import (
 )
 
 // Tail is delegated to read the latest lines of the file.
-// NOTE: buffer have to be lesser than the minimum string lenght
+// NOTE: buffer have to be lesser than the minimum string length
 func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 	// list of strings readed
 	var stringsArray []string = make([]string, N_STRING)
@@ -92,9 +92,11 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 	if err != nil {
 		log.Println("Error! -> " + err.Error())
 	}
+
 	if linesReaded > 0 {
 		stringsArray = stringsArray[linesReaded-1:]
 	}
+
 	return arrayutils.JoinStrings(stringsArray, "")
 }
 
@@ -234,7 +236,7 @@ func VerifyFilesExists(filePath string, files []string) bool {
 
 // CountLinesFile return the number of lines in the given file
 // If called with an empty separator, new line will be used as default
-func CountLinesFile(fileName, separator string, bufferLenght int) (int, error) {
+func CountLinesFile(fileName, separator string, bufferLength int) (int, error) {
 	var lineSep []byte
 	var buf []byte
 	var count int
@@ -246,8 +248,8 @@ func CountLinesFile(fileName, separator string, bufferLenght int) (int, error) {
 	defer file.Close()
 
 	// 32K as buffer in case of not provided
-	if bufferLenght == -1 {
-		bufferLenght = 32
+	if bufferLength == -1 {
+		bufferLength = 32
 	}
 	count = 0
 	if len(separator) == 0 {
@@ -255,7 +257,7 @@ func CountLinesFile(fileName, separator string, bufferLenght int) (int, error) {
 	}
 
 	r := bufio.NewReader(file)
-	buf = make([]byte, bufferLenght*1024)
+	buf = make([]byte, bufferLength*1024)
 
 	for {
 		c, err := r.Read(buf)
