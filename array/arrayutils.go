@@ -7,9 +7,11 @@ import (
 
 //RemoveElementsFromString delete the element of the indexes contained in j of the data in input
 func RemoveElementsFromString(data []string, j []int) []string {
-	var newArray []string
-	var toAdd bool = true
-	var removed int = 0
+	var (
+		newArray []string
+		toAdd    bool = true
+		removed  int  = 0
+	)
 
 	if len(j) == 0 {
 		return data
@@ -25,12 +27,15 @@ func RemoveElementsFromString(data []string, j []int) []string {
 				break
 			}
 		}
+
 		if toAdd {
 			newArray = append(newArray, data[i])
 			removed++
 		}
+
 		toAdd = true
 	}
+
 	return newArray
 }
 
@@ -40,6 +45,7 @@ func RemoveElement(s []string, i int) []string {
 		s[len(s)-1], s[i] = s[i], s[len(s)-1]
 		return s[:len(s)-1]
 	}
+
 	return s
 }
 
@@ -49,11 +55,14 @@ func JoinStrings(strs []string, delimiter string) string {
 	if len(strs) == 0 {
 		return ""
 	}
+
 	var sb strings.Builder
+
 	for i := range strs {
 		sb.WriteString(strs[i])
 		sb.WriteString(delimiter)
 	}
+
 	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
@@ -64,6 +73,7 @@ func JoinInts(ints []int, delimiter string) string {
 		return ""
 	}
 	var sb strings.Builder
+
 	for i := range ints {
 		sb.WriteString(strconv.Itoa(ints[i]))
 		sb.WriteString(delimiter)

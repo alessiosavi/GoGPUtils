@@ -17,6 +17,7 @@ type RandomGenerator struct {
 func InitRandomizer() RandomGenerator {
 	var random RandomGenerator
 	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	return random
 }
 
@@ -152,6 +153,7 @@ func ByteCountSI(b int64) string {
 		return fmt.Sprintf("%d B", b)
 	}
 	div, exp := int64(unit), 0
+
 	for n := b / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
@@ -166,6 +168,7 @@ func ByteCountIEC(b int64) string {
 	if b < unit {
 		return fmt.Sprintf("%d B", b)
 	}
+
 	div, exp := int64(unit), 0
 	for n := b / unit; n >= unit; n /= unit {
 		div *= unit

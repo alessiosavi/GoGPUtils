@@ -138,7 +138,6 @@ func TestCountLines(t *testing.T) {
 	if lines != 19567 {
 		t.Error(lines)
 	}
-
 }
 func TestTrim(t *testing.T) {
 	data := []string{` test`, `test `, `te s`}
@@ -186,7 +185,6 @@ func TestExtractTextFromQuery(t *testing.T) {
 	if len(ExtractTextFromQuery(data, ignore)) != 5 {
 		t.Fail()
 	}
-
 }
 func TestCheckPresence(t *testing.T) {
 	data := []string{"test1", "test2", "test3", "test4"}
@@ -369,7 +367,6 @@ func BenchmarkIsLower(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		IsLower(data)
 	}
-
 }
 
 func BenchmarkRemoveWhiteSpace(b *testing.B) {
