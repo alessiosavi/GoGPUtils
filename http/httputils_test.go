@@ -43,28 +43,3 @@ func TestServeHeaders(t *testing.T) {
 	t.Log(resp)
 	time.Sleep(time.Millisecond * 200)
 }
-
-func BenchmarkCreateCookie(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-func TestSetHeaders(t *testing.T) {}
-func BenchmarkSetHeaders(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-
-func BenchmarkServeHeaders(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-
-func BenchmarkServeCookie(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-
-func BenchmarkDebugRequest(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}

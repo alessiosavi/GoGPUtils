@@ -103,33 +103,3 @@ func BenchmarkContainsWhichStrings(t *testing.B) {
 		ContainsWhichStringsByte(data, target)
 	}
 }
-
-func TestLinearSearchParallelInt(t *testing.T) {}
-
-func TestLinearSearchParallelIntHelper(t *testing.T) {}
-func BenchmarkLinearSearchParallelIntHelper(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-func TestLinearSearchInt(t *testing.T) {}
-
-func TestContainsString(t *testing.T) {}
-func BenchmarkContainsString(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-func TestContainsStringByte(t *testing.T) {}
-
-func TestContainsStrings(t *testing.T) {}
-func BenchmarkContainsStrings(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
-func TestContainsStringsByte(t *testing.T) {}
-
-func TestContainsWhichStrings(t *testing.T)     {}
-func TestContainsWhichStringsByte(t *testing.T) {}
-func BenchmarkContainsWhichStringsByte(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-	}
-}
