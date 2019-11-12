@@ -1,3 +1,4 @@
+
 (base) [alessiosavi@oc5740124013 GoGPUtils]$ go test -bench=. -benchmem ./... -benchtime=5s
 ?   	github.com/alessiosavi/GoGPUtils	[no test files]
 goos: linux
