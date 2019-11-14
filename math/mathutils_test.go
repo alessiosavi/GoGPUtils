@@ -162,15 +162,22 @@ func BenchmarkInitRandomMatrix(t *testing.B) {
 func TestSumMatrix(t *testing.T) {
 	m1 := InitStaticMatrix(5, 10, 1)
 	m2 := InitStaticMatrix(5, 10, 1)
-	/*m3 :=*/ SumMatrix(m1, m2)
-	// DumpMatrix(m3)
+	m3 := SumMatrix(m1, m2)
+	t.Log(DumpMatrix(m3))
+}
+
+func TestMultiplyMatrixLegacy(t *testing.T) {
+	m1 := generateTestMatrix1()
+	m2 := generateTestMatrix2()
+	m3 := MultiplyMatrixLegacy(m1, m2)
+	t.Log(DumpMatrix(m3))
 }
 
 func TestMultiplyMatrix(t *testing.T) {
 	m1 := generateTestMatrix1()
 	m2 := generateTestMatrix2()
-	/*m3 :=*/ MultiplyMatrix(m1, m2)
-	//DumpMatrix(m3)
+	m3 := MultiplyMatrix(m1, m2)
+	t.Log(DumpMatrix(m3))
 }
 
 func TestMultiplySumArray1000(t *testing.T) {
@@ -184,6 +191,15 @@ func BenchmarkMultiplySumArray1000(t *testing.B) {
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
 		MultiplySumArray(data, data)
+	}
+}
+
+func BenchmarkMultiplyMatrixLegacy100x100(t *testing.B) {
+	m1 := InitRandomMatrix(100, 100)
+	m2 := InitRandomMatrix(100, 100)
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		MultiplyMatrixLegacy(m1, m2)
 	}
 }
 
