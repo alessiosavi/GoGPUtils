@@ -1,10 +1,12 @@
 package mathutils
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"sort"
 	"strconv"
+	"strings"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -269,14 +271,16 @@ func CreateEmptyMatrix(r, c int) [][]int {
 }
 
 // DumpMatrix is delegated to print the given matrix
-func DumpMatrix(m [][]int) {
+func DumpMatrix(m [][]int) string {
+	var sb strings.Builder
 	if m == nil {
-		return
+		return ""
 	}
 	for i := range m {
-		log.Println(m[i])
+		sb.WriteString(fmt.Sprintf("%v", m[i]) + "\n")
 	}
-	log.Println("Rows: " + strconv.Itoa(len(m)) + " Columns: " + strconv.Itoa(len(m[0])))
+	sb.WriteString("\nRows: " + strconv.Itoa(len(m)) + " Columns: " + strconv.Itoa(len(m[0])))
+	return sb.String()
 }
 
 // InitRandomMatrix is delegated to initialize a random matrix with the given dimension
@@ -324,8 +328,38 @@ func SubtractMatrix(m1, m2 [][]int) [][]int {
 	return total
 }
 
-// MultiplyMatrix is delegated to execute the multiplication between the given matrix
 func MultiplyMatrix(m1, m2 [][]int) [][]int {
+	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
+		log.Println("Matrix empty")
+		return nil
+	}
+
+	if len(m1[0]) != len(m2) {
+		log.Println("Different size\nM1:")
+		DumpMatrix(m1)
+		log.Println("M2:")
+		DumpMatrix(m2)
+		return nil
+	}
+
+	n := len(m1)
+	y := len(m1[0])
+	m := len(m2[0])
+	result := InitStaticMatrix(n, m, 0)
+
+	for k := 0; k < y; k++ {
+		for i := 0; i < n; i++ {
+			for j := 0; j < m; j++ {
+				result[i][j] = result[i][j] + m1[i][k]*m2[k][j]
+			}
+		}
+	}
+
+	return result
+}
+
+// MultiplyMatrix is delegated to execute the multiplication between the given matrix
+func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
 	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
 		return nil
