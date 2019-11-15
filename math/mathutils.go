@@ -181,6 +181,31 @@ func MaxFloat64Index(array []float64) int {
 	return index
 }
 
+// ModeInt is delegated to calculate the mode of the given array
+func ModeInt(array []int) []int {
+	// Save the number of occurrence for every number of the array
+	var mode map[int]int = make(map[int]int)
+	for i := range array {
+		mode[array[i]]++
+	}
+	var max int
+	var maxs []int
+
+	// Avoid to take care about value that does not appear at least 2 time
+	max = 2
+	for i := 1; i < len(mode); i++ {
+		if mode[i] >= max {
+			max = mode[i]
+		}
+	}
+	for i := range mode {
+		if mode[i] == max {
+			maxs = append(maxs, i)
+		}
+	}
+	return maxs
+}
+
 // AverageInt is delegated to calculate the average of an int array
 func AverageInt(array []int) float64 {
 	var total int
@@ -473,7 +498,6 @@ func IsPrime(n int) bool {
 
 // GenerateFibonacci is delegated to generate the Fibonacci sequence
 func GenerateFibonacci(max int64) []int64 {
-
 	var array []int64
 	// Hardcoded for enhance for performance
 	array = append(array, 1)

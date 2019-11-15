@@ -299,3 +299,24 @@ func TestEuclideanDistance(t *testing.T) {
 		t.Error(distance)
 	}
 }
+
+func TestModeInt(t *testing.T) {
+	noMode := []int{0, 1, 2, 3, 4, 5, 6}
+	oneMode := []int{0, 1, 2, 3, 4, 5, 6, 6}
+	twoMode := []int{0, 1, 2, 3, 4, 5, 5, 6, 6}
+	m1 := ModeInt(noMode)
+	t.Log(m1)
+	if len(m1) > 0 {
+		t.Error("Err", m1)
+	}
+	m2 := ModeInt(oneMode)
+	t.Log(m2)
+	if len(m2) > 1 {
+		t.Error("Err", m2)
+	}
+	m3 := ModeInt(twoMode)
+	t.Log(m3)
+	if len(m3) > 2 {
+		t.Error("Err", m3)
+	}
+}

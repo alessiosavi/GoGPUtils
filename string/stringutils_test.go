@@ -238,6 +238,7 @@ func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
 		return
 	}
 	data2 := strings.ToUpper(string(content))
+
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
 		LevenshteinDistanceLegacy(data1, data2)
