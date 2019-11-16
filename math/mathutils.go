@@ -233,7 +233,51 @@ func AverageInt(array []int) float64 {
 	for i := range array {
 		total += array[i]
 	}
-	return float64(total / len(array))
+	return float64(total) / float64(len(array))
+}
+
+func StandardDeviationInt(array []int) float64 {
+	// 1. Calculate average
+	mean := AverageInt(array)
+	// 2. Subtract every terms for the average and square the result. Sum every terms
+	var sum float64
+	for i := range array {
+		sum += math.Pow(float64(array[i])-mean, 2)
+	}
+	// 3. Multiplying by 1/N (divide for N)
+	sum /= float64(len(array))
+
+	// 4.  Take the square root
+	return math.Sqrt(sum)
+}
+
+func VarianceInt(array []int) float64 {
+	// 1. Work out the Mean (the simple average of the numbers)
+	// 2. Then for each number: subtract the Mean and square the result (the squared difference).
+	// 3. Then work out the average of those squared differences. (Why Square?)
+	mean := AverageInt(array)
+	var sum float64
+
+	for i := range array {
+		sum += math.Pow(float64(array[i])-mean, 2)
+	}
+	sum /= float64(len(array))
+	return math.Sqrt(sum)
+}
+
+func CovarianceInt(arr1, arr2 []int) float64 {
+	if len(arr1) != len(arr2) || len(arr1) == 0 {
+		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
+	}
+	// 1. Calculate the mean
+	avg1 := AverageInt(arr1)
+	avg2 := AverageInt(arr2)
+
+	var sum float64
+	for i := range arr1 {
+		sum += (float64(arr1[i]) - avg1) * (float64(arr2[i]) - avg2)
+	}
+	return sum / float64(len(arr1)-1)
 }
 
 // AverageInt32 is delegated to calculate the average of an int array
@@ -389,7 +433,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	for k := 0; k < y; k++ {
 		for i := 0; i < n; i++ {
 			for j := 0; j < m; j++ {
-				result[i][j] = result[i][j] + m1[i][k]*m2[k][j]
+				result[i][j] += +m1[i][k] * m2[k][j]
 			}
 		}
 	}
@@ -454,7 +498,6 @@ func SumArrays(n1, n2 []int) []int {
 	n1 = PadArray(n1, length)
 	n2 = PadArray(n2, length)
 
-	log.Println("Arrays: ", n1, n2)
 	for i := length - 1; i >= 0; i-- {
 		sum = n1[i] + n2[i] + odd
 		if sum > 9 {
@@ -470,7 +513,6 @@ func SumArrays(n1, n2 []int) []int {
 	}
 	reversed := arrayutils.ReverseArrayInt(result)
 	return reversed
-
 }
 
 // CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the input number
@@ -597,7 +639,6 @@ func SortMaxIndex(array []int) []int {
 		additional, i, index int
 		arrayCopy            []int = make([]int, len(array))
 	)
-
 	copy(arrayCopy, array)
 	for i = 0; len(array) > 0; i++ {
 		index = MaxIntIndex(array)

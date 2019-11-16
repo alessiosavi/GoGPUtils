@@ -333,3 +333,28 @@ func TestMedianInt(t *testing.T) {
 		t.Error(m1)
 	}
 }
+
+func TestStandardDeviationInt(t *testing.T) {
+	median := []int{9, 2, 5, 4, 12, 7, 8, 11, 9, 3, 7, 4, 12, 5, 4, 10, 9, 6, 9, 4}
+	m1 := StandardDeviationInt(median)
+	if !(m1 > 2.9832 && m1 < 2.9833) {
+		t.Error(m1)
+	}
+}
+
+func TestVarianceInt(t *testing.T) {
+	median := []int{600, 470, 170, 430, 300}
+	m1 := VarianceInt(median)
+	if !(m1 > 147.322 && m1 < 147.323) {
+		t.Error(m1)
+	}
+}
+
+func TestCovarianceInt(t *testing.T) {
+	arr1 := []int{1692, 1978, 1884, 2151, 2519}
+	arr2 := []int{68, 102, 110, 112, 154}
+	cv := CovarianceInt(arr1, arr2)
+	if cv != 9107.3 {
+		t.Error(cv)
+	}
+}
