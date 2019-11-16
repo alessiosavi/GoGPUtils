@@ -320,3 +320,16 @@ func TestModeInt(t *testing.T) {
 		t.Error("Err", m3)
 	}
 }
+
+func TestMedianInt(t *testing.T) {
+	median := []int{6, 5, 4, 3, 2, 1, 0}
+	m1 := MedianInt(median)
+	if m1 != 3 {
+		t.Error(m1)
+	}
+	median = append(median, 7)
+	m1 = MedianInt(median)
+	if m1 != 3.5 {
+		t.Error(m1)
+	}
+}

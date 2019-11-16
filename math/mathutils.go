@@ -206,6 +206,20 @@ func ModeInt(array []int) []int {
 	return maxs
 }
 
+func MedianInt(arr []int) float64 {
+	var array []int = make([]int, len(arr))
+	// Avoid to modify the input array
+	copy(array, arr)
+	sort.Ints(array)
+	if len(array)%2 != 0 {
+		index := (len(array)) / 2
+		return float64(array[index])
+	}
+	n1 := array[(len(array)-1)/2]
+	n2 := array[(len(array)-1)/2+1]
+	return float64(n1+n2) / 2.0
+}
+
 // AverageInt is delegated to calculate the average of an int array
 func AverageInt(array []int) float64 {
 	var total int
