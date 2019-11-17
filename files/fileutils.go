@@ -43,12 +43,16 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 		log.Println("Unable to seek to the end of the file: " + FILE + " ERR: " + err.Error())
 		log.Fatal(err)
 	}
-	var linesReaded int = 0
-	var nByte int                // Number of byte readed
-	var stringBuffer string = "" // Contains the string until we don't found the new line
-	var iteration int64 = 1
-	var n int64 = -BUFF_BYTE // Just for pass the first check
-	var lastPosition int64
+
+	var (
+		linesReaded  int
+		nByte        int    // Number of byte readed
+		stringBuffer string // Contains the string until we don't found the new line
+		iteration    int64  = 1
+		n            int64  = -BUFF_BYTE // Just for pass the first check
+		lastPosition int64
+	)
+
 	// Until we haven't read all the string
 	for linesReaded < N_STRING {
 		if n >= -BUFF_BYTE {

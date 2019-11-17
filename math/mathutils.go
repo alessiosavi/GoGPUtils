@@ -206,6 +206,7 @@ func ModeInt(array []int) []int {
 	return maxs
 }
 
+// MedianInt is delegated to calculate the median for the given INT array
 func MedianInt(arr []int) float64 {
 	var array []int = make([]int, len(arr))
 	// Avoid to modify the input array
@@ -236,6 +237,7 @@ func AverageInt(array []int) float64 {
 	return float64(total) / float64(len(array))
 }
 
+// StandardDeviationInt is delegated to calculate the STD for the given array
 func StandardDeviationInt(array []int) float64 {
 	// 1. Calculate average
 	mean := AverageInt(array)
@@ -247,6 +249,21 @@ func StandardDeviationInt(array []int) float64 {
 	// 3. Multiplying by 1/N (divide for N)
 	sum /= float64(len(array))
 
+	// 4.  Take the square root
+	return math.Sqrt(sum)
+}
+
+// StandardDeviationInt is delegated to calculate the STD for the given array
+func StandardDeviationFloat64(array []float64) float64 {
+	// 1. Calculate average
+	mean := AverageFloat64(array)
+	// 2. Subtract every terms for the average and square the result. Sum every terms
+	var sum float64
+	for i := range array {
+		sum += math.Pow(float64(array[i])-mean, 2)
+	}
+	// 3. Multiplying by 1/N (divide for N)
+	sum /= float64(len(array))
 	// 4.  Take the square root
 	return math.Sqrt(sum)
 }
@@ -265,6 +282,7 @@ func VarianceInt(array []int) float64 {
 	return math.Sqrt(sum)
 }
 
+// CovarianceInt is delegated to calculate the Covariance between the given arrays
 func CovarianceInt(arr1, arr2 []int) float64 {
 	if len(arr1) != len(arr2) || len(arr1) == 0 {
 		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
@@ -278,6 +296,76 @@ func CovarianceInt(arr1, arr2 []int) float64 {
 		sum += (float64(arr1[i]) - avg1) * (float64(arr2[i]) - avg2)
 	}
 	return sum / float64(len(arr1)-1)
+}
+
+// CovarianceInt is delegated to calculate the Covariance between the given arrays
+func CovarianceFloat64(arr1, arr2 []float64) float64 {
+	if len(arr1) != len(arr2) || len(arr1) == 0 {
+		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
+	}
+	// 1. Calculate the mean
+	avg1 := AverageFloat64(arr1)
+	avg2 := AverageFloat64(arr2)
+
+	var sum float64
+	for i := range arr1 {
+		sum += (arr1[i] - avg1) * (arr2[i] - avg2)
+	}
+	return sum / float64(len(arr1)-1)
+}
+
+// CorrelationInt is delegated to calculate the correlation for the two given arrays
+func CorrelationInt(arr1, arr2 []int) float64 {
+	if len(arr1) != len(arr2) || len(arr1) == 0 {
+		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
+	}
+
+	// 1. Calculate the mean
+	avg1 := AverageInt(arr1)
+	avg2 := AverageInt(arr2)
+
+	var sum float64
+	var sum1, sum2 []float64 = make([]float64, len(arr1)), make([]float64, len(arr2))
+	for i := range arr1 {
+		sum1[i] = float64(arr1[i]) - avg1
+		sum2[i] = float64(arr2[i]) - avg2
+		sum += sum1[i] * sum2[i]
+	}
+	var pow1, pow2 float64
+
+	for i := range arr1 {
+		pow1 += math.Pow(sum1[i], 2)
+	}
+	for i := range arr1 {
+		pow2 += math.Pow(sum2[i], 2)
+	}
+	return sum / math.Sqrt(pow1*pow2)
+}
+
+// CorrelationFloat64 is delegated to calculate the correlation for the two given arrays
+func CorrelationFloat64(arr1, arr2 []float64) float64 {
+	if len(arr1) != len(arr2) || len(arr1) == 0 {
+		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
+	}
+
+	// 1. Calculate the mean
+	avg1 := AverageFloat64(arr1)
+	avg2 := AverageFloat64(arr2)
+
+	var sum float64
+	for i := range arr1 {
+		// TODO: Save calculation instead of recalculate at the step below
+		sum += (arr1[i] - avg1) * (arr2[i] - avg2)
+	}
+	var pow1, pow2 float64
+
+	for i := range arr1 {
+		pow1 += math.Pow(arr1[i]-avg1, 2)
+	}
+	for i := range arr1 {
+		pow2 += math.Pow(arr2[i]-avg2, 2)
+	}
+	return sum / math.Sqrt(pow1*pow2)
 }
 
 // AverageInt32 is delegated to calculate the average of an int array
@@ -411,6 +499,7 @@ func SubtractMatrix(m1, m2 [][]int) [][]int {
 	return total
 }
 
+// MultiplyMatrix is delegated to execute the multiplication between the given matrix without extra allocation
 func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
@@ -441,7 +530,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	return result
 }
 
-// MultiplyMatrix is delegated to execute the multiplication between the given matrix
+// MultiplyMatrixLegacy is delegated to execute the multiplication between the given matrix
 func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
 	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
@@ -581,7 +670,7 @@ func ExtractEvenValuedNumber(array []int64) []int64 {
 
 // FindDivisor is delegated to find every divisor for the input number
 func FindDivisor(n int) []int {
-	var count int = 0
+	var count int
 	var divisor []int
 	max := int(math.Sqrt(float64(n)))
 	for i := 1; i <= max; i++ {
@@ -727,18 +816,16 @@ func ManhattanDistance(v1, v2 []float64) float64 {
 func MaxInt(a, b int) int {
 	if a > b {
 		return a
-	} else {
-		return b
 	}
+	return b
 }
 
 // MinInt is delegated to return the min int from the two given int
 func MinInt(a, b int) int {
 	if a < b {
 		return a
-	} else {
-		return b
 	}
+	return b
 }
 
 // MaxIntMultiple is delegated to return the max value with a variable number of input int
@@ -746,7 +833,7 @@ func MaxIntMultiple(a ...int) int {
 	return a[MaxIntIndex(a)]
 }
 
-// MaxIntMultiple is delegated to return the min value with a variable number of input int
+// MinIntMultiple is delegated to return the min value with a variable number of input int
 func MinIntMultiple(a ...int) int {
 	return a[MinIntIndex(a)]
 }
