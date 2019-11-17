@@ -9,6 +9,7 @@ import (
 
 const gogputils string = `../testdata/files/test9`
 const codeFolder string = `../`
+const dante string = `../testdata/files/dante.txt`
 
 func TestCountLinesFile(t *testing.T) {
 	file := `../testdata/files/test1.txt`
@@ -26,9 +27,8 @@ func TestCountLinesFile(t *testing.T) {
 }
 
 func BenchmarkCountLinesFile(b *testing.B) {
-	file := `../testdata/files/test1.txt`
 	for i := 0; i < b.N; i++ {
-		_, err := CountLinesFile(file, "", -1)
+		_, err := CountLinesFile(dante, "", -1)
 		if err != nil {
 			b.Fail()
 		}
@@ -224,4 +224,8 @@ func TestGetFileSize(t *testing.T) {
 	t.Log(helper.ByteCountSI(size))
 	t.Log(size)
 	t.Log(kbSize, "K")
+}
+
+func TestExtractWordFromFile(t *testing.T) {
+	ExtractWordFromFile(dante)
 }

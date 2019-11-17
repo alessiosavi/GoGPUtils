@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
@@ -64,7 +65,10 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 			lastPosition = n
 		} else {
 			// We have not enought data for fill the buffer, seeking to the start of the file
-			file.Seek(0, 0)
+			n, err = file.Seek(0, 0)
+			if err != nil {
+				log.Fatal("error during seek: ", n)
+			}
 			buff = make([]byte, lastPosition)
 			_, err = file.Read(buff)
 			if err != nil {
@@ -395,4 +399,35 @@ func FilterFromFile(filename, target string, ignorecase bool) []string {
 		return nil
 	}
 	return result
+}
+
+// ExtractWordFromFile is delegated to extract the word from a given file with the related frequencies
+func ExtractWordFromFile(filename string) map[string]int {
+	if !IsFile(filename) {
+		log.Fatal("File [" + filename + "] is not a file!")
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	var words map[string]int = make(map[string]int)
+	var sb strings.Builder
+	for scanner.Scan() {
+		line := scanner.Text()
+		for _, word := range strings.Fields(line) {
+			for _, r := range word {
+				if unicode.IsLetter(r) || r == 39 || r == 226 || r == 8217 {
+					sb.WriteRune(r)
+				}
+			}
+			words[sb.String()]++
+			sb.Reset()
+		}
+	}
+	// log.Println(words)
+	file.Close()
+	return words
 }
