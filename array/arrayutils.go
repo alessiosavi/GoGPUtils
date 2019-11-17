@@ -101,7 +101,7 @@ func ReverseArrayInt(n1 []int) []int {
 	return result
 }
 
-// ReverseArray is delegated to return the inverse rappresentation of the array
+// ReverseArrayString is delegated to return the inverse rappresentation of the array
 func ReverseArrayString(n1 []string) []string {
 	var result []string = make([]string, len(n1))
 	for i := len(n1) - 1; i >= 0; i-- {

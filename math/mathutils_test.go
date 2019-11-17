@@ -358,3 +358,21 @@ func TestCovarianceInt(t *testing.T) {
 		t.Error(cv)
 	}
 }
+
+func TestCorrelationInt(t *testing.T) {
+	arr1 := []int{1692, 1978, 1884, 2151, 2519}
+	arr2 := []int{68, 102, 110, 112, 154}
+	cv := CorrelationInt(arr1, arr2)
+	if !(cv > 0.949 && cv < 0.950) {
+		t.Error(cv)
+	}
+}
+
+func TestCorrelationFloat64(t *testing.T) {
+	arr1 := []float64{1691.75, 1977.80, 1884.09, 2151.13, 2519.36}
+	arr2 := []float64{68.96, 100.11, 109.06, 112.18, 154.12}
+	cv := CorrelationFloat64(arr1, arr2)
+	if !(cv > 0.954 && cv < 0.955) {
+		t.Error(cv)
+	}
+}
