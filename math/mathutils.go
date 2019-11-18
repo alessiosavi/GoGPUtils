@@ -111,7 +111,7 @@ func SumFloat64Array(integers []float64) float64 {
 
 // MaxIntIndex return the index that contains the max value for the given array
 func MaxIntIndex(array []int) int {
-	index := 0
+	var index int
 	length := len(array)
 	for i := 1; i < length; i++ {
 		if array[i] > array[index] {
@@ -429,8 +429,8 @@ func AverageFloat64(array []float64) float64 {
 	return total / float64(len(array))
 }
 
-// CreateEmptyMatrix is delegated to initialize a new empty matrix
-func CreateEmptyMatrix(r, c int) [][]int {
+// InitMatrix is delegated to initialize a new empty matrix
+func InitMatrix(r, c int) [][]int {
 	if r <= 1 || c <= 1 {
 		return nil
 	}
@@ -456,7 +456,7 @@ func DumpMatrix(m [][]int) string {
 
 // InitRandomMatrix is delegated to initialize a random matrix with the given dimension
 func InitRandomMatrix(r, c int) [][]int {
-	m := CreateEmptyMatrix(r, c)
+	m := InitMatrix(r, c)
 	randomizer := helper.InitRandomizer()
 	for i := range m {
 		m[i] = randomizer.RandomIntArray(0, 100, c)
@@ -464,9 +464,9 @@ func InitRandomMatrix(r, c int) [][]int {
 	return m
 }
 
-// InitStaticMatrix is delegated to initialize a matrix with the given dimension using the same value for each field
-func InitStaticMatrix(r, c, value int) [][]int {
-	m := CreateEmptyMatrix(r, c)
+// InitMatrixCustom is delegated to initialize a matrix with the given dimension using the same value for each field
+func InitMatrixCustom(r, c, value int) [][]int {
+	m := InitMatrix(r, c)
 	for i := range m {
 		m[i] = InitIntArray(c, value)
 	}
@@ -517,7 +517,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	n := len(m1)
 	y := len(m1[0])
 	m := len(m2[0])
-	result := InitStaticMatrix(n, m, 0)
+	result := InitMatrix(n, m)
 
 	for k := 0; k < y; k++ {
 		for i := 0; i < n; i++ {
@@ -545,7 +545,7 @@ func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
 		return nil
 	}
 
-	total := InitStaticMatrix(len(m1), len(m2[0]), -1)
+	total := InitMatrix(len(m1), len(m2[0]))
 	for i := range m1 {
 		arrayM1 := m1[i]
 		for k := 0; k < len(m2); k++ {
@@ -573,12 +573,14 @@ func MultiplySumArray(a, b []int) int {
 	return SumIntArray(total)
 }
 
-// SumArrays is delegated to sum 2 array of different length
+// SumArrays is delegated to sum 2 array of different length.
 func SumArrays(n1, n2 []int) []int {
-	var result []int
-	var odd int
-	var length int
-	var sum int
+	var (
+		result []int
+		odd    int
+		length int
+		sum    int
+	)
 	if len(n1) > len(n2) {
 		length = len(n1)
 	} else {
@@ -646,13 +648,29 @@ func GenerateFibonacci(max int64) []int64 {
 	var array []int64
 	// Hardcoded for enhance for performance
 	array = append(array, 1)
+	array = append(array, 1)
 	array = append(array, 2)
-	i := 2
+	i := 3
 	var value int64 = array[i-1] + array[i-2]
 	for value < max {
-		value = array[i-1] + array[i-2]
-		i++
 		array = append(array, value)
+		i++
+		value = array[i-1] + array[i-2]
+	}
+	return array
+}
+
+// GenerateFibonacciN is delegated to generate N Fibonacci number
+func GenerateFibonacciN(max int) []float64 {
+	var array []float64
+	// Hardcoded for enhance for performance
+	array = append(array, 1)
+	array = append(array, 1)
+	array = append(array, 2)
+	i := 3
+	for len(array) < max && array[len(array)-1] <= math.MaxFloat64 {
+		array = append(array, array[i-1]+array[i-2])
+		i++
 	}
 	return array
 }
@@ -707,38 +725,34 @@ func PadArray(array []int, n int) []int {
 }
 
 // FindIndexValue is delegated to retrieve the index of the given value into the input array.
-// NOTE: FIXME in case of multiple value, only the first will be returned
-func FindIndexValue(array []int, value int) int {
-	var index int = -1
-
+func FindIndexValue(array []int, value int) []int {
+	var indexs []int
 	for i := range array {
 		if array[i] == value {
-			index = i
-			break
+			indexs = append(indexs, i)
 		}
 	}
-	return index
+	//log.Println("Found value [", value, "] at index [", indexs, "]")
+	return indexs
 }
 
 // SortMaxIndex is delegated to return an array that contains the position of the order value (from max to min) of the given array
 // {1, 9, 2, 10, 3} -> [3 1 4 2 0] || {7, 6, 5, 4, 3, 2, 1} -> [0 1 2 3 4 5 6] || {1, 2, 3, 4, 5, 6, 7} -> [6 5 4 3 2 1 0]
 func SortMaxIndex(array []int) []int {
 	var (
-		result               []int
-		additional, i, index int
-		arrayCopy            []int = make([]int, len(array))
+		result, additional []int
+		index, value       int
+		arrayCopy          []int = make([]int, len(array))
 	)
 	copy(arrayCopy, array)
-	for i = 0; len(array) > 0; i++ {
+	for len(array) > 0 {
+		// Retrieve the max index
 		index = MaxIntIndex(array)
-		if index != -1 {
-			additional = FindIndexValue(arrayCopy, array[index])
-			if additional == -1 {
-				additional = 0
-			}
-			result = append(result, additional)
-			array = arrayutils.RemoveIntByIndex(array, index)
-		}
+		value = array[index]
+		// Find the value(s)
+		additional = FindIndexValue(arrayCopy, value)
+		result = append(result, additional...)
+		array = arrayutils.RemoveIntByValue(array, value)
 	}
 	return result
 }
@@ -822,6 +836,22 @@ func MaxInt(a, b int) int {
 
 // MinInt is delegated to return the min int from the two given int
 func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// MaxFloat64 is delegated to return the max int from the two given int
+func MaxFloat64(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// MinFloat64 is delegated to return the min int from the two given int
+func MinFloat64(a, b float64) float64 {
 	if a < b {
 		return a
 	}
