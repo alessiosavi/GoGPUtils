@@ -2,6 +2,7 @@ package mathutils
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -140,7 +141,7 @@ func BenchmarkAverageFloat64(t *testing.B) {
 }
 
 func TestCreateEmptyMatrix(t *testing.T) {
-	/*m := */ CreateEmptyMatrix(5, 10)
+	/*m := */ InitMatrix(5, 10)
 	//DumpMatrix(m)
 }
 
@@ -150,7 +151,7 @@ func TestInitRandomMatrix(t *testing.T) {
 }
 
 func TestInitStaticMatrix(t *testing.T) {
-	/*m :=*/ InitStaticMatrix(5, 10, 1)
+	/*m :=*/ InitMatrixCustom(5, 10, 1)
 	//DumpMatrix(m)
 }
 func BenchmarkInitRandomMatrix(t *testing.B) {
@@ -159,9 +160,17 @@ func BenchmarkInitRandomMatrix(t *testing.B) {
 	}
 }
 
+func TestGenerateFibonacci(t *testing.T) {
+	t.Log(GenerateFibonacci(100))
+}
+
+func TestGenerateFibonacciN(t *testing.T) {
+	t.Log(GenerateFibonacciN(999009))
+}
+
 func TestSumMatrix(t *testing.T) {
-	m1 := InitStaticMatrix(5, 10, 1)
-	m2 := InitStaticMatrix(5, 10, 1)
+	m1 := InitMatrixCustom(5, 10, 1)
+	m2 := InitMatrixCustom(5, 10, 1)
 	m3 := SumMatrix(m1, m2)
 	t.Log(DumpMatrix(m3))
 }
@@ -259,10 +268,26 @@ func TestSumArrays(t *testing.T) {
 	t.Log(SumArrays(array1, array2))
 }
 func TestSortMaxIndex(t *testing.T) {
-	var array []int = []int{1, 2, 3, 4, 5, 6, 7}
-	// var array []int = []int{7, 6, 5, 4, 3, 2, 1}
-	//var array []int = []int{1, 9, 2, 10, 3}
-	t.Log(SortMaxIndex(array))
+	var array1 []int = []int{1, 2, 3, 4, 5, 6, 7}
+	var result1 []int = []int{6, 5, 4, 3, 2, 1, 0}
+	var array2 []int = []int{7, 6, 5, 4, 3, 2, 1}
+	var result2 []int = []int{0, 1, 2, 3, 4, 5, 6}
+	var array3 []int = []int{1, 9, 9, 2, 10, 3}
+	var result3 []int = []int{4, 1, 2, 5, 3, 0}
+	if !reflect.DeepEqual(SortMaxIndex(array1), result1) {
+		t.Error("Error on [", array1, "]")
+	}
+	if !reflect.DeepEqual(SortMaxIndex(array2), result2) {
+		t.Error("Error on [", array2, "]")
+	}
+	if !reflect.DeepEqual(SortMaxIndex(array3), result3) {
+		t.Error("Error on [", array3, "]")
+	}
+}
+
+func TestFindIndexValue(t *testing.T) {
+	var array []int = []int{1, 2, 3, 4, 5, 6, 6, 7}
+	t.Log(FindIndexValue(array, 6))
 }
 
 func TestCosineSimilarity(t *testing.T) {

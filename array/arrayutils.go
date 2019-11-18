@@ -45,7 +45,6 @@ func RemoveElement(s []string, i int) []string {
 		s[len(s)-1], s[i] = s[i], s[len(s)-1]
 		return s[:len(s)-1]
 	}
-
 	return s
 }
 
@@ -81,15 +80,6 @@ func JoinInts(ints []int, delimiter string) string {
 	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
-// RemoveFromByte Remove a given element from a string
-func RemoveFromByte(s []byte, i int) []byte {
-	if i > len(s) {
-		return s
-	}
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
-}
-
 // ReverseArrayInt is delegated to return the inverse rappresentation of the array
 func ReverseArrayInt(n1 []int) []int {
 	var result []int = make([]int, len(n1))
@@ -120,6 +110,17 @@ func RemoveIntByIndex(slice []int, s int) []int {
 	return append(slice[:s], slice[s+1:]...)
 }
 
+// RemoveIntByValue is delegated to remove the element that contains the given value
+func RemoveIntByValue(slice []int, value int) []int {
+	for i := 0; i < len(slice); i++ {
+		if slice[i] == value {
+			slice = append(slice[:i], slice[i+1:]...)
+			i--
+		}
+	}
+	return slice
+}
+
 // RemoveStringByIndex the item in position s from the input array
 func RemoveStringByIndex(slice []string, s int) []string {
 	if s < 0 || s >= len(slice) {
@@ -135,7 +136,7 @@ func RemoveStrings(slice []string, toRemove []string) []string {
 			if slice[i] == toRemove[j] {
 				slice = RemoveStringByIndex(slice, i)
 				// reset the index
-				i = -1
+				i--
 				break
 			}
 		}

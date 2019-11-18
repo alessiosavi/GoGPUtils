@@ -21,3 +21,12 @@ func IsLowerByte(str []byte) bool {
 	}
 	return true
 }
+
+// RemoveFromByte Remove a given element from a string
+func RemoveFromByte(s []byte, i int) []byte {
+	if i > len(s) {
+		return s
+	}
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
