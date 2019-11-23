@@ -5,12 +5,11 @@ import (
 	"strings"
 )
 
-//RemoveElementsFromString delete the element of the indexes contained in j of the data in input
-func RemoveElementsFromString(data []string, j []int) []string {
+//RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
+func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	var (
 		newArray []string
 		toAdd    bool = true
-		removed  int  = 0
 	)
 
 	if len(j) == 0 {
@@ -30,7 +29,6 @@ func RemoveElementsFromString(data []string, j []int) []string {
 
 		if toAdd {
 			newArray = append(newArray, data[i])
-			removed++
 		}
 
 		toAdd = true

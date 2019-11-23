@@ -9,7 +9,7 @@ import (
 func TestRemoveElementsFromString1(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	t.Log("Before remove:", data, "Len:", len(data))
-	data = RemoveElementsFromString(data, []int{0, 1, 2})
+	data = RemoveElementsFromStringByIndex(data, []int{0, 1, 2})
 	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+4) {
@@ -21,7 +21,7 @@ func TestRemoveElementsFromString1(t *testing.T) {
 func TestRemoveElementsFromString2(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	t.Log("Before remove:", data, "Len:", len(data))
-	data = RemoveElementsFromString(data, []int{5, 4, 3})
+	data = RemoveElementsFromStringByIndex(data, []int{5, 4, 3})
 	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+1) {
@@ -33,7 +33,7 @@ func TestRemoveElementsFromString2(t *testing.T) {
 func TestRemoveElementsFromString3(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	t.Log("Before remove:", data, "Len:", len(data))
-	data = RemoveElementsFromString(data, []int{1, 2, 3, 5, 4, 3, 0})
+	data = RemoveElementsFromStringByIndex(data, []int{1, 2, 3, 5, 4, 3, 0})
 	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+1) {
