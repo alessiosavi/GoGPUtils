@@ -461,8 +461,6 @@ func CompareBinaryFile(file1, file2 string, nByte int) int {
 		log.Fatal("Unable to read file [" + file2 + "]")
 	}
 
-	// Compare file size (disabled)
-
 	if size1 != size2 {
 		log.Println("Size of ["+file1+"]-> ", size1)
 		log.Println("Size of ["+file2+"]-> ", size2)
@@ -513,6 +511,6 @@ func CompareBinaryFile(file1, file2 string, nByte int) int {
 		}
 	}
 
-	log.Println("Files [", file1, "-", file2, "] are equal!")
+	log.Println("Files [", file1, "-", file2, "] are equals!")
 	return 0
 }

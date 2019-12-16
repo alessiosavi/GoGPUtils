@@ -468,3 +468,12 @@ func DiceCoefficient(string1, string2 string) float64 {
 	}
 	return matches / float64(strlen1+strlen2)
 }
+
+// Join is a quite efficient string concatenator
+func Join(strs ...string) string {
+	var sb strings.Builder
+	for _, str := range strs {
+		sb.WriteString(str)
+	}
+	return sb.String()
+}
