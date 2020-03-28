@@ -428,7 +428,7 @@ func ExtractWordFromFile(filename string) map[string]int {
 		}
 	}
 	// log.Println(words)
-	file.Close()
+	_ = file.Close()
 	return words
 }
 
@@ -478,41 +478,35 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	// Close file at return
 	defer fdFile1.Close()
 
-	log.Printf("%s opened\n", file1)
-
 	// Open second file
-	fdFile2, err := os.Open(file1)
+	fdFile2, err := os.Open(file2)
 	if err != nil {
 		log.Fatal("Error while opening file", err)
 	}
 
 	defer fdFile2.Close()
 
-	log.Printf("%s opened\n", file2)
-
 	// Read 1k bytes at iteration
 	data1 := make([]byte, nByte)
 	data2 := make([]byte, nByte)
-	for err1 != io.EOF || err2 != io.EOF {
-		_, err1 = fdFile1.Read(data1)
-		if err1 != nil && err1 != io.EOF {
-			log.Fatal("Error on file [" + file1 + "] -> [" + err1.Error() + "]")
-		}
 
+	for {
+		_, err1 = fdFile1.Read(data1)
 		_, err2 = fdFile2.Read(data2)
-		if err2 != nil && err2 != io.EOF {
-			log.Fatal("Error on file [" + file2 + "] -> [" + err2.Error() + "]")
+		if err1 != nil || err2 != nil {
+			if err1 == io.EOF && err2 == io.EOF {
+				return bytes.Equal(data1, data2)
+			} else if err1 == io.EOF || err2 == io.EOF {
+				return false
+			} else {
+				log.Fatal(err1, err2)
+			}
 		}
 
 		if !bytes.Equal(data1, data2) {
-			var pos1, pos2 int64
-			pos1, _ = fdFile1.Seek(0, 1)
-			pos2, _ = fdFile1.Seek(0, 1)
-			log.Println("Files are not equals! At position [Pos1:", pos1, "Pos2:", pos2, "]")
 			return false
 		}
 	}
 
-	log.Println("Files [", file1, "-", file2, "] are equal!")
 	return true
 }
