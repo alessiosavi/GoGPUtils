@@ -433,7 +433,7 @@ func ExtractWordFromFile(filename string) map[string]int {
 }
 
 // CompareBinaryFile is delegated to compare two files using chunks of byte
-func CompareBinaryFile(file1, file2 string, nByte int) int {
+func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	var size1, size2 int64
 	var err, err1, err2 error
 	if nByte < 1 {
@@ -441,11 +441,11 @@ func CompareBinaryFile(file1, file2 string, nByte int) int {
 		nByte = 1024
 	}
 
-	if FileExists(file1) {
+	if !FileExists(file1) {
 		log.Fatal("File [", file1, "] does not exist!")
 	}
 
-	if FileExists(file2) {
+	if !FileExists(file2) {
 		log.Fatal("File [", file2, "] does not exist!")
 	}
 
@@ -461,11 +461,13 @@ func CompareBinaryFile(file1, file2 string, nByte int) int {
 		log.Fatal("Unable to read file [" + file2 + "]")
 	}
 
+	// Compare file size (disabled)
+
 	if size1 != size2 {
 		log.Println("Size of ["+file1+"]-> ", size1)
 		log.Println("Size of ["+file2+"]-> ", size2)
 		log.Println("Files are not equals! Dimension mismatch!")
-		return 1
+		return false
 	}
 
 	// Open first file
@@ -507,10 +509,10 @@ func CompareBinaryFile(file1, file2 string, nByte int) int {
 			pos1, _ = fdFile1.Seek(0, 1)
 			pos2, _ = fdFile1.Seek(0, 1)
 			log.Println("Files are not equals! At position [Pos1:", pos1, "Pos2:", pos2, "]")
-			return 1
+			return false
 		}
 	}
 
-	log.Println("Files [", file1, "-", file2, "] are equals!")
-	return 0
+	log.Println("Files [", file1, "-", file2, "] are equal!")
+	return true
 }
