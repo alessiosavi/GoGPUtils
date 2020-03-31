@@ -65,6 +65,28 @@ func (n *Node) visitPostOrder(array *[]int) []int {
 	return *array
 }
 
+func (n *Node) visitInOrder(array *[]int) {
+	if n.Left != nil {
+		n.Left.visitInOrder(array)
+	}
+	// fmt.Printf("%d ", n.Value)
+	*array = append(*array, n.Value)
+	if n.Right != nil {
+		n.Right.visitInOrder(array)
+	}
+
+}
+
+// VisitPreOrder is delegated to traverse the Tree in pre order
+func (t *Tree) VisitInOrder() []int {
+	if t.Root == nil {
+		panic("Empty array")
+	}
+	var result []int
+	t.Root.visitInOrder(&result)
+	return result
+}
+
 // VisitPreOrder is delegated to traverse the Tree in pre order
 func (t *Tree) VisitPreOrder() []int {
 	if t.Root == nil {
@@ -102,8 +124,7 @@ func (t *Tree) Remove(val int) {
 
 func (n *Node) remove(val int) {
 	if n.Value == val {
-		var tmp *Node
-		tmp = n.Right
+		var tmp *Node = n.Right
 		*n = *n.Left
 		n.Right = tmp
 	} else if val <= n.Value && n.Left != nil {
@@ -136,7 +157,7 @@ func (n *Node) height() int {
 
 /* Function to print level
 order traversal a tree*/
-func (n *Node) print() {
+func (n *Node) print() string {
 
 	h := n.height()
 	printMap = make(map[int][]int, h)
@@ -152,8 +173,11 @@ func (n *Node) print() {
 			}
 		}
 	}
-	fmt.Printf("Tree: %+v", printMap)
+
+	s := fmt.Sprintf("Tree: %+v", printMap)
 	printMap = nil
+
+	return s
 }
 
 // printMap is delegated to save the value for the given level
@@ -172,6 +196,6 @@ func (n *Node) printByLevel(level int) {
 	}
 }
 
-func (t *Tree) Print() {
-	t.Root.print()
+func (t *Tree) Print() string {
+	return t.Root.print()
 }

@@ -3,6 +3,8 @@ package binarytree
 import (
 	"sort"
 	"testing"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 func initTestTree() Tree {
@@ -139,6 +141,18 @@ func Test_VisitPreOrder(t *testing.T) {
 	t.Log(tree.Root.Print())
 }
 
+func Test_VisitInOrder(t *testing.T) {
+	var tree Tree = initTestTree()
+	res := tree.VisitInOrder()
+	t.Logf("InOrder: %v\n", res)
+
+	for i := 0; i < len(res); i += 3 {
+		if !(res[i] < res[i+1] && res[i+1] < res[i+2]) {
+			t.Errorf("Not 3 consecutive minor at iteration %d! %v\n", i, res)
+		}
+	}
+}
+
 func Test_VisitPostOrder(t *testing.T) {
 
 	var tree Tree = initTestTree()
@@ -160,19 +174,23 @@ func Test_Remove(t *testing.T) {
 	if res_n-1 != len(res) {
 		t.Error("Expected 1 less length of the result")
 	}
-	for _, v := range res {
-		if v == value {
-			t.Errorf("Expected no more [%d]\n", value)
-		}
+
+	if arrayutils.In(res, value) {
+		t.Errorf("Expected no more [%d]\n", value)
 	}
+
 	t.Log(tree.Root.Print())
 }
 
 func Test_Height(t *testing.T) {
 	tree := initTestTree()
-	t.Logf("Lenght: %d\n", tree.Height())
+	h := tree.Height()
+	if h != 4 {
+		t.Errorf("Expected height 4, found %d.\nTree: %+v", h, tree.Print())
+	}
+	t.Logf("Lenght: %d\n", h)
 }
 func Test_Print(t *testing.T) {
 	tree := initTestTree()
-	tree.Print()
+	t.Log(tree.Print())
 }
