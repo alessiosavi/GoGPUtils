@@ -483,10 +483,8 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	if err != nil {
 		log.Fatal("Error while opening file", err)
 	}
-
 	defer fdFile2.Close()
 
-	// Read 1k bytes at iteration
 	data1 := make([]byte, nByte)
 	data2 := make([]byte, nByte)
 
