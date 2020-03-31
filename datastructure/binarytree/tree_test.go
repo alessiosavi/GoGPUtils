@@ -1,6 +1,7 @@
 package binarytree
 
 import (
+	"sort"
 	"testing"
 )
 
@@ -120,6 +121,25 @@ func Test_VisitPreOrder(t *testing.T) {
 	tree.Insert(30)
 	tree.Insert(15)
 	tree.Insert(6)
-	tree.VisitPreOrder()
+	res := tree.VisitPreOrder()
+	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] < res[j] }) {
+		t.Error("Slice is not sorted!", res)
+	}
+}
 
+func Test_VisitPostOrder(t *testing.T) {
+
+	var tree Tree
+	tree.InitTree(0)
+	tree.Insert(10)
+	tree.Insert(5)
+	tree.Insert(20)
+	tree.Insert(1)
+	tree.Insert(30)
+	tree.Insert(15)
+	tree.Insert(6)
+	res := tree.VisitPostOrder()
+	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] > res[j] }) {
+		t.Error("Slice is not sorted!", res)
+	}
 }

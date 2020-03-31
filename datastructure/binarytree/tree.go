@@ -1,7 +1,5 @@
 package binarytree
 
-import "fmt"
-
 type Node struct {
 	Value int
 	Left  *Node
@@ -32,23 +30,44 @@ func (n *Node) insert(val int) {
 	}
 }
 
-func (n *Node) visitPreOrder() {
+func (n *Node) visitPreOrder(array *[]int) []int {
 	if n.Left != nil {
-		n.Left.visitPreOrder()
+		n.Left.visitPreOrder(array)
 	}
-	fmt.Printf(" %d", n.Value)
+	*array = append(*array, n.Value)
 	if n.Right != nil {
-		n.Right.visitPreOrder()
+		n.Right.visitPreOrder(array)
 	}
+	return *array
 }
 
-func (t *Tree) VisitPreOrder() {
+func (n *Node) visitPostOrder(array *[]int) []int {
+	if n.Right != nil {
+		n.Right.visitPostOrder(array)
+	}
+	*array = append(*array, n.Value)
+	if n.Left != nil {
+		n.Left.visitPostOrder(array)
+	}
+	return *array
+}
+
+func (t *Tree) VisitPreOrder() []int {
 	if t.Root == nil {
 		panic("Empty array")
 	}
-	fmt.Printf("[")
-	t.Root.visitPreOrder()
-	fmt.Printf("]\n")
+	var result []int
+	t.Root.visitPreOrder(&result)
+	return result
+}
+
+func (t *Tree) VisitPostOrder() []int {
+	if t.Root == nil {
+		panic("Empty array")
+	}
+	var result []int
+	t.Root.visitPostOrder(&result)
+	return result
 }
 
 func (t *Tree) InitTree(val int) {
