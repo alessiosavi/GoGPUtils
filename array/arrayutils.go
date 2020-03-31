@@ -119,6 +119,16 @@ func RemoveIntByValue(slice []int, value int) []int {
 	return slice
 }
 
+// In is delegated to verify if the given value is present in the target slice
+func In(slice []int, target int) bool {
+	for _, b := range slice {
+		if b == target {
+			return true
+		}
+	}
+	return false
+}
+
 // RemoveStringByIndex the item in position s from the input array
 func RemoveStringByIndex(slice []string, s int) []string {
 	if s < 0 || s >= len(slice) {

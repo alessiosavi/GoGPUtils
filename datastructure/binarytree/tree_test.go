@@ -5,6 +5,20 @@ import (
 	"testing"
 )
 
+func initTestTree() Tree {
+	var tree Tree
+	tree.InitTree(10)
+	tree.Insert(5)
+	tree.Insert(4)
+	tree.Insert(6)
+	tree.Insert(20)
+	tree.Insert(15)
+	tree.Insert(25)
+	tree.Insert(21)
+	tree.Insert(26)
+	return tree
+}
+
 func Test_InitTree(t *testing.T) {
 	var tree Tree
 	tree.InitTree(0)
@@ -117,16 +131,7 @@ func Test_MultipleInsertLeft(t *testing.T) {
 
 func Test_VisitPreOrder(t *testing.T) {
 
-	var tree Tree
-	tree.InitTree(0)
-	tree.Insert(10)
-	tree.Insert(5)
-	tree.Insert(20)
-	tree.Insert(1)
-	tree.Insert(30)
-	tree.Insert(15)
-	tree.Insert(6)
-	tree.Insert(-1)
+	var tree Tree = initTestTree()
 	res := tree.VisitPreOrder()
 	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] < res[j] }) {
 		t.Error("Slice is not sorted!", res)
@@ -136,16 +141,7 @@ func Test_VisitPreOrder(t *testing.T) {
 
 func Test_VisitPostOrder(t *testing.T) {
 
-	var tree Tree
-	tree.InitTree(0)
-	tree.Insert(10)
-	tree.Insert(5)
-	tree.Insert(20)
-	tree.Insert(1)
-	tree.Insert(30)
-	tree.Insert(15)
-	tree.Insert(6)
-	tree.Insert(-1)
+	var tree Tree = initTestTree()
 	res := tree.VisitPostOrder()
 	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] > res[j] }) {
 		t.Error("Slice is not sorted!", res)
@@ -154,18 +150,8 @@ func Test_VisitPostOrder(t *testing.T) {
 }
 
 func Test_Remove(t *testing.T) {
-	var tree Tree
+	var tree Tree = initTestTree()
 	value := 25
-
-	tree.InitTree(10)
-	tree.Insert(5)
-	tree.Insert(4)
-	tree.Insert(6)
-	tree.Insert(20)
-	tree.Insert(15)
-	tree.Insert(value)
-	tree.Insert(21)
-	tree.Insert(26)
 
 	res := tree.VisitPreOrder()
 	res_n := len(res)
@@ -180,4 +166,13 @@ func Test_Remove(t *testing.T) {
 		}
 	}
 	t.Log(tree.Root.Print())
+}
+
+func Test_Height(t *testing.T) {
+	tree := initTestTree()
+	t.Logf("Lenght: %d\n", tree.Height())
+}
+func Test_Print(t *testing.T) {
+	tree := initTestTree()
+	tree.Print()
 }
