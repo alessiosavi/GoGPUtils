@@ -167,7 +167,7 @@ func (n *Node) print() string {
 	for key := h; key > 0; key-- {
 		for j := h; j > key; j-- {
 			for _, k := range printMap[j] {
-				if arrayutils.In(printMap[key], k) {
+				if arrayutils.InInt(printMap[key], k) {
 					printMap[key] = arrayutils.RemoveIntByValue(printMap[key], k)
 				}
 			}
