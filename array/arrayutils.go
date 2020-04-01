@@ -120,7 +120,17 @@ func RemoveIntByValue(slice []int, value int) []int {
 }
 
 // In is delegated to verify if the given value is present in the target slice
-func In(slice []int, target int) bool {
+func InInt(slice []int, target int) bool {
+	for _, b := range slice {
+		if b == target {
+			return true
+		}
+	}
+	return false
+}
+
+// In is delegated to verify if the given value is present in the target slice
+func InRune(slice []rune, target rune) bool {
 	for _, b := range slice {
 		if b == target {
 			return true
