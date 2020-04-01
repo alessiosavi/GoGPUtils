@@ -124,9 +124,16 @@ func (t *Tree) Remove(val int) {
 
 func (n *Node) remove(val int) {
 	if n.Value == val {
-		var tmp *Node = n.Right
-		*n = *n.Left
-		n.Right = tmp
+		var tmp *Node
+		if n.Left != nil {
+			tmp = n.Right
+			*n = *n.Left
+			n.Right = tmp
+		} else {
+			tmp = n.Left
+			*n = *n.Right
+			n.Left = tmp
+		}
 	} else if val <= n.Value && n.Left != nil {
 		n.Left.remove(val)
 	} else if val > n.Value && n.Right != nil {
@@ -167,7 +174,7 @@ func (n *Node) print() string {
 	for key := h; key > 0; key-- {
 		for j := h; j > key; j-- {
 			for _, k := range printMap[j] {
-				if arrayutils.In(printMap[key], k) {
+				if arrayutils.InInt(printMap[key], k) {
 					printMap[key] = arrayutils.RemoveIntByValue(printMap[key], k)
 				}
 			}
