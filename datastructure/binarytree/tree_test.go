@@ -175,7 +175,7 @@ func Test_Remove(t *testing.T) {
 		t.Error("Expected 1 less length of the result")
 	}
 
-	if arrayutils.In(res, value) {
+	if arrayutils.InInt(res, value) {
 		t.Errorf("Expected no more [%d]\n", value)
 	}
 
