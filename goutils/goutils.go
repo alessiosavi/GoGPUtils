@@ -19,8 +19,8 @@ func GetUlimitValue() (uint64, uint64) {
 	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
 	if err != nil {
 		fmt.Printf("Error Getting Rlimit: %s\n", err)
+		return 1024, 1024
 	}
-	fmt.Printf("Current Ulimit: %d", rLimit.Cur)
 	return rLimit.Cur, rLimit.Max
 }
 
