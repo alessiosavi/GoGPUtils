@@ -74,7 +74,6 @@ func (n *Node) visitInOrder(array *[]int) {
 	if n.Right != nil {
 		n.Right.visitInOrder(array)
 	}
-
 }
 
 // VisitPreOrder is delegated to traverse the Tree in pre order
@@ -124,9 +123,16 @@ func (t *Tree) Remove(val int) {
 
 func (n *Node) remove(val int) {
 	if n.Value == val {
-		var tmp *Node = n.Right
-		*n = *n.Left
-		n.Right = tmp
+		var tmp *Node
+		if n.Left != nil {
+			tmp = n.Right
+			*n = *n.Left
+			n.Right = tmp
+		} else {
+			tmp = n.Left
+			*n = *n.Right
+			n.Left = tmp
+		}
 	} else if val <= n.Value && n.Left != nil {
 		n.Left.remove(val)
 	} else if val > n.Value && n.Right != nil {
