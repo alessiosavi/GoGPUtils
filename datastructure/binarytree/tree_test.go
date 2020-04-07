@@ -138,7 +138,7 @@ func Test_VisitPreOrder(t *testing.T) {
 	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] < res[j] }) {
 		t.Error("Slice is not sorted!", res)
 	}
-	t.Log(tree.Root.Print())
+	t.Log(res)
 }
 
 func Test_VisitInOrder(t *testing.T) {

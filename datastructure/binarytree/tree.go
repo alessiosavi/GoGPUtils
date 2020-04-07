@@ -74,7 +74,6 @@ func (n *Node) visitInOrder(array *[]int) {
 	if n.Right != nil {
 		n.Right.visitInOrder(array)
 	}
-
 }
 
 // VisitPreOrder is delegated to traverse the Tree in pre order
