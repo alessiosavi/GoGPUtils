@@ -226,6 +226,8 @@ func IsBlank(str string) bool {
 // It also convert every new line in a space
 func Trim(str string) string {
 	var b strings.Builder
+	replacer := strings.NewReplacer("\\n", "", "\\r", "", "\\t", "")
+	str = replacer.Replace(str)
 	b.Grow(len(str))
 	length := len(str)
 	for i := 0; i < length; i++ {
