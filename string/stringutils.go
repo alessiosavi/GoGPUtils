@@ -344,7 +344,6 @@ func LevenshteinDistance(str1, str2 string) int {
 
 	var p []int = make([]int, n+1)
 	var d []int = make([]int, n+1)
-	var _d []int
 
 	var i, j, cost int
 	var t_j byte
@@ -369,9 +368,7 @@ func LevenshteinDistance(str1, str2 string) int {
 		}
 
 		// copy current distance counts to 'previous row' distance counts
-		_d = p
-		p = d
-		d = _d
+		p, d = d, p
 	}
 	return p[n]
 }
@@ -382,7 +379,7 @@ func JaroDistance(str1, str2 string) float64 {
 		return 1
 	}
 
-	if len(str1) == 0 || len(str2) == 0 {
+	if str1 == "" || str2 == "" {
 		return 0
 	}
 
@@ -442,7 +439,7 @@ func JaroDistance(str1, str2 string) float64 {
 // DiceCoefficient is bigram position dependent implementation of the Dice coefficient
 func DiceCoefficient(string1, string2 string) float64 {
 	// Check for nil or empty string
-	if len(string1) == 0 && len(string2) == 0 {
+	if string1 == "" && string2 == "" {
 		return 0
 	}
 	if string1 == string2 {

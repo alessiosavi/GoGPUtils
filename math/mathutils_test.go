@@ -161,11 +161,13 @@ func BenchmarkInitRandomMatrix(t *testing.B) {
 }
 
 func TestGenerateFibonacci(t *testing.T) {
-	t.Log(GenerateFibonacci(100))
+	if len(GenerateFibonacci(100)) != 11 {
+		t.Fail()
+	}
 }
 
 func TestGenerateFibonacciN(t *testing.T) {
-	t.Log(GenerateFibonacciN(999009))
+	GenerateFibonacciN(999009)
 }
 
 func TestSumMatrix(t *testing.T) {

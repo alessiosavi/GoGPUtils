@@ -21,7 +21,7 @@ import (
 
 // Tail is delegated to read the latest lines of the file.
 // NOTE: buffer have to be lesser than the minimum string length
-func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
+func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error) {
 	// list of strings readed
 	var stringsArray []string = make([]string, N_STRING)
 	// Contains the data
@@ -34,7 +34,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 	file, err := os.Open(FILE)
 	if err != nil {
 		log.Println("Unable to open file: " + FILE + " ERR: " + err.Error())
-		log.Fatal(err)
+		return "", err
 	}
 	defer file.Close()
 
@@ -42,7 +42,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 	_, err = file.Seek(BUFF_BYTE, START_POS)
 	if err != nil {
 		log.Println("Unable to seek to the end of the file: " + FILE + " ERR: " + err.Error())
-		log.Fatal(err)
+		return "", err
 	}
 
 	var (
@@ -60,7 +60,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 			n, err = file.Seek(iteration*BUFF_BYTE, START_POS)
 			if err != nil {
 				log.Println("2) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-				log.Fatal(err)
+				return "", err
 			}
 			lastPosition = n
 		} else {
@@ -73,7 +73,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 			_, err = file.Read(buff)
 			if err != nil {
 				log.Println("3) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-				log.Fatal(err)
+				return "", err
 			}
 			stringBuffer = string(buff) + stringBuffer
 			stringsArray[N_STRING-linesReaded-1] = stringBuffer
@@ -84,7 +84,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 		nByte, err = file.Read(buff)
 		if err != nil {
 			log.Println("1) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-			log.Fatal(err)
+			return "", err
 		}
 		// Append the string in initial position
 		stringBuffer = string(buff) + stringBuffer
@@ -105,7 +105,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) string {
 		stringsArray = stringsArray[linesReaded-1:]
 	}
 
-	return arrayutils.JoinStrings(stringsArray, "")
+	return arrayutils.JoinStrings(stringsArray, ""), nil
 }
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
@@ -409,7 +409,7 @@ func ExtractWordFromFile(filename string) map[string]int {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error: ", err)
 	}
 
 	scanner := bufio.NewScanner(file)

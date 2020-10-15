@@ -647,9 +647,7 @@ func IsPrime(n int) bool {
 func GenerateFibonacci(max int64) []int64 {
 	var array []int64
 	// Hardcoded for enhance for performance
-	array = append(array, 1)
-	array = append(array, 1)
-	array = append(array, 2)
+	array = append(array, 1, 1, 2)
 	i := 3
 	var value int64 = array[i-1] + array[i-2]
 	for value < max {
@@ -664,9 +662,7 @@ func GenerateFibonacci(max int64) []int64 {
 func GenerateFibonacciN(max int) []float64 {
 	var array []float64
 	// Hardcoded for enhance for performance
-	array = append(array, 1)
-	array = append(array, 1)
-	array = append(array, 2)
+	array = append(array, 1, 1, 2)
 	i := 3
 	for len(array) < max && array[len(array)-1] <= math.MaxFloat64 {
 		array = append(array, array[i-1]+array[i-2])
