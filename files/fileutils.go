@@ -67,7 +67,8 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error)
 			// We have not enought data for fill the buffer, seeking to the start of the file
 			n, err = file.Seek(0, 0)
 			if err != nil {
-				log.Fatal("error during seek: ", n)
+				log.Println("error during seek: ", n)
+				return "", err
 			}
 			buff = make([]byte, lastPosition)
 			_, err = file.Read(buff)
@@ -475,7 +476,8 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	// Open first file
 	fdFile1, err := os.Open(file1)
 	if err != nil {
-		log.Fatal("Error while opening file", err)
+		log.Println("Error while opening file", err)
+		return false
 	}
 	// Close file at return
 	defer fdFile1.Close()
@@ -483,7 +485,8 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	// Open second file
 	fdFile2, err := os.Open(file2)
 	if err != nil {
-		log.Fatal("Error while opening file", err)
+		log.Println("Error while opening file", err)
+		return false
 	}
 	defer fdFile2.Close()
 
