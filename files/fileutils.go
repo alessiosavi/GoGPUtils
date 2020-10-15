@@ -261,7 +261,7 @@ func CountLinesFile(fileName, separator string, bufferLength int) (int, error) {
 		bufferLength = 32
 	}
 	count = 0
-	if len(separator) == 0 {
+	if separator == "" {
 		lineSep = []byte{'\n'}
 	}
 
@@ -503,7 +503,8 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 			} else if err1 == io.EOF || err2 == io.EOF {
 				return false
 			} else {
-				log.Fatal(err1, err2)
+				log.Println("Error mismatch!", err1, err2)
+				break
 			}
 		}
 
@@ -511,4 +512,5 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 			return false
 		}
 	}
+	return false
 }
