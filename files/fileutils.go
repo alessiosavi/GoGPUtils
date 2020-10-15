@@ -436,6 +436,8 @@ func ExtractWordFromFile(filename string) map[string]int {
 func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	var size1, size2 int64
 	var err, err1, err2 error
+
+	// Preliminary check
 	if nByte < 1 {
 		log.Println("Chunks of bytes size not provided, using 1k byte")
 		nByte = 1024
@@ -488,12 +490,13 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	data1 := make([]byte, nByte)
 	data2 := make([]byte, nByte)
 
+	// from https://stackoverflow.com/a/30038571/9361998
 	for {
 		_, err1 = fdFile1.Read(data1)
 		_, err2 = fdFile2.Read(data2)
 		if err1 != nil || err2 != nil {
 			if err1 == io.EOF && err2 == io.EOF {
-				return bytes.Equal(data1, data2)
+				return true
 			} else if err1 == io.EOF || err2 == io.EOF {
 				return false
 			} else {
@@ -505,6 +508,4 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 			return false
 		}
 	}
-
-	return true
 }
