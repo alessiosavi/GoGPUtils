@@ -71,6 +71,10 @@ func TestContainsOnlyLetter(t *testing.T) {
 	}
 }
 
+func TestContainsMultiple(t *testing.T) {
+
+}
+
 func TestRemoveNonAscii(t *testing.T) {
 	dataOK := []string{`AÀ È Ì Ò Ù Ỳ Ǹ ẀA`, `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`, `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`}
 	for _, item := range dataOK {
@@ -533,5 +537,36 @@ func BenchmarkReverseString(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ReverseString(data)
+	}
+}
+
+func TestContainsMultiple1(t *testing.T) {
+	type args struct {
+		lower     bool
+		s         string
+		substring []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "testOK1", args: struct {
+			lower     bool
+			s         string
+			substring []string
+		}{lower: true, s: "this is a test", substring: []string{"this", "is"}}, want: true},
+		{name: "testKO1", args: struct {
+			lower     bool
+			s         string
+			substring []string
+		}{lower: true, s: "this is a test", substring: []string{"not", "found"}}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsMultiple(tt.args.lower, tt.args.s, tt.args.substring...); got != tt.want {
+				t.Errorf("ContainsMultiple() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

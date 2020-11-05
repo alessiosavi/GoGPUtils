@@ -82,6 +82,22 @@ func ContainsOnlyLetter(str string) bool {
 	return true
 }
 
+// ContainsMultiple is delegated to verify if the given string 's' contains all the 'substring' present
+func ContainsMultiple(lower bool, s string, substring ...string) bool {
+	if lower {
+		s = strings.ToLower(s)
+		for i := range substring {
+			substring[i] = strings.ToLower(substring[i])
+		}
+	}
+	for _, toFind := range substring {
+		if !strings.Contains(s, toFind) {
+			return false
+		}
+	}
+	return true
+}
+
 // CreateJSON is delegated to create a simple json object for the key pair in input
 func CreateJSON(values []string) string {
 	json := `{`
