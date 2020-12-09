@@ -117,7 +117,7 @@ func CreateJSON(values []string) string {
 }
 
 // RemoveDoubleWhiteSpace is delegated to remove the whitespace from the given string
-// FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
+// FIXME: memory inefficient, use 2n size, use RemoveFromString method instead
 func RemoveDoubleWhiteSpace(str string) string {
 	var b strings.Builder
 	var i int
@@ -132,7 +132,7 @@ func RemoveDoubleWhiteSpace(str string) string {
 }
 
 // RemoveWhiteSpace is delegated to remove the whitespace from the given string
-// FIXME: memory unefficient, use 2n size, use RemoveFromString method instead
+// FIXME: memory inefficient, use 2n size, use RemoveFromString method instead
 func RemoveWhiteSpace(str string) string {
 	var b strings.Builder
 	b.Grow(len(str))
@@ -491,4 +491,15 @@ func Join(strs ...string) string {
 		sb.WriteString(str)
 	}
 	return sb.String()
+}
+
+// Join is a quite efficient string concatenator
+func JoinSeparator(sep string, strs ...string) string {
+	var sb strings.Builder
+	for _, str := range strs {
+		sb.WriteString(str)
+		sb.WriteString(sep)
+	}
+	data := sb.String()
+	return data[:len(data)-len(sep)]
 }
