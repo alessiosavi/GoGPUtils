@@ -203,5 +203,5 @@ func ValidatePort(port int) bool {
 	// Well-known ports: 0 to 1023 (used for system services e.g. HTTP, FTP, SSH, DHCP ...)
 	// Registered/user ports: 1024 to 49151
 	// Dynamic/private ports: 49152 to 65535. (not used for the servers rather the clients e.g. in NATing service)
-	return port < 65535 && port >= 0
+	return port <= 65535 && port >= 0
 }

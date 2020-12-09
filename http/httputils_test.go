@@ -68,3 +68,24 @@ func TestServeHeaders(t *testing.T) {
 	t.Log(resp)
 	time.Sleep(time.Millisecond * 200)
 }
+
+func TestValidatePort(t *testing.T) {
+	type args struct {
+		port int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "test_ok1", args: args{port: 22}, want: true},
+		{name: "test_ko1", args: args{port: -1}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ValidatePort(tt.args.port); got != tt.want {
+				t.Errorf("ValidatePort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
