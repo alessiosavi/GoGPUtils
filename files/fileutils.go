@@ -243,9 +243,9 @@ func VerifyFilesExists(filePath string, files []string) bool {
 	return false
 }
 
-// CountLinesFile return the number of lines in the given file
+// CountLines return the number of lines in the given file
 // If called with an empty separator, new line will be used as default
-func CountLinesFile(fileName, separator string, bufferLength int) (int, error) {
+func CountLines(fileName, separator string, bufferLength int) (int, error) {
 	var lineSep []byte
 	var buf []byte
 	var count int
@@ -263,6 +263,8 @@ func CountLinesFile(fileName, separator string, bufferLength int) (int, error) {
 	count = 0
 	if separator == "" {
 		lineSep = []byte{'\n'}
+	} else {
+		lineSep = []byte(separator)
 	}
 
 	r := bufio.NewReader(file)

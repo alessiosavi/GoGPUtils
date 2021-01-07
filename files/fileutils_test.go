@@ -13,13 +13,13 @@ const dante string = `../testdata/files/dante.txt`
 
 func TestCountLinesFile(t *testing.T) {
 	file := `../testdata/files/test1.txt`
-	lines, err := CountLinesFile(file, "", -1)
+	lines, err := CountLines(file, "", -1)
 	if err != nil || lines != 112 {
 		t.Log(err)
 		t.Fail()
 	}
 
-	_, err = CountLinesFile(file+"test", "", -1)
+	_, err = CountLines(file+"test", "", -1)
 	if err == nil {
 		t.Log(err)
 		t.Fail()
@@ -28,7 +28,7 @@ func TestCountLinesFile(t *testing.T) {
 
 func BenchmarkCountLinesFile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, err := CountLinesFile(dante, "", -1)
+		_, err := CountLines(dante, "", -1)
 		if err != nil {
 			b.Fail()
 		}
