@@ -263,11 +263,13 @@ func Trim(str string) string {
 	}
 	var data string = b.String()
 
-	if data[0] == 32 {
-		data = data[1:]
-	}
-	if data[len(data)-1] == 32 {
-		data = data[:len(data)-1]
+	if len(data) > 0 {
+		if data[0] == 32 {
+			data = data[1:]
+		}
+		if data[len(data)-1] == 32 {
+			data = data[:len(data)-1]
+		}
 	}
 	return data
 }
