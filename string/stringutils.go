@@ -241,8 +241,8 @@ func IsBlank(str string) bool {
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
 // It also convert every new line in a space
 func Trim(str string) string {
-	if len(str) == 0 {
-		return ""
+	if str == "" {
+		return str
 	}
 	var b strings.Builder
 	replacer := strings.NewReplacer("\\n", "", "\\r", "", "\\t", "")
