@@ -241,12 +241,15 @@ func IsBlank(str string) bool {
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
 // It also convert every new line in a space
 func Trim(str string) string {
+	if len(str) == 0 {
+		return ""
+	}
 	var b strings.Builder
 	replacer := strings.NewReplacer("\\n", "", "\\r", "", "\\t", "")
 	str = replacer.Replace(str)
 	b.Grow(len(str))
-	length := len(str)
-	for i := 0; i < length; i++ {
+
+	for i := 0; i < len(str); i++ {
 		// Write character
 		if str[i] > 32 {
 			b.WriteByte(str[i])
@@ -254,18 +257,17 @@ func Trim(str string) string {
 		} else if str[i] == 10 {
 			b.WriteByte(32)
 			// Print the space only if followed by an ASCII character
-		} else if i+1 < length && (str[i] < 33 && str[i+1] > 32) {
+		} else if i+1 < len(str) && (str[i] < 33 && str[i+1] > 32) {
 			b.WriteByte(str[i])
 		}
 	}
 	var data string = b.String()
-	length = len(data)
+
 	if data[0] == 32 {
 		data = data[1:]
-		length--
 	}
-	if data[length-1] == 32 {
-		data = data[:length-1]
+	if data[len(data)-1] == 32 {
+		data = data[:len(data)-1]
 	}
 	return data
 }
