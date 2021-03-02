@@ -83,3 +83,86 @@ func TestGetObject(t *testing.T) {
 		})
 	}
 }
+
+func TestCopyObject(t *testing.T) {
+	type args struct {
+		bucket       string
+		bucketTarget string
+		key          string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				bucket:       "my-bucket-test-s3",
+				bucketTarget: "my-bucket-test-s3-copy",
+				key:          "covid.csv",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CopyObject(tt.args.bucket, tt.args.bucketTarget, tt.args.key); (err != nil) != tt.wantErr {
+				t.Errorf("CopyObject() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestObjectExists(t *testing.T) {
+	type args struct {
+		bucket string
+		key    string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				bucket: "my-bucket-test-s3",
+				key:    "covid.csv",
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "ko1",
+			args: args{
+				bucket: "my-bucket-test-s3",
+				key:    "this-file-does-not-exists",
+			},
+			want:    false,
+			wantErr: true,
+		},
+		{
+			name: "ko2",
+			args: args{
+				bucket: "this-bucket-does-not-exists",
+				key:    "this-file-does-not-exists",
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ObjectExists(tt.args.bucket, tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ObjectExists() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ObjectExists() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

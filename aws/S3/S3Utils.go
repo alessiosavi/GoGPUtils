@@ -6,6 +6,8 @@ import (
 	"crypto/md5"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path"
 )
 import "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 import "github.com/aws/aws-sdk-go-v2/aws"
@@ -22,7 +24,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(fileName)})
+		Key:    aws.String(url.PathEscape(fileName))})
 
 	if err != nil {
 		return nil, err
@@ -55,7 +57,7 @@ func PutObject(bucket, filename string, data []byte) error {
 
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
-		Key:             aws.String(filename),
+		Key:             aws.String(url.PathEscape(filename)),
 		Body:            ioutil.NopCloser(bytes.NewReader(data)),
 		ContentEncoding: encoding,
 		ContentMD5:      aws.String(string(sum)),
@@ -81,4 +83,34 @@ func ListBucketObject(bucket string) ([]string, error) {
 		buckets[i] = *bucketName.Key
 	}
 	return buckets, nil
+}
+
+func CopyObject(bucket, bucketTarget, key string) error {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return err
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+
+	if _, err = S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
+		Bucket:     aws.String(bucketTarget),
+		CopySource: aws.String(url.PathEscape(path.Join(bucket, key))),
+		Key:        aws.String(key),
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ObjectExists(bucket, key string) (bool, error) {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return false, nil
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+
+	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(url.PathEscape(key))}); err != nil {
+		return false, err
+	}
+	return true, nil
 }
