@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -54,7 +53,7 @@ func PutObject(bucket, filename string, data []byte) error {
 
 	uploader := manager.NewUploader(S3Client)
 
-	object, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
+	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),
 		Body:            ioutil.NopCloser(bytes.NewReader(data)),
@@ -62,6 +61,24 @@ func PutObject(bucket, filename string, data []byte) error {
 		ContentMD5:      aws.String(string(sum)),
 		ContentType:     aws.String(contentType),
 	})
-	fmt.Printf("%+v\n", object)
 	return err
+}
+
+func ListBucketObject(bucket string) ([]string, error) {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+
+	objects, err := S3Client.ListObjects(context.Background(), &s3.ListObjectsInput{Bucket: aws.String(bucket)})
+	if err != nil {
+		return nil, err
+	}
+	var buckets = make([]string, len(objects.Contents))
+
+	for i, bucketName := range objects.Contents {
+		buckets[i] = *bucketName.Key
+	}
+	return buckets, nil
 }
