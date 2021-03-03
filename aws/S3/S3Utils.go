@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"path"
 )
 import "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -24,7 +24,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(url.PathEscape(fileName))})
+		Key:    aws.String(fileName)})
 
 	if err != nil {
 		return nil, err
@@ -46,6 +46,7 @@ func PutObject(bucket, filename string, data []byte) error {
 	if _, err := h.Write(data); err != nil {
 		sum = h.Sum(nil)
 	}
+	_, filename = path.Split(filename)
 	contentType := http.DetectContentType(data)
 	_, enc, ok := charset.DetermineEncoding(data, contentType)
 	var encoding *string = nil
@@ -55,13 +56,34 @@ func PutObject(bucket, filename string, data []byte) error {
 
 	uploader := manager.NewUploader(S3Client)
 
+	_, filename = path.Split(filename)
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
-		Key:             aws.String(url.PathEscape(filename)),
+		Key:             aws.String(filename),
 		Body:            ioutil.NopCloser(bytes.NewReader(data)),
 		ContentEncoding: encoding,
 		ContentMD5:      aws.String(string(sum)),
 		ContentType:     aws.String(contentType),
+	})
+	return err
+}
+
+func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return err
+	}
+
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	uploader := manager.NewUploader(S3Client)
+	_, filename = path.Split(filename)
+	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
+		Bucket:          aws.String(bucket),
+		Key:             aws.String(filename),
+		Body:            stream,
+		ContentEncoding: encoding,
+		ContentMD5:      md5,
+		ContentType:     contentType,
 	})
 	return err
 }
@@ -94,7 +116,7 @@ func CopyObject(bucket, bucketTarget, key string) error {
 
 	if _, err = S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
 		Bucket:     aws.String(bucketTarget),
-		CopySource: aws.String(url.PathEscape(path.Join(bucket, key))),
+		CopySource: aws.String(path.Join(bucket, key)),
 		Key:        aws.String(key),
 	}); err != nil {
 		return err
@@ -109,7 +131,7 @@ func ObjectExists(bucket, key string) (bool, error) {
 	}
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 
-	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(url.PathEscape(key))}); err != nil {
+	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
 		return false, err
 	}
 	return true, nil

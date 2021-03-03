@@ -11,6 +11,8 @@ import (
 func ReadCsv(buf []byte, separator rune) ([]string, [][]string) {
 	csvReader := csv.NewReader(bytes.NewReader(buf))
 	csvReader.Comma = separator
+	csvReader.LazyQuotes = true
+	csvReader.TrimLeadingSpace = true
 	csvData, err := csvReader.ReadAll()
 	if err != nil {
 		panic(err)

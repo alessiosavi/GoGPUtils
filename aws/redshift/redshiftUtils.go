@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
 )
