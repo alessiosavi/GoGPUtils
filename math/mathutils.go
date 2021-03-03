@@ -184,7 +184,7 @@ func MaxFloat64Index(array []float64) int {
 // ModeInt is delegated to calculate the mode of the given array
 func ModeInt(array []int) []int {
 	// Save the number of occurrence for every number of the array
-	var mode map[int]int = make(map[int]int)
+	var mode = make(map[int]int)
 	for i := range array {
 		mode[array[i]]++
 	}
@@ -208,7 +208,7 @@ func ModeInt(array []int) []int {
 
 // MedianInt is delegated to calculate the median for the given INT array
 func MedianInt(arr []int) float64 {
-	var array []int = make([]int, len(arr))
+	var array = make([]int, len(arr))
 	// Avoid to modify the input array
 	copy(array, arr)
 	sort.Ints(array)
@@ -260,7 +260,7 @@ func StandardDeviationFloat64(array []float64) float64 {
 	// 2. Subtract every terms for the average and square the result. Sum every terms
 	var sum float64
 	for i := range array {
-		sum += math.Pow(float64(array[i])-mean, 2)
+		sum += math.Pow(array[i]-mean, 2)
 	}
 	// 3. Multiplying by 1/N (divide for N)
 	sum /= float64(len(array))
@@ -325,7 +325,7 @@ func CorrelationInt(arr1, arr2 []int) float64 {
 	avg2 := AverageInt(arr2)
 
 	var sum float64
-	var sum1, sum2 []float64 = make([]float64, len(arr1)), make([]float64, len(arr2))
+	var sum1, sum2 = make([]float64, len(arr1)), make([]float64, len(arr2))
 	for i := range arr1 {
 		sum1[i] = float64(arr1[i]) - avg1
 		sum2[i] = float64(arr2[i]) - avg2
@@ -649,7 +649,7 @@ func GenerateFibonacci(max int64) []int64 {
 	// Hardcoded for enhance for performance
 	array = append(array, 1, 1, 2)
 	i := 3
-	var value int64 = array[i-1] + array[i-2]
+	var value = array[i-1] + array[i-2]
 	for value < max {
 		array = append(array, value)
 		i++
@@ -706,7 +706,7 @@ func FindDivisor(n int) []int {
 // PadArray is delegated to return a new padded array with length n
 func PadArray(array []int, n int) []int {
 	var result []int
-	var length int = len(array)
+	var length = len(array)
 	if n != length {
 		result = make([]int, n-length)
 		for i := 0; i < n-length; i++ {
@@ -738,7 +738,7 @@ func SortMaxIndex(array []int) []int {
 	var (
 		result, additional []int
 		index, value       int
-		arrayCopy          []int = make([]int, len(array))
+		arrayCopy          = make([]int, len(array))
 	)
 	copy(arrayCopy, array)
 	for len(array) > 0 {

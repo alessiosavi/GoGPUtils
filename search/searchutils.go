@@ -3,15 +3,15 @@ package searchutils
 import (
 	"sync"
 
-	ahocorasick "github.com/alessiosavi/ahocorasick"
+	"github.com/alessiosavi/ahocorasick"
 )
 
 // LinearSearchParallelInt is delegated to parallelize the execution of search method
 func LinearSearchParallelInt(data []int, target int, thread int) int {
 	var (
-		length      int = len(data)
-		dataXThread int = length / thread
-		oddment     int = length % thread
+		length      = len(data)
+		dataXThread = length / thread
+		oddment     = length % thread
 		found       int
 		wg          sync.WaitGroup
 		result      []int

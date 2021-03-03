@@ -210,7 +210,7 @@ func TestLevenshteinDistanceLegacy(t *testing.T) {
 }
 
 func TestJaroDistance(t *testing.T) {
-	var str1, str2 string = "MARTHA", "MARHTA"
+	var str1, str2 = "MARTHA", "MARHTA"
 	t.Log(JaroDistance(str1, str2))
 }
 

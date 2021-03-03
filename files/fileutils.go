@@ -23,9 +23,9 @@ import (
 // NOTE: buffer have to be lesser than the minimum string length
 func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error) {
 	// list of strings readed
-	var stringsArray []string = make([]string, N_STRING)
+	var stringsArray = make([]string, N_STRING)
 	// Contains the data
-	var buff []byte = make([]byte, -BUFF_BYTE)
+	var buff = make([]byte, -BUFF_BYTE)
 
 	if !(START_POS >= 0 && START_POS <= 2) {
 		log.Fatal("Wrong argument for Seek ...")
@@ -50,7 +50,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error)
 		nByte        int    // Number of byte readed
 		stringBuffer string // Contains the string until we don't found the new line
 		iteration    int64  = 1
-		n            int64  = -BUFF_BYTE // Just for pass the first check
+		n                   = -BUFF_BYTE // Just for pass the first check
 		lastPosition int64
 	)
 
@@ -179,7 +179,7 @@ func GetFileDate(filepath string) string {
 
 // ListFile is delegated to find the files from the given directory, recursively for each dir
 func ListFile(path string) []string {
-	fileList := []string{}
+	var fileList []string
 	// Read all the file recursively
 	err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 		if IsFile(file) {
@@ -196,7 +196,7 @@ func ListFile(path string) []string {
 
 // FindFiles is delegated to find the files from the given directory, recursively for each dir, and extract only the one that match the input
 func FindFiles(path, target string, caseSensitive bool) []string {
-	fileList := []string{}
+	var fileList []string
 	if caseSensitive {
 		// Read all the file recursively, taking care about the case of the string
 		err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
@@ -416,7 +416,7 @@ func ExtractWordFromFile(filename string) map[string]int {
 	}
 
 	scanner := bufio.NewScanner(file)
-	var words map[string]int = make(map[string]int)
+	var words = make(map[string]int)
 	var sb strings.Builder
 	for scanner.Scan() {
 		line := scanner.Text()

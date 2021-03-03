@@ -133,7 +133,7 @@ func Test_MultipleInsertLeft(t *testing.T) {
 
 func Test_VisitPreOrder(t *testing.T) {
 
-	var tree Tree = initTestTree()
+	var tree = initTestTree()
 	res := tree.VisitPreOrder()
 	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] < res[j] }) {
 		t.Error("Slice is not sorted!", res)
@@ -142,7 +142,7 @@ func Test_VisitPreOrder(t *testing.T) {
 }
 
 func Test_VisitInOrder(t *testing.T) {
-	var tree Tree = initTestTree()
+	var tree = initTestTree()
 	res := tree.VisitInOrder()
 	t.Logf("InOrder: %v\n", res)
 
@@ -155,7 +155,7 @@ func Test_VisitInOrder(t *testing.T) {
 
 func Test_VisitPostOrder(t *testing.T) {
 
-	var tree Tree = initTestTree()
+	var tree = initTestTree()
 	res := tree.VisitPostOrder()
 	if !sort.SliceIsSorted(res, func(i, j int) bool { return res[i] > res[j] }) {
 		t.Error("Slice is not sorted!", res)
@@ -164,7 +164,7 @@ func Test_VisitPostOrder(t *testing.T) {
 }
 
 func Test_Remove(t *testing.T) {
-	var tree Tree = initTestTree()
+	var tree = initTestTree()
 	value := 25
 
 	res := tree.VisitPreOrder()

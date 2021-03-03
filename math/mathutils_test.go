@@ -10,9 +10,9 @@ import (
 
 const total int = 1000
 
-var prime []int = []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199}
+var prime = []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199}
 
-var randomizer helper.RandomGenerator = helper.InitRandomizer()
+var randomizer = helper.InitRandomizer()
 
 func TestInitInitArray(t *testing.T) {
 	array := InitIntArray(10, 1)
@@ -270,12 +270,12 @@ func TestSumArrays(t *testing.T) {
 	t.Log(SumArrays(array1, array2))
 }
 func TestSortMaxIndex(t *testing.T) {
-	var array1 []int = []int{1, 2, 3, 4, 5, 6, 7}
-	var result1 []int = []int{6, 5, 4, 3, 2, 1, 0}
-	var array2 []int = []int{7, 6, 5, 4, 3, 2, 1}
-	var result2 []int = []int{0, 1, 2, 3, 4, 5, 6}
-	var array3 []int = []int{1, 9, 9, 2, 10, 3}
-	var result3 []int = []int{4, 1, 2, 5, 3, 0}
+	var array1 = []int{1, 2, 3, 4, 5, 6, 7}
+	var result1 = []int{6, 5, 4, 3, 2, 1, 0}
+	var array2 = []int{7, 6, 5, 4, 3, 2, 1}
+	var result2 = []int{0, 1, 2, 3, 4, 5, 6}
+	var array3 = []int{1, 9, 9, 2, 10, 3}
+	var result3 = []int{4, 1, 2, 5, 3, 0}
 	if !reflect.DeepEqual(SortMaxIndex(array1), result1) {
 		t.Error("Error on [", array1, "]")
 	}
@@ -288,7 +288,7 @@ func TestSortMaxIndex(t *testing.T) {
 }
 
 func TestFindIndexValue(t *testing.T) {
-	var array []int = []int{1, 2, 3, 4, 5, 6, 6, 7}
+	var array = []int{1, 2, 3, 4, 5, 6, 6, 7}
 	t.Log(FindIndexValue(array, 6))
 }
 
@@ -310,8 +310,8 @@ func BenchmarkCosineSimilarity(t *testing.B) {
 }
 
 func TestManhattanDistance(t *testing.T) {
-	var x []float64 = []float64{1, 2, 3}
-	var y []float64 = []float64{2, 4, 6}
+	var x = []float64{1, 2, 3}
+	var y = []float64{2, 4, 6}
 	taxiNorm := ManhattanDistance(x, y)
 	if taxiNorm != 6 {
 		t.Error(taxiNorm)
@@ -319,8 +319,8 @@ func TestManhattanDistance(t *testing.T) {
 }
 
 func TestEuclideanDistance(t *testing.T) {
-	var x []float64 = []float64{1, 2, 3}
-	var y []float64 = []float64{2, 4, 6}
+	var x = []float64{1, 2, 3}
+	var y = []float64{2, 4, 6}
 	distance := EuclideanDistance(x, y)
 	if !(distance > 3.741 && distance < 3.742) {
 		t.Error(distance)

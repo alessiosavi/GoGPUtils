@@ -156,9 +156,9 @@ func (n *Node) height() int {
 	rheight := n.Right.height()
 
 	if lheight > rheight {
-		return (lheight + 1)
+		return lheight + 1
 	}
-	return (rheight + 1)
+	return rheight + 1
 }
 
 /* Function to print level

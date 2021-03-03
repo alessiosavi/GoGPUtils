@@ -3,7 +3,6 @@ language: go
 os:
   - linux
   - osx
-  - windows
 # You don't need to test on very old versions of the Go compiler. It's the user's
 # responsibility to keep their compiler up to date.
 go:
@@ -24,6 +23,7 @@ notifications:
 script:
   - go clean
   - go build
+  - go get -u golang.org/x/tools/cmd/benchcmp
   - go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v aws`  # Run all the tests with the race detector enabled
   - go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt # Run all the benchmark for 5s and print memory information
   - benchcmp bench_old.txt new.txt

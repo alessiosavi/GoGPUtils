@@ -261,7 +261,7 @@ func Trim(str string) string {
 			b.WriteByte(str[i])
 		}
 	}
-	var data string = b.String()
+	var data = b.String()
 
 	if len(data) > 0 {
 		if data[0] == 32 {
@@ -355,15 +355,15 @@ func LevenshteinDistanceLegacy(str1, str2 string) int {
 
 // LevenshteinDistance is an optimized version for calculate the levenstein distance
 func LevenshteinDistance(str1, str2 string) int {
-	var n, m int = len(str1), len(str2)
+	var n, m = len(str1), len(str2)
 	if n == 0 {
 		return m
 	} else if m == 0 {
 		return n
 	}
 
-	var p []int = make([]int, n+1)
-	var d []int = make([]int, n+1)
+	var p = make([]int, n+1)
+	var d = make([]int, n+1)
 
 	var i, j, cost int
 	var t_j byte
@@ -473,7 +473,7 @@ func DiceCoefficient(string1, string2 string) float64 {
 	}
 
 	var matches float64 = 0
-	var i, j int = 0, 0
+	var i, j = 0, 0
 
 	//get bigrams and compare
 	for i < strlen1 && j < strlen2 {
