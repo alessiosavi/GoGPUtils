@@ -2,8 +2,11 @@ package redshift
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"io/ioutil"
+	"log"
 )
 
 type Conf struct {
@@ -15,7 +18,6 @@ type Conf struct {
 }
 
 func (c *Conf) Validate() error {
-
 	if stringutils.IsBlank(c.Username) {
 		return fmt.Errorf("username is empty:[%+v]", *c)
 	}
@@ -33,6 +35,27 @@ func (c *Conf) Validate() error {
 	}
 	return nil
 }
+
+func (c *Conf) Load(confFile string) error {
+	data, err := ioutil.ReadFile(confFile)
+	if err != nil {
+		panic(err)
+	}
+	if err = json.Unmarshal(data, &c); err != nil {
+		panic(err)
+	}
+	if err = c.Validate(); err != nil {
+		indent, err := json.MarshalIndent(c, " ", "  ")
+		if err != nil {
+			log.Printf("%+v\n", c.Validate())
+		} else {
+			log.Println(string(indent))
+		}
+		return err
+	}
+	return nil
+}
+
 func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 	var err error
 	var db *sql.DB = nil

@@ -9,7 +9,7 @@ import (
 func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	var (
 		newArray []string
-		toAdd    bool = true
+		toAdd    = true
 	)
 
 	if len(j) == 0 {
@@ -80,7 +80,7 @@ func JoinInts(ints []int, delimiter string) string {
 
 // ReverseArrayInt is delegated to return the inverse rappresentation of the array
 func ReverseArrayInt(n1 []int) []int {
-	var result []int = make([]int, len(n1))
+	var result = make([]int, len(n1))
 	for i := len(n1) - 1; i >= 0; i-- {
 		v := n1[i]
 		j := len(n1) - 1 - i
@@ -91,7 +91,7 @@ func ReverseArrayInt(n1 []int) []int {
 
 // ReverseArrayString is delegated to return the inverse rappresentation of the array
 func ReverseArrayString(n1 []string) []string {
-	var result []string = make([]string, len(n1))
+	var result = make([]string, len(n1))
 	for i := len(n1) - 1; i >= 0; i-- {
 		v := n1[i]
 		j := len(n1) - 1 - i
