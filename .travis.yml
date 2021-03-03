@@ -7,8 +7,8 @@ os:
 # You don't need to test on very old versions of the Go compiler. It's the user's
 # responsibility to keep their compiler up to date.
 go:
-  - 1.13.x
-  - 1.12.x
+  - 1.15.x
+  - 1.16.x
 
 # Only clone the most recent commit.
 git:
@@ -24,6 +24,6 @@ notifications:
 script:
   - go clean
   - go build
-  - go test -race -coverprofile=coverage.txt -covermode=atomic ./...  # Run all the tests with the race detector enabled
-  - go test -bench=. -benchmem ./... -benchtime=5s > bench_new.txt # Run all the benchmark for 5s and print memory information
+  - go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v aws`  # Run all the tests with the race detector enabled
+  - go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt # Run all the benchmark for 5s and print memory information
   - benchcmp bench_old.txt new.txt

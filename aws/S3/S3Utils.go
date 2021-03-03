@@ -114,3 +114,18 @@ func ObjectExists(bucket, key string) (bool, error) {
 	}
 	return true, nil
 }
+
+func SyncBucket(bucket string, bucketsTarget []string) error {
+	objects, err := ListBucketObject(bucket)
+	if err != nil {
+		panic(err)
+	}
+	for _, object := range objects {
+		for _, bucketTarget := range bucketsTarget {
+			if err = CopyObject(bucket, bucketTarget, object); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
