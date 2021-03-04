@@ -24,7 +24,5 @@ script:
   - go build
   - go mod download golang.org/x/tools
   - go install golang.org/x/tools/cmd/benchcmp
-  - go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v aws`  # Run all the tests with the race detector enabled
-  - go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt # Run all the benchmark for 5s and print memory information
-  - benchcmp bench_old.txt new.txt
-  - cat bench_new.txt
+  - go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v aws`; cat coverage.txt  # Run all the tests with the race detector enabled
+  - go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt; cat bench_new.txt # Run all the benchmark for 5s and print memory information

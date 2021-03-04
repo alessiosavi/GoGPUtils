@@ -27,3 +27,6 @@ jobs:
 
       - name: Test
         run: go test -race -covermode=atomic `go list ./... | grep -v aws`
+
+      - name: Benchmark
+        run: go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt ;  cat bench_new.txt
