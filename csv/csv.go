@@ -20,11 +20,9 @@ func ReadCsv(buf []byte, separator rune) ([]string, [][]string) {
 
 	headers := csvData[0]
 	// Remove the headers from the row data
-	for k := 0; k < len(csvData)-1; k++ {
-		csvData[k] = csvData[k+1]
-	}
+	csvData = csvData[1:]
 	// Remove the latest element due to headers shift
-	return headers, csvData[:len(csvData)-1]
+	return headers, csvData
 }
 func WriteCsv(headers []string, records [][]string, separator rune) []byte {
 	var buff bytes.Buffer

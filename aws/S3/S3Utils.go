@@ -46,7 +46,7 @@ func PutObject(bucket, filename string, data []byte) error {
 	if _, err := h.Write(data); err != nil {
 		sum = h.Sum(nil)
 	}
-	_, filename = path.Split(filename)
+
 	contentType := http.DetectContentType(data)
 	_, enc, ok := charset.DetermineEncoding(data, contentType)
 	var encoding *string = nil
@@ -56,7 +56,6 @@ func PutObject(bucket, filename string, data []byte) error {
 
 	uploader := manager.NewUploader(S3Client)
 
-	_, filename = path.Split(filename)
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),
@@ -76,7 +75,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	uploader := manager.NewUploader(S3Client)
-	_, filename = path.Split(filename)
+
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),

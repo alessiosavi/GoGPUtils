@@ -17,6 +17,7 @@ const (
 	ND   LineTerminatorType = `unable to detect line terminator`
 )
 
+// FIXME: Select the line terminator by reading all the file and finding the one that occurs more time
 func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 	buff := make([]byte, 1024*10)
 
@@ -44,4 +45,15 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 			return RS, nil
 		}
 	}
+}
+
+// ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
+func ReplaceLineTerminator(data, newLineTerminator []byte) ([]byte, error) {
+	terminator, err := DetectLineTerminator(bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	newData := bytes.ReplaceAll(data, []byte(terminator), newLineTerminator)
+	newData = bytes.TrimSpace(newData)
+	return bytes.Trim(newData, string(newLineTerminator)), nil
 }
