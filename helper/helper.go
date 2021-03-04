@@ -21,34 +21,27 @@ func InitRandomizer() RandomGenerator {
 	return random
 }
 
-// Check is a helper function which streamlines error checking
-func Check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt(min, max int) int {
 	return rander.randomizer.Intn(max-min) + min
 }
 
-// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt32(min, max int32) int32 {
 	return rander.randomizer.Int31n(max-min) + min
 }
 
-// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt64(min, max int64) int64 {
 	return rander.randomizer.Int63n(max-min) + min
 }
 
-// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+// RandomFloat32 initialize a new seed using the UNIX Nano time and return a float32 between the 2 input value
 func (rander RandomGenerator) RandomFloat32(min, max float32) float32 {
 	return min + rander.randomizer.Float32()*(max-min)
 }
 
-// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+// RandomFloat64 initialize a new seed using the UNIX Nano time and return a float64 between the 2 input value
 func (rander RandomGenerator) RandomFloat64(min, max float64) float64 {
 	return min + rander.randomizer.Float64()*(max-min)
 }
@@ -98,31 +91,39 @@ func (rander RandomGenerator) RandomFloat64Array(min, max float64, len int) []fl
 	return array
 }
 
-// RandomInt initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomByte is delegated to generate a byte array with the given input length
+func RandomByte(length int) []byte {
+	data := make([]byte, length)
+	rand.Read(data)
+	return data
+
+}
+
+// RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
-// RandomInt32 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt32(min, max int32) int32 {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Int31n(max-min) + min
 }
 
-// RandomInt64 initalizate a new seed using the UNIX Nano time and return an integer between the 2 input value
+// RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt64(min, max int64) int64 {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Int63n(max-min) + min
 }
 
-// RandomFloat64 initalizate a new seed using the UNIX Nano time and return a float64 between the 2 input value
+// RandomFloat64 initialize a new seed using the UNIX Nano time and return a float64 between the 2 input value
 func RandomFloat64(min, max float64) float64 {
 	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float64()*(max-min)
 }
 
-// RandomFloat32 initalizate a new seed using the UNIX Nano time and return a float32 between the 2 input value
+// RandomFloat32 initialize a new seed using the UNIX Nano time and return a float32 between the 2 input value
 func RandomFloat32(min, max float32) float32 {
 	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float32()*(max-min)
@@ -176,28 +177,6 @@ func ByteCountIEC(b int64) string {
 	}
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
-}
-
-// RecognizeFormat is delegated to valutate the extension and return the properly Mimetype by a given format type
-// reurn: (Mimetype http compliant,Content-Disposition header value)
-func RecognizeFormat(input string) (string, string) {
-	// Find the last occurrence of the dot
-	// extract only the extension of the file by slicing the string
-	var contentDisposition string
-	var mimeType string
-	contentDisposition = `inline; filename="` + input + `"`
-	switch input[strings.LastIndex(input, ".")+1:] {
-	case "doc":
-		mimeType = "application/msword"
-	case "docx":
-		mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-	case "pdf":
-		mimeType = "application/pdf"
-	default:
-		mimeType = "application/octet-stream"
-		contentDisposition = `inline; filename="` + input + `"`
-	}
-	return mimeType, contentDisposition
 }
 
 // ConvertSize is delegated to return the dimension related to the input byte size

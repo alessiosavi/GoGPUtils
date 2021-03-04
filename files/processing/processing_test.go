@@ -1,7 +1,9 @@
 package processing
 
 import (
+	"bytes"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"os"
 	"testing"
 )
@@ -20,4 +22,24 @@ func TestDetectCarriageReturn(t *testing.T) {
 		}
 		t.Logf("File %s: %x\n", f, carriageReturn)
 	}
+}
+
+func TestCR(t *testing.T) {
+	fakeCrs := generateFakeDataLineTerminator(CR)
+	terminator, err := ReplaceLineTerminator(fakeCrs, []byte(LF))
+	if err != nil {
+		t.Error(err)
+	}
+	if bytes.Contains(terminator, []byte(CR)) {
+		t.Fail()
+	}
+}
+
+func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
+	var fakeDataCR []byte
+	for i := 0; i < 100; i++ {
+		fakeDataCR = append(fakeDataCR, helper.RandomByte(255)...)
+		fakeDataCR = append(fakeDataCR, []byte(terminator)...)
+	}
+	return fakeDataCR
 }

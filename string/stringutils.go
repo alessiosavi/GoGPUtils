@@ -507,3 +507,10 @@ func JoinSeparator(sep string, strs ...string) string {
 	data := sb.String()
 	return data[:len(data)-len(sep)]
 }
+
+func GetFirstRune(data string) rune {
+	for _, c := range data {
+		return c
+	}
+	return 0
+}

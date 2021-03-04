@@ -1,9 +1,11 @@
 package processing
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
+	"io/ioutil"
 )
 
 type LineTerminatorType string
@@ -54,6 +56,26 @@ func ReplaceLineTerminator(data, newLineTerminator []byte) ([]byte, error) {
 		return nil, err
 	}
 	newData := bytes.ReplaceAll(data, []byte(terminator), newLineTerminator)
+	newData = bytes.TrimSpace(newData)
+	return bytes.Trim(newData, string(newLineTerminator)), nil
+}
+
+// ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
+func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []byte) ([]byte, error) {
+
+	terminator, err := DetectLineTerminator(bufio.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	// Read all the file
+	newData, err := ioutil.ReadAll(data)
+	if err != nil {
+		return nil, err
+	}
+	// Reset to the start of the file
+	data.Seek(0, io.SeekStart)
+	newData = bytes.ReplaceAll(newData, []byte(terminator), newLineTerminator)
 	newData = bytes.TrimSpace(newData)
 	return bytes.Trim(newData, string(newLineTerminator)), nil
 }
