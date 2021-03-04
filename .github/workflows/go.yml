@@ -27,9 +27,3 @@ jobs:
 
       - name: Test
         run: go test -race -covermode=atomic `go list ./... | grep -v aws`
-
-      - name: Install cob
-        run: curl -sfL https://raw.githubusercontent.com/knqyf263/cob/master/install.sh | sudo sh -s -- -b /usr/local/bin
-
-      - name: Run Benchmark
-        run: cob

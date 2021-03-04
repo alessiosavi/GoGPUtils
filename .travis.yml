@@ -6,7 +6,6 @@ os:
 # You don't need to test on very old versions of the Go compiler. It's the user's
 # responsibility to keep their compiler up to date.
 go:
-  - 1.15.x
   - 1.16.x
 
 # Only clone the most recent commit.
@@ -16,11 +15,6 @@ git:
 # Don't email me the results of the test runs.
 notifications:
   email: false
-
-
-
-before_script:
-  - curl -sfL https://raw.githubusercontent.com/knqyf263/cob/master/install.sh | sudo sh -s -- -b /usr/local/bin
 
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
@@ -34,4 +28,3 @@ script:
   - go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws` > bench_new.txt # Run all the benchmark for 5s and print memory information
   - benchcmp bench_old.txt new.txt
   - cat bench_new.txt
-  - cob
