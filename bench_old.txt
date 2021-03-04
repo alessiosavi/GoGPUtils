@@ -1,0 +1,192 @@
+ok      github.com/alessiosavi/GoGPUtils/goutils        0.011s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/helper
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkRandomIntn-8                     870757              6916 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomInt32-8                    882505              7027 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomInt64-8                    878916              6907 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomFloat32-8                  874807              6895 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomFloat64-8                  887563              6834 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomIntnR-8                  713714742                8.462 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomInt32R-8                 901416304                6.697 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomInt64R-8                 371426367               16.00 ns/op            0 B/op          0 allocs/op
+BenchmarkRandomFloat32R-8               1000000000               5.132 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomFloat64R-8               1000000000               5.508 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomIntnRArray-8               553015             10666 ns/op            8192 B/op          1 allocs/op
+BenchmarkRandomInt32RArray-8              709432              8382 ns/op            4096 B/op          1 allocs/op
+BenchmarkRandomInt64RArray-8              345655             17131 ns/op            8192 B/op          1 allocs/op
+BenchmarkRandomFloat32Array-8             925064              6527 ns/op            4096 B/op          1 allocs/op
+BenchmarkRandomFloat64RArray-8            827622              7179 ns/op            8192 B/op          1 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/helper 93.954s
+2021/03/05 00:21:43 Request data ->
+ GET / HTTP/1.1
+Host: localhost:44904
+Accept-Encoding: gzip
+User-Agent: Go-http-client/1.1
+
+
+PASS
+ok      github.com/alessiosavi/GoGPUtils/http   1.412s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/math
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkSumIntArray-8                          13485812               445.8 ns/op             0 B/op          0 allocs/op
+BenchmarkSumInt32Array-8                        13426503               447.0 ns/op             0 B/op          0 allocs/op
+BenchmarkSumInt64Array-8                        13431463               446.2 ns/op             0 B/op          0 allocs/op
+BenchmarkSumFloat32Array-8                       7060304               853.8 ns/op             0 B/op          0 allocs/op
+BenchmarkSumFloat64Array-8                       7040128               852.0 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxIntIndex-8                           7411839               814.6 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxInt32Index-8                         8940187               697.8 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxInt64Index-8                         7102568               825.0 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxFloat32Index-8                       7142695               820.1 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxFloat64Index-8
+C:\opt\SP\worksapce\Go\GoGPUtils>
+C:\opt\SP\worksapce\Go\GoGPUtils>
+C:\opt\SP\worksapce\Go\GoGPUtils>go run main.go -conf conf\AM\pricing_conf.json
+C:\opt\SP\worksapce\Go\GoGPUtils>esl
+'esl' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\opt\SP\worksapce\Go\GoGPUtils>wsl
+(base) alessiosavi@DESKTOP-OU8J0EF:/mnt/c/opt/SP/worksapce/Go/GoGPUtils$ ls^C
+(base) alessiosavi@DESKTOP-OU8J0EF:/mnt/c/opt/SP/worksapce/Go/GoGPUtils$ go test -bench=. -benchmem `go list ./... | grep -v aws`
+?       github.com/alessiosavi/GoGPUtils        [no test files]
+PASS
+ok      github.com/alessiosavi/GoGPUtils/array  0.008s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/byte
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkTestIsUpperByteOK-8    348656090                3.417 ns/op           0 B/op          0 allocs/op
+BenchmarkTestIsLowerByteKO-8    350978072                3.432 ns/op           0 B/op          0 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/byte   3.183s
+PASS
+ok      github.com/alessiosavi/GoGPUtils/csv    0.003s
+PASS
+ok      github.com/alessiosavi/GoGPUtils/datastructure/binarytree       0.004s
+?       github.com/alessiosavi/GoGPUtils/datastructure/stack    [no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/files
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkCountLinesFile-8                    354           3465037 ns/op           37000 B/op          5 allocs/op
+BenchmarkListFile-8                            1        1357046000 ns/op         1793408 B/op       4338 allocs/op
+BenchmarkFindFilesSensitive-8                  1        1348766300 ns/op         1777072 B/op       4329 allocs/op
+BenchmarkFindFilesInsensitive-8                1        1225251800 ns/op         1777056 B/op       4329 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/files  9.473s
+PASS
+ok      github.com/alessiosavi/GoGPUtils/files/processing       0.009s
+PASS
+ok      github.com/alessiosavi/GoGPUtils/goutils        0.011s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/helper
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkRandomIntn-8                     175485              6857 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomInt32-8                    175726              6862 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomInt64-8                    175081              6845 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomFloat32-8                  175288              6847 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomFloat64-8                  171444              6825 ns/op               0 B/op          0 allocs/op
+BenchmarkRandomIntnR-8                  142508641                8.407 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomInt32R-8                 180193004                6.662 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomInt64R-8                 74392768                16.32 ns/op            0 B/op          0 allocs/op
+BenchmarkRandomFloat32R-8               235999431                5.306 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomFloat64R-8               216121628                5.515 ns/op           0 B/op          0 allocs/op
+BenchmarkRandomIntnRArray-8               107378             10868 ns/op            8192 B/op          1 allocs/op
+BenchmarkRandomInt32RArray-8              143842              8249 ns/op            4096 B/op          1 allocs/op
+BenchmarkRandomInt64RArray-8               67983             17724 ns/op            8192 B/op          1 allocs/op
+BenchmarkRandomFloat32Array-8             177145              6655 ns/op            4096 B/op          1 allocs/op
+BenchmarkRandomFloat64RArray-8            162525              7311 ns/op            8192 B/op          1 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/helper 21.507s
+2021/03/05 00:24:08 Request data ->
+ GET / HTTP/1.1
+Host: localhost:27110
+Accept-Encoding: gzip
+User-Agent: Go-http-client/1.1
+
+
+PASS
+ok      github.com/alessiosavi/GoGPUtils/http   1.411s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/math
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkSumIntArray-8                           2633640               452.5 ns/op             0 B/op          0 allocs/op
+BenchmarkSumInt32Array-8                         2663049               448.8 ns/op             0 B/op          0 allocs/op
+BenchmarkSumInt64Array-8                         2664639               453.6 ns/op             0 B/op          0 allocs/op
+BenchmarkSumFloat32Array-8                       1387230               859.9 ns/op             0 B/op          0 allocs/op
+BenchmarkSumFloat64Array-8                       1407025               861.0 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxIntIndex-8                           1507975               762.6 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxInt32Index-8                         1755849               688.1 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxInt64Index-8                         1449278               837.9 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxFloat32Index-8                       1530235               844.1 ns/op             0 B/op          0 allocs/op
+BenchmarkMaxFloat64Index-8                       1479139               861.0 ns/op             0 B/op          0 allocs/op
+BenchmarkAverageInt-8                            4170481               292.4 ns/op             0 B/op          0 allocs/op
+BenchmarkAverageInt32-8                          3492954               345.1 ns/op             0 B/op          0 allocs/op
+BenchmarkAverageInt64-8                          3480288               349.4 ns/op             0 B/op          0 allocs/op
+BenchmarkAverageFloat32-8                        1356048               864.5 ns/op             0 B/op          0 allocs/op
+BenchmarkAverageFloat64-8                        1402154               860.1 ns/op             0 B/op          0 allocs/op
+BenchmarkInitRandomMatrix-8                       139495              8521 ns/op            6352 B/op         13 allocs/op
+BenchmarkMultiplySumArray1000-8                   626493              2087 ns/op            8192 B/op          1 allocs/op
+BenchmarkMultiplyMatrixLegacy100x100-8               237           4993913 ns/op        18012312 B/op      20101 allocs/op
+BenchmarkMultiplyMatrix100x100-8                     847           1395675 ns/op           92288 B/op        101 allocs/op
+BenchmarkIsPrime-8                                433272              2652 ns/op               0 B/op          0 allocs/op
+BenchmarkCosineSimilarity-8                     11169710               106.7 ns/op             0 B/op          0 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/math   36.097s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/search
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkLinearSearchInt-8                 81620             14535 ns/op               0 B/op          0 allocs/op
+BenchmarkLinearSearchParallelInt-8      50154643                23.86 ns/op           16 B/op          1 allocs/op
+BenchmarkContainsStringByte-8             143653              8135 ns/op           22148 B/op         15 allocs/op
+BenchmarkContainsStringsByte-8             62781             18912 ns/op           58201 B/op         33 allocs/op
+BenchmarkContainsWhichStrings-8             1292            915355 ns/op           58706 B/op         36 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/search 6.496s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/string
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkLevenshteinDistanceLegacy-8          21          47904505 ns/op        51286025 B/op       2502 allocs/op
+BenchmarkLevenshteinDistance-8                93          12118282 ns/op           40960 B/op          2 allocs/op
+BenchmarkDiceCoefficient-8                 23378             51200 ns/op               0 B/op          0 allocs/op
+BenchmarkJaroDistance-8                     1144           1059384 ns/op            5376 B/op          2 allocs/op
+BenchmarkContainsOnlyLetter-8           75193152                15.70 ns/op            0 B/op          0 allocs/op
+BenchmarkRemoveFromString-8                 9193            121587 ns/op         1163272 B/op          2 allocs/op
+BenchmarkRandomString-8                    77544             15578 ns/op            5376 B/op          1 allocs/op
+BenchmarkExtractTextFromQuery-8               24          48326879 ns/op        21765019 B/op     102063 allocs/op
+BenchmarkCheckPresence-8                442060102                2.679 ns/op           0 B/op          0 allocs/op
+BenchmarkIsUpper-8                      385276156                3.118 ns/op           0 B/op          0 allocs/op
+BenchmarkIsLower-8                      382071182                3.089 ns/op           0 B/op          0 allocs/op
+BenchmarkRemoveWhiteSpace-8                  548           2201325 ns/op          581633 B/op          1 allocs/op
+BenchmarkIsASCII-8                      31069328                38.80 ns/op            0 B/op          0 allocs/op
+BenchmarkSplit-8                             896           1327058 ns/op         2446866 B/op      14363 allocs/op
+BenchmarkSplitBuiltin-8                     4345            282428 ns/op          319488 B/op          1 allocs/op
+BenchmarkExtractString-8                    2869            422527 ns/op               0 B/op          0 allocs/op
+BenchmarkRemoveNonASCII-8                    248           4809285 ns/op         1662985 B/op          3 allocs/op
+BenchmarkTestIsUpperOK-8                378151657                3.160 ns/op           0 B/op          0 allocs/op
+BenchmarkTestIsLowerOK-8                381615178                3.162 ns/op           0 B/op          0 allocs/op
+BenchmarkCreateJSON-8                          2         524963850 ns/op        3096440600 B/op     9975 allocs/op
+BenchmarkJoin-8                             2101            563151 ns/op         2931699 B/op         30 allocs/op
+BenchmarkTrim-8                              454           2633661 ns/op         1745826 B/op         13 allocs/op
+BenchmarkRemoveDoubleWhiteSpace-8            483           2479221 ns/op          581635 B/op          1 allocs/op
+BenchmarkCountLines-8                       4966            239863 ns/op            4128 B/op          2 allocs/op
+BenchmarkReverseString-8                    1094           1093510 ns/op         2914314 B/op         32 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/string 34.562s
+goos: linux
+goarch: amd64
+pkg: github.com/alessiosavi/GoGPUtils/zip
+cpu: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz
+BenchmarkReadZipFile-8               714           1731380 ns/op            6304 B/op         27 allocs/op
+BenchmarkReadZip01-8                 696           1803121 ns/op            6640 B/op         29 allocs/op
+PASS
+ok      github.com/alessiosavi/GoGPUtils/zip    2.854s
