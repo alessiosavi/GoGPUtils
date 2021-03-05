@@ -148,7 +148,7 @@ func RemoveStringByIndex(slice []string, s int) []string {
 }
 
 // RemoveStrings is delegated to remove the input 'toRemove' value from the given slice
-func RemoveStrings(slice []string, toRemove []string) []string {
+func RemoveStrings(slice, toRemove []string) []string {
 	for i := 0; i < len(slice); i++ {
 		for j := 0; j < len(toRemove); j++ {
 			if slice[i] == toRemove[j] {

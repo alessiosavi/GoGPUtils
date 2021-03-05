@@ -7,7 +7,7 @@ import (
 )
 
 // LinearSearchParallelInt is delegated to parallelize the execution of search method
-func LinearSearchParallelInt(data []int, target int, thread int) int {
+func LinearSearchParallelInt(data []int, target, thread int) int {
 	var (
 		length      = len(data)
 		dataXThread = length / thread

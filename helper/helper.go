@@ -47,45 +47,45 @@ func (rander RandomGenerator) RandomFloat64(min, max float64) float64 {
 }
 
 // RandomIntArray return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomIntArray(min, max, len int) []int {
-	array := make([]int, len)
-	for i := 0; i < len; i++ {
+func (rander RandomGenerator) RandomIntArray(min, max, length int) []int {
+	array := make([]int, length)
+	for i := 0; i < length; i++ {
 		array[i] = rander.RandomInt(min, max)
 	}
 	return array
 }
 
 // RandomInt32Array return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomInt32Array(min, max int32, len int) []int32 {
-	array := make([]int32, len)
-	for i := 0; i < len; i++ {
+func (rander RandomGenerator) RandomInt32Array(min, max int32, length int) []int32 {
+	array := make([]int32, length)
+	for i := 0; i < length; i++ {
 		array[i] = rander.RandomInt32(min, max)
 	}
 	return array
 }
 
 // RandomInt64Array return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomInt64Array(min, max int64, len int) []int64 {
-	array := make([]int64, len)
-	for i := 0; i < len; i++ {
+func (rander RandomGenerator) RandomInt64Array(min, max int64, length int) []int64 {
+	array := make([]int64, length)
+	for i := 0; i < length; i++ {
 		array[i] = rander.RandomInt64(min, max)
 	}
 	return array
 }
 
 // RandomFloat32Array return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomFloat32Array(min, max float32, len int) []float32 {
-	array := make([]float32, len)
-	for i := 0; i < len; i++ {
+func (rander RandomGenerator) RandomFloat32Array(min, max float32, length int) []float32 {
+	array := make([]float32, length)
+	for i := 0; i < length; i++ {
 		array[i] = rander.RandomFloat32(min, max)
 	}
 	return array
 }
 
 // RandomFloat64Array return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomFloat64Array(min, max float64, len int) []float64 {
-	array := make([]float64, len)
-	for i := 0; i < len; i++ {
+func (rander RandomGenerator) RandomFloat64Array(min, max float64, length int) []float64 {
+	array := make([]float64, length)
+	for i := 0; i < length; i++ {
 		array[i] = rander.RandomFloat64(min, max)
 	}
 	return array

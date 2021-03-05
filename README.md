@@ -9,7 +9,7 @@ A simple Go general-purpose utility repository for avoid reinventing the wheel e
 ## Benchmark
 
 ```text
-$ go test -bench=. -benchmem ./... -benchtime=10s
+$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws`
 ?       github.com/alessiosavi/GoGPUtils        [no test files]
 PASS
 ok      github.com/alessiosavi/GoGPUtils/array  0.058s
