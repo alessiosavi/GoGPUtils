@@ -24,7 +24,7 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	// Remove the latest element due to headers shift
 	return headers, csvData, nil
 }
-func WriteCSB(headers []string, records [][]string, separator rune) ([]byte, error) {
+func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, error) {
 	var buff bytes.Buffer
 	writer := csv.NewWriter(&buff)
 	writer.Comma = separator
