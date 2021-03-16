@@ -34,6 +34,5 @@ func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, err
 	if err := writer.WriteAll(records); err != nil {
 		return nil, err
 	}
-
 	return bytes.TrimSuffix(buff.Bytes(), []byte("\n")), nil
 }

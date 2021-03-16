@@ -161,3 +161,13 @@ func RemoveStrings(slice, toRemove []string) []string {
 	}
 	return slice
 }
+
+// InStrings is delegated to verify if the given string arrays contains the target
+func InStrings(slice []string, target string) bool {
+	for _, element := range slice {
+		if element == target {
+			return true
+		}
+	}
+	return false
+}
