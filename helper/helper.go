@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -200,4 +201,20 @@ func ConvertSize(bytes float64, dimension string) float64 {
 		value = bytes / math.Pow(1000, 7)
 	}
 	return value
+}
+
+func Marshal(data interface{}) string {
+	if indent, err := json.Marshal(data); err == nil {
+		return string(indent)
+	} else {
+		return fmt.Sprintf("%+v\n", data)
+	}
+}
+
+func MarshalIndent(data interface{}) string {
+	if indent, err := json.MarshalIndent(data, " ", "  "); err == nil {
+		return string(indent)
+	} else {
+		return fmt.Sprintf("%+v\n", data)
+	}
 }

@@ -8,32 +8,32 @@ import (
 // ReadCsv is delegated to read into a CSV the content of the bytes in input
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
-func ReadCsv(buf []byte, separator rune) ([]string, [][]string) {
+func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	csvReader := csv.NewReader(bytes.NewReader(buf))
 	csvReader.Comma = separator
 	csvReader.LazyQuotes = true
 	csvReader.TrimLeadingSpace = true
 	csvData, err := csvReader.ReadAll()
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 
 	headers := csvData[0]
 	// Remove the headers from the row data
 	csvData = csvData[1:]
 	// Remove the latest element due to headers shift
-	return headers, csvData
+	return headers, csvData, nil
 }
-func WriteCsv(headers []string, records [][]string, separator rune) []byte {
+func WriteCSB(headers []string, records [][]string, separator rune) ([]byte, error) {
 	var buff bytes.Buffer
 	writer := csv.NewWriter(&buff)
 	writer.Comma = separator
 	if err := writer.Write(headers); err != nil {
-		panic(err)
+		return nil, err
 	}
 	if err := writer.WriteAll(records); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return bytes.TrimSuffix(buff.Bytes(), []byte("\n"))
+	return bytes.TrimSuffix(buff.Bytes(), []byte("\n")), nil
 }

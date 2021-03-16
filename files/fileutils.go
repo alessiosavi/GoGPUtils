@@ -178,9 +178,12 @@ func GetFileDate(filepath string) string {
 }
 
 // ListFile is delegated to find the files from the given directory, recursively for each dir
-func ListFile(path string) []string {
+func ListFile(path string) ([]string, error) {
 	var fileList []string
 	// Read all the file recursively
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
 	err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 		if IsFile(file) {
 			fileList = append(fileList, file)
@@ -188,10 +191,9 @@ func ListFile(path string) []string {
 		return nil
 	})
 	if err != nil {
-		log.Println(err)
-		return nil
+		return nil, err
 	}
-	return fileList
+	return fileList, nil
 }
 
 // FindFiles is delegated to find the files from the given directory, recursively for each dir, and extract only the one that match the input
