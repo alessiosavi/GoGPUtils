@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
+	"path"
 	"time"
 )
 
@@ -26,7 +27,6 @@ type SFTPConf struct {
 type SFTPClient struct {
 	Client *sftp.Client
 }
-
 
 func (c *SFTPConf) validate() error {
 	if stringutils.IsBlank(c.Host) {
@@ -45,7 +45,7 @@ func (c *SFTPConf) validate() error {
 }
 
 // Create a new SFTP connection by given parameters
-func (c *SFTPConf) NewConn(keyExchanges []string) (*SFTPClient, error) {
+func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	if err := c.validate(); err != nil {
 		return nil, err
 	}
@@ -88,8 +88,14 @@ func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
 	_, err = io.Copy(buf, srcFile)
 	return buf, err
 }
-func (c *SFTPClient) Put(data []byte, path string) error {
-	f, err := c.Client.Create(path)
+func (c *SFTPClient) Put(data []byte, fpath string) error {
+	dirname := path.Dir(fpath)
+	if exist, _ := c.Exist(dirname); !exist {
+		if err := c.CreateDirectory(dirname); err != nil {
+			return err
+		}
+	}
+	f, err := c.Client.Create(fpath)
 	if err != nil {
 		return err
 	}

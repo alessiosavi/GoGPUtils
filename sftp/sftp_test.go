@@ -1,4 +1,4 @@
-package ftp
+package sftp
 
 import (
 	"bytes"

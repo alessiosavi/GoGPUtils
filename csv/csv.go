@@ -17,7 +17,6 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-
 	headers := csvData[0]
 	// Remove the headers from the row data
 	csvData = csvData[1:]
@@ -27,6 +26,7 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, error) {
 	var buff bytes.Buffer
 	writer := csv.NewWriter(&buff)
+	defer writer.Flush()
 	writer.Comma = separator
 	if err := writer.Write(headers); err != nil {
 		return nil, err
