@@ -2,6 +2,9 @@
 
 package goutils
 
+import "syscall"
+import "fmt"
+
 // GetUlimitValue return the current and max value for ulimit
 func GetUlimitValue() (uint64, uint64) {
 	var rLimit syscall.Rlimit
