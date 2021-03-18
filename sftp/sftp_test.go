@@ -266,7 +266,7 @@ func TestSFTPConf_NewConn(t *testing.T) {
 				Port:     tt.fields.Port,
 				Timeout:  tt.fields.Timeout,
 			}
-			got, err := c.NewConn(tt.args.keyExchanges)
+			got, err := c.NewConn(tt.args.keyExchanges...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewConn() error = %v, wantErr %v", err, tt.wantErr)
 				return

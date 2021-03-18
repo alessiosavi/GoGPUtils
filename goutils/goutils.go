@@ -3,26 +3,12 @@ package goutils
 import (
 	"bufio"
 	"errors"
-	"fmt"
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"io/ioutil"
 	"log"
 	"strings"
-	"syscall"
-
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
-	fileutils "github.com/alessiosavi/GoGPUtils/files"
 )
-
-// GetUlimitValue return the current and max value for ulimit
-func GetUlimitValue() (uint64, uint64) {
-	var rLimit syscall.Rlimit
-	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	if err != nil {
-		fmt.Printf("Error Getting Rlimit: %s\n", err)
-		return 1024, 1024
-	}
-	return rLimit.Cur, rLimit.Max
-}
 
 // ExtractFunctionFromFile is delegated to filter the function present in the input file that have the given prefix
 func ExtractFunctionFromFile(codeFile, prefix string) ([]string, error) {

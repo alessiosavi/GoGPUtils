@@ -9,7 +9,10 @@ import (
 )
 
 func TestDetectCarriageReturn(t *testing.T) {
-	files := fileutils.ListFile(".")
+	files, err := fileutils.ListFile(".")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 	for _, f := range files {
 		fd, err := os.Open(f)
 		if err != nil {
