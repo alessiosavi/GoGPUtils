@@ -67,6 +67,19 @@ func PutObject(bucket, filename string, data []byte) error {
 	return err
 }
 
+func DeleteObject(bucket, key string) error {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return err
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	_, err = S3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	return err
+}
+
 func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
