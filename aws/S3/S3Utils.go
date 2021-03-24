@@ -119,7 +119,7 @@ func ListBucketObject(bucket string) ([]string, error) {
 	return buckets, nil
 }
 
-func CopyObject(bucket, bucketTarget, key string) error {
+func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return err
@@ -128,8 +128,8 @@ func CopyObject(bucket, bucketTarget, key string) error {
 
 	if _, err = S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
 		Bucket:     aws.String(bucketTarget),
-		CopySource: aws.String(path.Join(bucket, key)),
-		Key:        aws.String(key),
+		CopySource: aws.String(path.Join(bucketSource, keySource)),
+		Key:        aws.String(keyTarget),
 	}); err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func SyncBucket(bucket string, bucketsTarget []string) error {
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			if err = CopyObject(bucket, bucketTarget, object); err != nil {
+			if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
 				return err
 			}
 		}
