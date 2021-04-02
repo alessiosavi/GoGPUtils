@@ -24,12 +24,13 @@ func StartWorkflow(workflowName string, params map[string]string) error {
 		return err
 	}
 
-	for k, v := range params {
-		workflow.Workflow.DefaultRunProperties[k] = v
-	}
-
-	if _, err = glueClient.UpdateWorkflow(context.Background(), &glue.UpdateWorkflowInput{Name: aws.String(workflowName), DefaultRunProperties: workflow.Workflow.DefaultRunProperties}); err != nil {
-		return err
+	if params != nil && len(params) != 0 {
+		for k, v := range params {
+			workflow.Workflow.DefaultRunProperties[k] = v
+		}
+		if _, err = glueClient.UpdateWorkflow(context.Background(), &glue.UpdateWorkflowInput{Name: aws.String(workflowName), DefaultRunProperties: workflow.Workflow.DefaultRunProperties}); err != nil {
+			return err
+		}
 	}
 
 	_, err = glueClient.StartWorkflowRun(context.Background(), &glue.StartWorkflowRunInput{Name: aws.String(workflowName)})

@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/glue v1.2.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.1
+	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.2.0
 	github.com/lib/pq v1.10.0
 	github.com/pkg/sftp v1.13.0
 	golang.org/x/crypto v0.0.0-20210317152858-513c2a44f670

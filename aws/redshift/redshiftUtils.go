@@ -11,11 +11,11 @@ import (
 )
 
 type Conf struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	DBName   string `json:"dbname"`
+	Username string      `json:"username"`
+	Password string      `json:"password"`
+	Host     string      `json:"host"`
+	Port     json.Number `json:"port"`
+	DBName   string      `json:"dbname"`
 }
 
 func (c *Conf) Validate() error {
@@ -28,9 +28,10 @@ func (c *Conf) Validate() error {
 	if stringutils.IsBlank(c.Host) {
 		return fmt.Errorf("host is empty:[%+v]", *c)
 	}
-	if stringutils.IsBlank(c.Port) {
-		return fmt.Errorf("port is empty:[%+v]", *c)
-	}
+	//if stringutils.IsBlank(c.Port) {
+	//	return fmt.Errorf("port is empty:[%+v]", *c)
+	//}
+
 	if stringutils.IsBlank(c.DBName) {
 		return fmt.Errorf("DBName is empty:[%+v]", *c)
 	}

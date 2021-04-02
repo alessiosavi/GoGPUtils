@@ -107,7 +107,7 @@ func TestCopyObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CopyObject(tt.args.bucket, tt.args.bucketTarget, tt.args.key); (err != nil) != tt.wantErr {
+			if err := CopyObject(tt.args.bucket, tt.args.bucketTarget, tt.args.key, tt.args.key); (err != nil) != tt.wantErr {
 				t.Errorf("CopyObject() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

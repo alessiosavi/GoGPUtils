@@ -106,7 +106,16 @@ func (c *SFTPClient) Put(data []byte, fpath string) error {
 
 func (c *SFTPClient) CreateDirectory(path string) error {
 	return c.Client.MkdirAll(path)
+}
 
+func (c *SFTPClient) DeleteFile(path string) error {
+	if exists, err := c.Exist(path); err != nil {
+		return err
+	} else if exists {
+		return c.Client.Remove(path)
+	} else {
+		return errors.New(fmt.Sprintf("file %s does not exists", path))
+	}
 }
 
 func (c *SFTPClient) DeleteDirectory(path string) error {
