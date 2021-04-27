@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 )
@@ -149,15 +150,24 @@ func ObjectExists(bucket, key string) (bool, error) {
 	return true, nil
 }
 
-func SyncBucket(bucket string, bucketsTarget []string) error {
+func SyncBucket(bucket string, bucketsTarget ...string) error {
 	objects, err := ListBucketObject(bucket)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
-				return err
+			exist, err := ObjectExists(bucketTarget, object)
+			if err != nil {
+				return nil
+			}
+			if !exist {
+				log.Printf("Copying %s\n", path.Join(bucket, object))
+				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
+					return err
+				}
+			} else {
+				log.Printf("File %s skipped cause it already exists\n", path.Join(bucket, object))
 			}
 		}
 	}
