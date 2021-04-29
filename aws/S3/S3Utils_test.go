@@ -128,8 +128,8 @@ func TestObjectExists(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				bucket: "my-bucket-test-s3",
-				key:    "covid.csv",
+				bucket: "aws-glue-scripts-796325849317-eu-west-1",
+				key:    "FabricaLabAdmin/prova",
 			},
 			want:    true,
 			wantErr: false,
@@ -155,11 +155,7 @@ func TestObjectExists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ObjectExists(tt.args.bucket, tt.args.key)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ObjectExists() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := ObjectExists(tt.args.bucket, tt.args.key)
 			if got != tt.want {
 				t.Errorf("ObjectExists() got = %v, want %v", got, tt.want)
 			}

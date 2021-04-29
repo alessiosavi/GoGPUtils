@@ -28,16 +28,15 @@ func ExtractTextFromQuery(target string, ignore []string) []string {
 	return queries
 }
 
-
-
-func HasPrefixArray(prefixs []string, target string) bool{
-	for _, prefix := range prefixs{
-		if strings.HasPrefix(target,prefix){
+func HasPrefixArray(prefixs []string, target string) bool {
+	for _, prefix := range prefixs {
+		if strings.HasPrefix(target, prefix) {
 			return true
 		}
 	}
 	return false
 }
+
 // CheckPresence verify that the given array contains the target string
 func CheckPresence(array []string, target string) bool {
 	for i := range array {

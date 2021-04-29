@@ -137,19 +137,17 @@ func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 	return nil
 }
 
-func ObjectExists(bucket, key string) (bool, error) {
+func ObjectExists(bucket, key string) bool {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return false, nil
+		return false
 	}
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
-
 	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }
-
 func SyncBucket(bucket string, bucketsTarget ...string) error {
 	objects, err := ListBucketObject(bucket)
 	if err != nil {
@@ -157,10 +155,7 @@ func SyncBucket(bucket string, bucketsTarget ...string) error {
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			exist, err := ObjectExists(bucketTarget, object)
-			if err != nil {
-				return nil
-			}
+			exist := ObjectExists(bucketTarget, object)
 			if !exist {
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {

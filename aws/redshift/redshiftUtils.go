@@ -41,10 +41,10 @@ func (c *Conf) Validate() error {
 func (c *Conf) Load(confFile string) error {
 	data, err := ioutil.ReadFile(confFile)
 	if err != nil {
-		return(err)
+		return (err)
 	}
 	if err = json.Unmarshal(data, &c); err != nil {
-		return(err)
+		return (err)
 	}
 	if err = c.Validate(); err != nil {
 		indent, err := json.MarshalIndent(c, " ", "  ")

@@ -6,7 +6,7 @@ import (
 )
 
 func TestReadZip01(t *testing.T) {
-	t.Log("----TestReadZip01---")
+	//t.Log("----TestReadZip01---")
 	file := `../testdata/ziputils/test1.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -19,7 +19,7 @@ func TestReadZip01(t *testing.T) {
 }
 
 func TestReadZip02(t *testing.T) {
-	t.Log("----TestReadZip02---")
+	//t.Log("----TestReadZip02---")
 	file := `../testdata/ziputils/test1.zip_error`
 	data, err := ReadZip(file)
 	if err == nil {
@@ -31,7 +31,7 @@ func TestReadZip02(t *testing.T) {
 }
 
 func TestReadZip03(t *testing.T) {
-	t.Log("----TestReadZip03---")
+	//t.Log("----TestReadZip03---")
 	file := `../testdata/ziputils/test2.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -43,7 +43,7 @@ func TestReadZip03(t *testing.T) {
 }
 
 func TestReadZip04(t *testing.T) {
-	t.Log("----TestReadZip04---")
+	//t.Log("----TestReadZip04---")
 	file := `../testdata/ziputils/test3.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -55,7 +55,7 @@ func TestReadZip04(t *testing.T) {
 }
 
 func TestReadZip05(t *testing.T) {
-	t.Log("----TestReadZip05---")
+	//t.Log("----TestReadZip05---")
 	file := `../testdata/ziputils/test4.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -67,7 +67,7 @@ func TestReadZip05(t *testing.T) {
 }
 
 func TestReadZip06(t *testing.T) {
-	t.Log("----TestReadZip06---")
+	//t.Log("----TestReadZip06---")
 	file := `../testdata/ziputils/test5.zip`
 	data, err := ReadZip(file)
 	if err != nil {
