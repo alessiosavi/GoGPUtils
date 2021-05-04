@@ -156,11 +156,7 @@ func SyncBucket(bucket string, bucketsTarget ...string) error {
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
 			exist := ObjectExists(bucketTarget, object)
-			different, err := IsDifferent(bucket, bucketTarget, object, object)
-			if err != nil {
-				return err
-			}
-			if !exist || different {
+			if !exist ||  IsDifferent(bucket, bucketTarget, object, object) {
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
 					return err
@@ -173,19 +169,19 @@ func SyncBucket(bucket string, bucketsTarget ...string) error {
 	return nil
 }
 
-func IsDifferent(bucket_base, bucket_target, key_base, key_target string) (bool, error) {
+func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return false, err
+		return true
 	}
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
 	if err != nil {
-		return false, err
+		return true
 	}
 	head_target, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_target), Key: aws.String(key_target)})
 	if err != nil {
-		return false, err
+		return true
 	}
-	return head_base.LastModified.After(*head_target.LastModified), nil
+	return head_base.LastModified.After(*head_target.LastModified)
 }
