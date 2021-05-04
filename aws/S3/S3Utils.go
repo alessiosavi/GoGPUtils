@@ -148,25 +148,27 @@ func ObjectExists(bucket, key string) bool {
 	}
 	return true
 }
-func SyncBucket(bucket string, bucketsTarget ...string) error {
+func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
+	var fileNotSynced []string
+	var err error
 	objects, err := ListBucketObject(bucket)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
 			exist := ObjectExists(bucketTarget, object)
-			if !exist ||  IsDifferent(bucket, bucketTarget, object, object) {
+			if !exist || IsDifferent(bucket, bucketTarget, object, object) {
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
-					return err
+					fileNotSynced = append(fileNotSynced, object)
 				}
 			} else {
 				log.Printf("File %s skipped cause it already exists\n", path.Join(bucket, object))
 			}
 		}
 	}
-	return nil
+	return fileNotSynced, nil
 }
 
 func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
