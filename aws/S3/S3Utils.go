@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 )
-import "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-import "github.com/aws/aws-sdk-go-v2/aws"
-import "github.com/aws/aws-sdk-go-v2/config"
-import "github.com/aws/aws-sdk-go-v2/service/s3"
-import "golang.org/x/net/html/charset"
 
 func GetObject(bucket, fileName string) ([]byte, error) {
 	cfg, err := config.LoadDefaultConfig(context.Background())
@@ -136,30 +137,54 @@ func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 	return nil
 }
 
-func ObjectExists(bucket, key string) (bool, error) {
+func ObjectExists(bucket, key string) bool {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return false, nil
+		return false
 	}
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
-
 	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }
-
-func SyncBucket(bucket string, bucketsTarget []string) error {
+func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
+	var fileNotSynced []string
+	var err error
 	objects, err := ListBucketObject(bucket)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
-				return err
+			exist := ObjectExists(bucketTarget, object)
+			if !exist || IsDifferent(bucket, bucketTarget, object, object) {
+				log.Printf("Copying %s\n", path.Join(bucket, object))
+				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
+					fileNotSynced = append(fileNotSynced, object)
+				}
+			} else {
+				log.Printf("File %s skipped cause it already exists\n", path.Join(bucket, object))
 			}
 		}
 	}
-	return nil
+
+	return fileNotSynced, nil
+}
+
+func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return true
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
+	if err != nil {
+		return true
+	}
+	head_target, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_target), Key: aws.String(key_target)})
+	if err != nil {
+		return true
+	}
+	return head_base.LastModified.After(*head_target.LastModified)
 }

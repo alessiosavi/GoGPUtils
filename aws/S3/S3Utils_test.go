@@ -1,6 +1,11 @@
 package S3
 
 import (
+	"context"
+	"github.com/alessiosavi/GoGPUtils/helper"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"reflect"
 	"testing"
 )
@@ -128,8 +133,8 @@ func TestObjectExists(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				bucket: "my-bucket-test-s3",
-				key:    "covid.csv",
+				bucket: "aws-glue-scripts-796325849317-eu-west-1",
+				key:    "FabricaLabAdmin/prova",
 			},
 			want:    true,
 			wantErr: false,
@@ -155,14 +160,23 @@ func TestObjectExists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ObjectExists(tt.args.bucket, tt.args.key)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ObjectExists() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := ObjectExists(tt.args.bucket, tt.args.key)
 			if got != tt.want {
 				t.Errorf("ObjectExists() got = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestHead(t *testing.T) {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return
+	}
+	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	if head, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String("prod-lambda-asset"), Key: aws.String("describe-jobs.zip")}); err != nil {
+		return
+	} else {
+		t.Log(helper.MarshalIndent(head))
 	}
 }

@@ -15,7 +15,7 @@ func GetSecrets(secretARN string) (string, error) {
 	client := secretsmanager.New(secretsmanager.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	value, err := client.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{SecretId: aws.String(secretARN)})
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	return *value.SecretString, err
 }
