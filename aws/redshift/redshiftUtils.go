@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	_ "github.com/lib/pq"
 	"io/ioutil"
@@ -20,20 +21,19 @@ type Conf struct {
 
 func (c *Conf) Validate() error {
 	if stringutils.IsBlank(c.Username) {
-		return fmt.Errorf("username is empty:[%+v]", *c)
+		return fmt.Errorf("username is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	if stringutils.IsBlank(c.Password) {
-		return fmt.Errorf("password is empty:[%+v]", *c)
+		return fmt.Errorf("password is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	if stringutils.IsBlank(c.Host) {
-		return fmt.Errorf("host is empty:[%+v]", *c)
+		return fmt.Errorf("host is empty:[%+v]", helper.MarshalIndent(*c))
 	}
-	//if stringutils.IsBlank(c.Port) {
-	//	return fmt.Errorf("port is empty:[%+v]", *c)
-	//}
-
+	if stringutils.IsBlank(c.Port.String()) {
+		return fmt.Errorf("password is empty:[%+v]", helper.MarshalIndent(*c))
+	}
 	if stringutils.IsBlank(c.DBName) {
-		return fmt.Errorf("DBName is empty:[%+v]", *c)
+		return fmt.Errorf("DBName is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	return nil
 }
@@ -66,11 +66,9 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 	}
 	url := fmt.Sprintf("sslmode=require user=%v password=%v host=%v port=%v dbname=%v",
 		conf.Username, conf.Password, conf.Host, conf.Port, conf.DBName)
-
 	if db, err = sql.Open("postgres", url); err != nil {
 		return nil, fmt.Errorf("redshift connect error : (%s)", err.Error())
 	}
-
 	if err = db.Ping(); err != nil {
 		return nil, fmt.Errorf("redshift ping error : (%s)", err.Error())
 	}

@@ -14,6 +14,8 @@ import (
 	mathutils "github.com/alessiosavi/GoGPUtils/math"
 )
 
+var BOM = []byte{0xef, 0xbb, 0xbf} // UTF-8
+
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
 // It can be viewed as a tokenzier that use whitespace for delimit the word
 func ExtractTextFromQuery(target string, ignore []string) []string {
@@ -28,16 +30,15 @@ func ExtractTextFromQuery(target string, ignore []string) []string {
 	return queries
 }
 
-
-
-func HasPrefixArray(prefixs []string, target string) bool{
-	for _, prefix := range prefixs{
-		if strings.HasPrefix(target,prefix){
+func HasPrefixArray(prefixs []string, target string) bool {
+	for _, prefix := range prefixs {
+		if strings.HasPrefix(target, prefix) {
 			return true
 		}
 	}
 	return false
 }
+
 // CheckPresence verify that the given array contains the target string
 func CheckPresence(array []string, target string) bool {
 	for i := range array {

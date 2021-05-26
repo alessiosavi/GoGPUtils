@@ -6,6 +6,33 @@ import (
 	"testing"
 )
 
+func TestRemoveElementsFromMatrixByIndex(t *testing.T) {
+
+	var data [][]string = [][]string{
+		[]string{"0", "0", "0", "0", "0", "0", "0", "0", "0"},
+		[]string{"1", "1", "1", "1", "1", "1", "1", "1", "1"},
+		[]string{"2", "2", "2", "2", "2", "2", "2", "2", "2"},
+		[]string{"3", "3", "3", "3", "3", "3", "3", "3", "3"},
+		[]string{"4", "4", "4", "4", "4", "4", "4", "4", "4"},
+		[]string{"5", "5", "5", "5", "5", "5", "5", "5", "5"},
+		[]string{"6", "6", "6", "6", "6", "6", "6", "6", "6"},
+	}
+	var target [][]string = [][]string{
+		[]string{"0", "0", "0", "0", "0", "0", "0", "0", "0"},
+		[]string{"1", "1", "1", "1", "1", "1", "1", "1", "1"},
+		[]string{"4", "4", "4", "4", "4", "4", "4", "4", "4"},
+		[]string{"5", "5", "5", "5", "5", "5", "5", "5", "5"},
+		[]string{"6", "6", "6", "6", "6", "6", "6", "6", "6"},
+	}
+
+	data = RemoveElementsFromMatrixByIndex(data, []int{2, 3})
+
+	if !reflect.DeepEqual(data, target) {
+		t.Errorf("Got: %v\nExpected:%+v\n", data, target)
+	}
+
+}
+
 func TestRemoveElementsFromString1(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	t.Log("Before remove:", data, "Len:", len(data))

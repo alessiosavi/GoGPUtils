@@ -5,6 +5,32 @@ import (
 	"strings"
 )
 
+func RemoveElementsFromMatrixByIndex(data [][]string, j []int) [][]string {
+	var (
+		newArray [][]string
+		toAdd    = true
+	)
+
+	if len(j) == 0 {
+		return data
+	}
+	for i := 0; i < len(data); i++ {
+		for _, k := range j {
+			if i == k {
+				toAdd = false
+				break
+			}
+		}
+
+		if toAdd {
+			newArray = append(newArray, data[i])
+		}
+		toAdd = true
+	}
+
+	return newArray
+}
+
 //RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
 func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	var (
