@@ -66,9 +66,7 @@ func TestRemoveElementsFromString3(t *testing.T) {
 func TestRemoveElement(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	lenBefore := len(data)
-	t.Log("Before remove:", data, "Len:", len(data))
 	data = RemoveElement(data, 0)
-	t.Log("After remove:", data, "Len:", len(data))
 	if lenBefore-1 != len(data) {
 		t.Fail()
 	}

@@ -3,9 +3,9 @@ package glue
 import (
 	"context"
 	"errors"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/glue"
 )
 
@@ -13,7 +13,7 @@ func StartWorkflow(workflowName string, params map[string]string) error {
 	if stringutils.IsBlank(workflowName) {
 		return errors.New("workflow is empty")
 	}
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return nil
 	}

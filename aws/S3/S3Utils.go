@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"golang.org/x/net/html/charset"
@@ -17,7 +17,7 @@ import (
 )
 
 func GetObject(bucket, fileName string) ([]byte, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 }
 
 func PutObject(bucket, filename string, data []byte) error {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func PutObject(bucket, filename string, data []byte) error {
 }
 
 func DeleteObject(bucket, key string) error {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func DeleteObject(bucket, key string) error {
 }
 
 func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 }
 
 func ListBucketObject(bucket string) ([]string, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func ListBucketObject(bucket string) ([]string, error) {
 }
 
 func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 }
 
 func ObjectExists(bucket, key string) bool {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return false
 	}
@@ -192,7 +192,7 @@ func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 }
 
 func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return true
 	}

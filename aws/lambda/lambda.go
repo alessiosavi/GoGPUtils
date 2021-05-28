@@ -2,14 +2,14 @@ package lambda
 
 import (
 	"context"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 )
 
 func InvokeLambda(name string, payload []byte, invocationType types.InvocationType) (*lambda.InvokeOutput, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return nil, err
 	}

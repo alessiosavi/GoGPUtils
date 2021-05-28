@@ -2,9 +2,9 @@ package S3
 
 import (
 	"context"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"reflect"
 	"testing"
@@ -169,7 +169,7 @@ func TestObjectExists(t *testing.T) {
 }
 
 func TestHead(t *testing.T) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := awsutils.New()
 	if err != nil {
 		return
 	}
