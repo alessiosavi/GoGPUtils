@@ -24,7 +24,7 @@ func StartWorkflow(workflowName string, params map[string]string) error {
 		return err
 	}
 
-	if params != nil && len(params) != 0 {
+	if len(params) > 0 {
 		for k, v := range params {
 			workflow.Workflow.DefaultRunProperties[k] = v
 		}
