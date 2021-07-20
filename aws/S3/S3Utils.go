@@ -205,5 +205,6 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 	if err != nil {
 		return true
 	}
-	return head_base.LastModified.After(*head_target.LastModified)
+
+	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
