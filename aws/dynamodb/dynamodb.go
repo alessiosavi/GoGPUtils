@@ -42,7 +42,9 @@ func CreateTable(definition *dynamodb.CreateTableInput) error {
 	if err != nil {
 		return err
 	}
-	_, err = dynamoClient.CreateTable(context.Background(), definition)
+	if _, err = dynamoClient.CreateTable(context.Background(), definition); err != nil {
+		return err
+	}
 	return waitForTable(context.Background(), dynamoClient, *definition.TableName)
 }
 
