@@ -394,7 +394,10 @@ func FilterFromFile(filename, target string, ignorecase bool) []string {
 
 	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 	for scanner.Scan() {
-		data := strings.ToLower(scanner.Text())
+		var data = scanner.Text()
+		if ignorecase {
+			data = strings.ToLower(data)
+		}
 		if strings.Contains(data, target) {
 			result = append(result, data)
 		}
