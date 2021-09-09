@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"github.com/alessiosavi/GoGPUtils/files/processing"
-	"log"
 )
 
 // ReadCSV is delegated to read into a CSV the content of the bytes in input
@@ -14,7 +13,6 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	terminator, err := processing.DetectLineTerminator(bytes.NewReader(buf))
 	// Clean file if possible ...
 	if err == nil {
-		log.Println("Cleaning file ...")
 		buf = bytes.ReplaceAll(buf, []byte(terminator), []byte("\n"))
 		buf = bytes.ReplaceAll(buf, []byte("\u001D"), []byte{}) // Remove group separator
 		buf = bytes.ReplaceAll(buf, []byte("\u000B"), []byte{}) // Remove vertical tab

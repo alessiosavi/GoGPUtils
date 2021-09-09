@@ -1,6 +1,7 @@
 package arrayutils
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -196,4 +197,18 @@ func InStrings(slice []string, target string) bool {
 		}
 	}
 	return false
+}
+
+func UniqueString(slice []string) []string {
+	var m map[string]struct{} = make(map[string]struct{})
+	for _, x := range slice {
+		m[x] = struct{}{}
+	}
+	slice = []string{}
+	for x := range m {
+		slice = append(slice, x)
+	}
+
+	sort.Strings(slice)
+	return slice
 }
