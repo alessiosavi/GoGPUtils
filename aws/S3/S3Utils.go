@@ -86,10 +86,11 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	if err != nil {
 		return err
 	}
+	defer stream.Close()
 
 	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	uploader := manager.NewUploader(S3Client)
-
+	uploader.Concurrency = 10
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),

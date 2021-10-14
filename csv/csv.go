@@ -28,10 +28,10 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	headers := csvData[0]
 	// Remove the headers from the row data
+	headers := csvData[0]
+	// Remove the first element due to headers shift
 	csvData = csvData[1:]
-	// Remove the latest element due to headers shift
 	return headers, csvData, nil
 }
 func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, error) {

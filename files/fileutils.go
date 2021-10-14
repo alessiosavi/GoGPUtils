@@ -521,3 +521,7 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	}
 	return false
 }
+
+func Move(source, dest string) error {
+	return os.Rename(source, dest)
+}
