@@ -200,7 +200,7 @@ func InStrings(slice []string, target string) bool {
 }
 
 func UniqueString(slice []string) []string {
-	var m map[string]struct{} = make(map[string]struct{})
+	var m = make(map[string]struct{})
 	for _, x := range slice {
 		m[x] = struct{}{}
 	}

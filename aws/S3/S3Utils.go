@@ -116,27 +116,28 @@ func ListBucketObject(bucket, prefix string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	continuationToken := objects.NextContinuationToken
 
 	var buckets = make([]string, len(objects.Contents))
-
 	for i, bucketName := range objects.Contents {
 		buckets[i] = *bucketName.Key
 	}
 
-	for continuationToken != nil {
+	continuationToken := objects.NextContinuationToken
+	truncated := objects.IsTruncated
+	for truncated {
 		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
-			ContinuationToken: continuationToken,
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
+			ContinuationToken: continuationToken,
 		})
 		if err != nil {
 			return nil, err
 		}
 		continuationToken = newObjects.NextContinuationToken
-		for _, bucketName := range objects.Contents {
+		for _, bucketName := range newObjects.Contents {
 			buckets = append(buckets, *bucketName.Key)
 		}
+		truncated = newObjects.IsTruncated
 	}
 
 	return buckets, nil

@@ -24,7 +24,7 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 
 	buff := make([]byte, 1024*1000)
-	var counts map[LineTerminatorType]int = make(map[LineTerminatorType]int)
+	var counts = make(map[LineTerminatorType]int)
 	for {
 		if _, err := reader.Read(buff); err != nil {
 			if err != io.EOF {
@@ -44,7 +44,7 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 	counts[CR] -= counts[CRLF] + counts[LFCR]
 	counts[LF] -= counts[CRLF] + counts[LFCR]
 	maxV := 0
-	var maxKey LineTerminatorType = ND
+	var maxKey = ND
 	for k, v := range counts {
 		if v > maxV {
 			maxV = v
