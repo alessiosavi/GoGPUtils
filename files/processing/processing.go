@@ -3,7 +3,6 @@ package processing
 import (
 	"bufio"
 	"bytes"
-	"github.com/alessiosavi/GoGPUtils/helper"
 	"io"
 	"io/ioutil"
 	"log"
@@ -52,7 +51,7 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 			maxKey = k
 		}
 	}
-	log.Println(helper.MarshalIndent(counts))
+	//log.Println(helper.MarshalIndent(counts))
 	return maxKey, nil
 }
 

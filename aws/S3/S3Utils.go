@@ -102,7 +102,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	return err
 }
 
-func ListBucketObject(bucket string) ([]string, error) {
+func ListBucketObject(bucket, prefix string) ([]string, error) {
 	cfg, err := awsutils.New()
 	if err != nil {
 		return nil, err
@@ -111,6 +111,7 @@ func ListBucketObject(bucket string) ([]string, error) {
 
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
+		Prefix: aws.String(prefix),
 	})
 	if err != nil {
 		return nil, err
@@ -127,6 +128,7 @@ func ListBucketObject(bucket string) ([]string, error) {
 		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 			ContinuationToken: continuationToken,
 			Bucket:            aws.String(bucket),
+			Prefix:            aws.String(prefix),
 		})
 		if err != nil {
 			return nil, err
@@ -171,7 +173,7 @@ func ObjectExists(bucket, key string) bool {
 func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 	var fileNotSynced []string
 	var err error
-	objects, err := ListBucketObject(bucket)
+	objects, err := ListBucketObject(bucket, "")
 	if err != nil {
 		return nil, err
 	}

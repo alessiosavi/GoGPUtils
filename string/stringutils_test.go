@@ -574,3 +574,36 @@ func TestContainsMultiple1(t *testing.T) {
 		})
 	}
 }
+
+func TestUnique(t *testing.T) {
+	type args struct {
+		data []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Ok",
+			args: args{
+				data: []string{"a", "b", "c", "c"},
+			},
+			want: []string{"a", "b", "c"},
+		},
+		{
+			name: "Ok",
+			args: args{
+				data: []string{"a", "b", "c"},
+			},
+			want: []string{"a", "b", "c"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Unique(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Unique() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

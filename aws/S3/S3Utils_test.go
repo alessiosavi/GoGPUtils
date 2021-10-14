@@ -25,9 +25,9 @@ func TestListBucketObject(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				bucket: "my-bucket-test-s3",
+				bucket: "aws-website-tbimg-pdds3-backup",
 			},
-			want:    []string{"covid.csv", "empty.txt"},
+			want:    []string{"bbl-positional-conf-margins.csv", "bbl-positional-conf-moq.csv", "size_distribution.py"},
 			wantErr: false,
 		},
 		{
@@ -41,7 +41,7 @@ func TestListBucketObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ListBucketObject(tt.args.bucket)
+			got, err := ListBucketObject(tt.args.bucket, "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ListBucketObject() error = %v, wantErr %v", err, tt.wantErr)
 				return

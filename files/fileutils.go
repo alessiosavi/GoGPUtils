@@ -115,6 +115,8 @@ func ReadFileInArray(filePath string) []string {
 	if err != nil {
 		return nil
 	}
+
+	data = bytes.Trim(data, "\n")
 	return strings.Split(string(data), "\n")
 }
 
