@@ -14,15 +14,24 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"sync"
 )
 
-func GetObject(bucket, fileName string) ([]byte, error) {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return nil, err
-	}
+var S3Client *s3.Client = nil
+var once sync.Once
 
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+func init() {
+	once.Do(func() {
+		cfg, err := awsutils.New()
+		if err != nil {
+			panic(err)
+		}
+		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	})
+}
+
+func GetObject(bucket, fileName string) ([]byte, error) {
+
 	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fileName)})
@@ -36,12 +45,6 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 }
 
 func PutObject(bucket, filename string, data []byte) error {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return err
-	}
-
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	h := md5.New()
 	var sum []byte = nil
 	if _, err := h.Write(data); err != nil {
@@ -57,7 +60,7 @@ func PutObject(bucket, filename string, data []byte) error {
 
 	uploader := manager.NewUploader(S3Client)
 
-	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
+	_, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),
 		Body:            ioutil.NopCloser(bytes.NewReader(data)),
@@ -69,12 +72,8 @@ func PutObject(bucket, filename string, data []byte) error {
 }
 
 func DeleteObject(bucket, key string) error {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return err
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
-	_, err = S3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+
+	_, err := S3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -82,16 +81,12 @@ func DeleteObject(bucket, key string) error {
 }
 
 func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return err
-	}
-	defer stream.Close()
 
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	defer stream.Close()
 	uploader := manager.NewUploader(S3Client)
 	uploader.Concurrency = 10
-	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
+
+	_, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),
 		Body:            stream,
@@ -103,11 +98,6 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 }
 
 func ListBucketObject(bucket, prefix string) ([]string, error) {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return nil, err
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
@@ -144,13 +134,8 @@ func ListBucketObject(bucket, prefix string) ([]string, error) {
 }
 
 func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return err
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 
-	if _, err = S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
+	if _, err := S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
 		Bucket:     aws.String(bucketTarget),
 		CopySource: aws.String(path.Join(bucketSource, keySource)),
 		Key:        aws.String(keyTarget),
@@ -161,12 +146,8 @@ func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 }
 
 func ObjectExists(bucket, key string) bool {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return false
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
-	if _, err = S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
+
+	if _, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
 		return false
 	}
 	return true
@@ -196,11 +177,7 @@ func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 }
 
 func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return true
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
 	if err != nil {
 		return true

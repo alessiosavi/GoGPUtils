@@ -9,18 +9,19 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.2.2
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.5.4
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.2
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.19.0
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.7.1
 	github.com/aws/aws-sdk-go-v2/service/glue v1.12.0
+	github.com/aws/aws-sdk-go-v2/service/iam v1.10.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.9.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.16.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.7.0
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.6.1
 	github.com/lib/pq v1.10.3
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.4
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e
-	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309
 )
 
 require (

@@ -9,16 +9,35 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/pkg/errors"
+	"sync"
 	"time"
 )
 
-func New() (*dynamodb.Client, error) {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return nil, err
-	}
-	dynamoClient := dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region})
-	return dynamoClient, nil
+var dynamoClient *dynamodb.Client = nil
+var once sync.Once
+
+type UpdateType string
+
+const (
+	UpdateTypeSet    UpdateType = "SET"
+	UpdateTypeRemove UpdateType = "REMOVE"
+	UpdateTypeAdd    UpdateType = "ADD"
+)
+
+type Update struct {
+	Type  UpdateType `json:"type,omitempty"`
+	Key   string     `json:"key,omitempty"`
+	Value string     `json:"value,omitempty"`
+}
+
+func init() {
+	once.Do(func() {
+		cfg, err := awsutils.New()
+		if err != nil {
+			panic(err)
+		}
+		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	})
 }
 
 func waitForTable(ctx context.Context, db *dynamodb.Client, tableName string) error {
@@ -38,22 +57,14 @@ func waitForTable(ctx context.Context, db *dynamodb.Client, tableName string) er
 	return err
 }
 func CreateTable(definition *dynamodb.CreateTableInput) error {
-	dynamoClient, err := New()
-	if err != nil {
-		return err
-	}
-	if _, err = dynamoClient.CreateTable(context.Background(), definition); err != nil {
+
+	if _, err := dynamoClient.CreateTable(context.Background(), definition); err != nil {
 		return err
 	}
 	return waitForTable(context.Background(), dynamoClient, *definition.TableName)
 }
 
 func WriteItem(tableName string, item interface{}) error {
-	dynamoClient, err := New()
-	if err != nil {
-		return err
-	}
-
 	av, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return err
@@ -68,29 +79,11 @@ func WriteItem(tableName string, item interface{}) error {
 }
 
 func DeleteTable(tableName string) error {
-	dynamoClient, err := New()
-	if err != nil {
-		return err
-	}
-	_, err = dynamoClient.DeleteTable(context.Background(), &dynamodb.DeleteTableInput{
+	_, err := dynamoClient.DeleteTable(context.Background(), &dynamodb.DeleteTableInput{
 		TableName: aws.String(tableName),
 	})
 
 	return err
-}
-
-type UpdateType string
-
-const (
-	UpdateTypeSet    UpdateType = "SET"
-	UpdateTypeRemove UpdateType = "REMOVE"
-	UpdateTypeAdd    UpdateType = "ADD"
-)
-
-type Update struct {
-	Type  UpdateType `json:"type,omitempty"`
-	Key   string     `json:"key,omitempty"`
-	Value string     `json:"value,omitempty"`
 }
 
 //func UpdateItem(tableName string, key map[string]types.AttributeValue, set map[string]string) error {
