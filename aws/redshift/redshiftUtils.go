@@ -82,7 +82,7 @@ func CreateTableByType(tableName string, tableType map[string]string) string {
 	translator := sqlutils.GetRedshiftTranslator()
 	sb.WriteString("CREATE TABLE " + tableName + " (\n")
 	for k, v := range tableType {
-		sb.WriteString(k + " " + translator[v] + ",\n")
+		sb.WriteString("\t" + k + " " + translator[v] + ",\n")
 	}
 	data := sb.String()
 	data = strings.TrimSuffix(data, ",\n")

@@ -53,10 +53,11 @@ func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, err
 }
 
 // GetCSVDataType is delegated to retrieve the data type for every field of the CSV
-func GetCSVDataType(raw []byte, separator rune) (map[string]string, error) {
+// Return: headers, csv data, data type, error
+func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[string]string, error) {
 	headers, data, err := ReadCSV(raw, separator)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 	// key = headers ; value = type
 	var dataType = make(map[string]string)
@@ -97,5 +98,14 @@ func GetCSVDataType(raw []byte, separator rune) (map[string]string, error) {
 			dataType[header] = "string"
 		}
 	}
-	return dataType, nil
+	return headers, data, dataType, nil
+}
+
+func DecodeNonUTF8CSV(data [][]string) [][]string {
+	for i := range data {
+		for j := range data[i] {
+			data[i][j] = processing.DecodeNonUTF8String(data[i][j])
+		}
+	}
+	return data
 }

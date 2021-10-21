@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 // RandomGenerator is delegated to generate random without call seed every time
 type RandomGenerator struct {
 	randomizer *rand.Rand
@@ -18,7 +22,6 @@ type RandomGenerator struct {
 func InitRandomizer() RandomGenerator {
 	var random RandomGenerator
 	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	return random
 }
 
@@ -102,31 +105,26 @@ func RandomByte(length int) []byte {
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
 // RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt32(min, max int32) int32 {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int31n(max-min) + min
 }
 
 // RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt64(min, max int64) int64 {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int63n(max-min) + min
 }
 
 // RandomFloat64 initialize a new seed using the UNIX Nano time and return a float64 between the 2 input value
 func RandomFloat64(min, max float64) float64 {
-	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float64()*(max-min)
 }
 
 // RandomFloat32 initialize a new seed using the UNIX Nano time and return a float32 between the 2 input value
 func RandomFloat32(min, max float32) float32 {
-	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float32()*(max-min)
 }
 

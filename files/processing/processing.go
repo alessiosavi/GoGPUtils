@@ -1,11 +1,11 @@
 package processing
 
 import (
-	"bufio"
 	"bytes"
 	"io"
 	"io/ioutil"
 	"log"
+	"unicode/utf8"
 )
 
 type LineTerminatorType string
@@ -66,10 +66,9 @@ func ReplaceLineTerminator(data, newLineTerminator []byte) ([]byte, error) {
 	return bytes.Trim(newData, string(newLineTerminator)), nil
 }
 
-// ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
+// ReplaceLineTerminatorBytesReader is delegated to find the line terminator of the given byte array and replace them without the one provided in input
 func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []byte) ([]byte, error) {
-
-	terminator, err := DetectLineTerminator(bufio.NewReader(data))
+	terminator, err := DetectLineTerminator(data)
 	if err != nil {
 		return nil, err
 	}
@@ -84,4 +83,20 @@ func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []by
 	newData = bytes.ReplaceAll(newData, []byte(terminator), newLineTerminator)
 	newData = bytes.TrimSpace(newData)
 	return bytes.Trim(newData, string(newLineTerminator)), nil
+}
+
+func DecodeNonUTF8String(data string) string {
+	if !utf8.ValidString(data) {
+		v := make([]rune, 0, len(data))
+		for k, r := range data {
+			if r == utf8.RuneError {
+				if _, size := utf8.DecodeRuneInString(data[k:]); size == 1 {
+					continue
+				}
+			}
+			v = append(v, r)
+		}
+		return string(v)
+	}
+	return data
 }
