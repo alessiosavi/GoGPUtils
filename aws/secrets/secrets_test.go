@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"github.com/alessiosavi/GoGPUtils/helper"
+	"reflect"
 	"testing"
 )
 
@@ -63,7 +64,6 @@ func TestUnmarshalSecret(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			name: "ok",
 			args: args{
@@ -81,3 +81,26 @@ func TestUnmarshalSecret(t *testing.T) {
 		})
 	}
 }
+
+func TestListSecret(t *testing.T) {
+	tests := []struct {
+		name    string
+		want    []string
+		wantErr bool
+	}{
+		{},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ListSecret()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ListSecret() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListSecret() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+

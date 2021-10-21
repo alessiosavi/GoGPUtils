@@ -26,7 +26,7 @@ func ListECR() ([]string, error) {
 		return nil, err
 	}
 
-	var images []string = make([]string, len(imgs.Repositories))
+	var images = make([]string, len(imgs.Repositories))
 
 	for i := range imgs.Repositories {
 		images[i] = *imgs.Repositories[i].RepositoryName

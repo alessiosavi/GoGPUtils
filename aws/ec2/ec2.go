@@ -2,8 +2,13 @@ package ec2
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"log"
 	"sync"
 )
 
@@ -32,7 +37,35 @@ func init() {
 	})
 }
 
-func ListEC2() ([]InstanceDetail, error) {
+func ListEC2() ([]ec2types.Instance, error) {
+	instances, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{})
+	if err != nil {
+		return nil, err
+	}
+	var ec2instances []ec2types.Instance
+	nextToken := instances.NextToken
+	for _, reservation := range instances.Reservations {
+		for _, instance := range reservation.Instances {
+			ec2instances = append(ec2instances, instance)
+		}
+	}
+	for nextToken != nil {
+		instances, err = ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{})
+		if err != nil {
+			return nil, err
+		}
+		nextToken = instances.NextToken
+		for _, reservation := range instances.Reservations {
+			for _, instance := range reservation.Instances {
+				ec2instances = append(ec2instances, instance)
+			}
+		}
+	}
+	return ec2instances, nil
+}
+
+// GetEC2InstanceDetail return a struct that contains {InstanceName, InstanceID} for every EC2 instances
+func GetEC2InstanceDetail() ([]InstanceDetail, error) {
 	instances, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		return nil, err
@@ -74,7 +107,7 @@ func ListEC2() ([]InstanceDetail, error) {
 }
 
 func DescribeNetwork(instance string) (*Network, error) {
-	describeInstance, err := DescribeInstance(instance)
+	describeInstance, err := DescribeInstanceByID(instance)
 	if err != nil {
 		return nil, err
 	}
@@ -97,10 +130,30 @@ func DescribeNetwork(instance string) (*Network, error) {
 	return &network, nil
 }
 
-func DescribeInstance(instance string) (*ec2.DescribeInstancesOutput, error) {
-	hosts, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{InstanceIds: []string{instance}})
+func DescribeInstanceByID(instanceID string) (*ec2.DescribeInstancesOutput, error) {
+	hosts, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{InstanceIds: []string{instanceID}})
 	if err != nil {
 		return nil, err
 	}
 	return hosts, nil
+}
+
+func DescribeInstanceByName(instanceName string) (*ec2.DescribeInstancesOutput, error) {
+	listEC2, err := GetEC2InstanceDetail()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range listEC2 {
+		if instanceName == s.InstanceName {
+			hosts, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{InstanceIds: []string{s.InstanceID}})
+			if err != nil {
+				return nil, err
+			}
+			log.Println(helper.MarshalIndent(hosts))
+			return hosts, nil
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("instance %s not found", instanceName))
 }

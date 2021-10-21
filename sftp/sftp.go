@@ -1,3 +1,5 @@
+// Package sftp can be used in order to copy file from SSH too.
+// You just need to set SSH port instead of SFTP
 package sftp
 
 import (
@@ -90,7 +92,11 @@ func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
 }
 func (c *SFTPClient) Put(data []byte, fpath string) error {
 	dirname := path.Dir(fpath)
-	if exist, _ := c.Exist(dirname); !exist {
+	exist, err := c.Exist(dirname)
+	if err != nil {
+		return err
+	}
+	if !exist {
 		if err := c.CreateDirectory(dirname); err != nil {
 			return err
 		}
@@ -124,7 +130,10 @@ func (c *SFTPClient) DeleteDirectory(path string) error {
 
 func (c *SFTPClient) Exist(path string) (bool, error) {
 	_, err := c.Client.Lstat(path)
-	return err != nil, err
+	if err.Error() == "file does not exist" {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 func (c *SFTPClient) IsDir(path string) (bool, error) {
@@ -140,4 +149,8 @@ func (c *SFTPClient) IsFile(path string) (bool, error) {
 		return false, err
 	}
 	return !lstat.IsDir(), nil
+}
+
+func (c *SFTPClient) Close() error {
+	return c.Client.Close()
 }
