@@ -130,7 +130,7 @@ func (c *SFTPClient) DeleteDirectory(path string) error {
 
 func (c *SFTPClient) Exist(path string) (bool, error) {
 	_, err := c.Client.Lstat(path)
-	if err.Error() == "file does not exist" {
+	if err != nil && err.Error() == "file does not exist" {
 		return false, nil
 	}
 	return err == nil, err

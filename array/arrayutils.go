@@ -212,3 +212,12 @@ func UniqueString(slice []string) []string {
 	sort.Strings(slice)
 	return slice
 }
+
+func ToByte(slice []string, separator string) []byte {
+	var sb strings.Builder
+	for _, x := range slice {
+		sb.WriteString(x)
+		sb.WriteString(separator)
+	}
+	return []byte(strings.TrimSuffix(sb.String(), separator))
+}

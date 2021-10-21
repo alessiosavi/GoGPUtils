@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/alessiosavi/GoGPUtils/helper"
+	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
 type Conf struct {
@@ -73,4 +75,17 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 		return nil, fmt.Errorf("redshift ping error : (%s)", err.Error())
 	}
 	return db, nil
+}
+
+func CreateTableByType(tableName string, tableType map[string]string) string {
+	var sb strings.Builder
+	translator := sqlutils.GetRedshiftTranslator()
+	sb.WriteString("CREATE TABLE " + tableName + " (\n")
+	for k, v := range tableType {
+		sb.WriteString(k + " " + translator[v] + ",\n")
+	}
+	data := sb.String()
+	data = strings.TrimSuffix(data, ",\n")
+	data = data + ");"
+	return data
 }
