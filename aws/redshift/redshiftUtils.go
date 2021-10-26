@@ -49,12 +49,7 @@ func (c *Conf) Load(confFile string) error {
 		return err
 	}
 	if err = c.Validate(); err != nil {
-		indent, err := json.MarshalIndent(c, " ", "  ")
-		if err != nil {
-			log.Printf("%+v\n", c.Validate())
-		} else {
-			log.Println(string(indent))
-		}
+		log.Println(helper.MarshalIndent(c))
 		return err
 	}
 	return nil
@@ -71,18 +66,20 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 	if db, err = sql.Open("postgres", url); err != nil {
 		return nil, fmt.Errorf("redshift connect error : (%s)", err.Error())
 	}
-	if err = db.Ping(); err != nil {
-		return nil, fmt.Errorf("redshift ping error : (%s)", err.Error())
-	}
-	return db, nil
+	return db, db.Ping()
 }
 
-func CreateTableByType(tableName string, tableType map[string]string) string {
+// CreateTableByType is delegated to create the `CREATE TABLE` query for the given table
+// tableName: Name of the table
+// headers: List of headers necessarya to preserve orders
+// tableType: Map of headers:type for the given table
+func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
 	var sb strings.Builder
 	translator := sqlutils.GetRedshiftTranslator()
-	sb.WriteString("CREATE TABLE " + tableName + " (\n")
-	for k, v := range tableType {
-		sb.WriteString("\t" + k + " " + translator[v] + ",\n")
+	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
+	for _, header := range headers {
+		//for k, v := range tableType {
+		sb.WriteString("\t" + header + " " + translator[tableType[header]] + ",\n")
 	}
 	data := sb.String()
 	data = strings.TrimSuffix(data, ",\n")

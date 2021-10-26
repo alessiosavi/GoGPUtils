@@ -3,6 +3,7 @@ package csv
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"github.com/alessiosavi/GoGPUtils/files/processing"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"strconv"
@@ -31,6 +32,11 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	csvData, err := csvReader.ReadAll()
 	if err != nil {
 		return nil, nil, err
+	}
+	csvData = DecodeNonUTF8CSV(csvData)
+
+	if len(csvData) < 2 {
+		return nil, nil, errors.New("input data does not contains at least 2 rows (headers + data)")
 	}
 	// Remove the headers from the row data
 	headers := csvData[0]
@@ -68,6 +74,12 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 		// e[<type>] = False -> Not checked, continue trying to parse the field
 		var e = make(map[string]bool)
 		for _, row := range data {
+			if row[i][0] == '0' {
+				// A number that start with 0 is a valid number for golang, but from a data warehouse POV, it has to be saved as is, so it's better to use a string.
+				// Example: 00100 will be saved as 100, that is not correct
+				dataType[header] = "string"
+				break
+			}
 			// INT was not checked for this header
 			if !e["int"] {
 				if _, err = strconv.ParseInt(row[i], 10, 64); err == nil {
