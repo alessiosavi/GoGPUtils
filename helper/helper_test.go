@@ -152,3 +152,8 @@ func BenchmarkRandomFloat64RArray(t *testing.B) {
 //	t.Log(ConvertSize(1000000, "MB"))
 //	t.Log(ConvertSize(1024, "GB"))
 //}
+
+func TestRandomGenerator_RandomString(t *testing.T) {
+	var r RandomGenerator = InitRandomizer()
+	t.Log(r.RandomString(10))
+}

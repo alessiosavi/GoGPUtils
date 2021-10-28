@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 func init() {
@@ -93,6 +94,29 @@ func (rander RandomGenerator) RandomFloat64Array(min, max float64, length int) [
 		array[i] = rander.RandomFloat64(min, max)
 	}
 	return array
+}
+const LETTER_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	LETTER_IDX_BYTES = 6                       // 6 bits to represent a letter index
+	LETTER_IDX_MASK  = 1<<LETTER_IDX_BYTES - 1 // All 1-bits, as many as LETTER_IDX_BYTES
+	LETTER_IDX_MAX     = 63 / LETTER_IDX_BYTES   // # of letter indices fitting in 63 bits
+)
+
+func (rander RandomGenerator) RandomString(n int) string {
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, rander.randomizer.Int63(), LETTER_IDX_MAX; i >= 0; {
+		if remain == 0 {
+			cache, remain = rander.randomizer.Int63(), LETTER_IDX_MAX
+		}
+		if idx := int(cache & LETTER_IDX_MASK); idx < len(LETTER_BYTES) {
+			b[i] = LETTER_BYTES[idx]
+			i--
+		}
+		cache >>= LETTER_IDX_BYTES
+		remain--
+	}
+	return *(*string)(unsafe.Pointer(&b))
 }
 
 // RandomByte is delegated to generate a byte array with the given input length
