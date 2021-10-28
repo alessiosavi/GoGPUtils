@@ -1,4 +1,4 @@
-package iam
+package iamutils
 
 import (
 	"context"

@@ -76,7 +76,7 @@ func (n *Node) visitInOrder(array *[]int) {
 	}
 }
 
-// VisitPreOrder is delegated to traverse the Tree in pre order
+// VisitInOrder is delegated to traverse the Tree in order
 func (t *Tree) VisitInOrder() []int {
 	if t.Root == nil {
 		panic("Empty array")
@@ -86,7 +86,7 @@ func (t *Tree) VisitInOrder() []int {
 	return result
 }
 
-// VisitPreOrder is delegated to traverse the Tree in pre order
+// VisitPreOrder is delegated to traverse the Tree in pre-order
 func (t *Tree) VisitPreOrder() []int {
 	if t.Root == nil {
 		panic("Empty array")

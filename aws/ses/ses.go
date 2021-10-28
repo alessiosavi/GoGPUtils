@@ -1,4 +1,4 @@
-package ses
+package sesutils
 
 import (
 	"context"
@@ -10,6 +10,13 @@ import (
 
 var sesClient *sesv2.Client = nil
 var once sync.Once
+
+type MailConf struct {
+	FromName string   `json:"from_name,omitempty"`
+	FromMail string   `json:"from_mail,omitempty"`
+	To       string   `json:"to,omitempty"`
+	CC       []string `json:"cc,omitempty"`
+}
 
 func init() {
 	once.Do(func() {

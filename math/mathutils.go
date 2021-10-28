@@ -34,7 +34,7 @@ func SumIntArray(integers []int) int {
 	return sum
 }
 
-// SubtractIntArray return the subtract of every element contained in the array
+// SubtractIntArray subtract of every element contained in the array and return the result
 func SubtractIntArray(integers []int) int {
 	subtract := 0
 	for i := range integers {
@@ -191,7 +191,7 @@ func ModeInt(array []int) []int {
 	var max int
 	var maxs []int
 
-	// Avoid to take care about value that does not appear at least 2 time
+	// Avoid taking care about value that does not appear at least 2 time
 	max = 2
 	for i := 1; i < len(mode); i++ {
 		if mode[i] >= max {
@@ -209,7 +209,7 @@ func ModeInt(array []int) []int {
 // MedianInt is delegated to calculate the median for the given INT array
 func MedianInt(arr []int) float64 {
 	var array = make([]int, len(arr))
-	// Avoid to modify the input array
+	// Avoid modifying the input array
 	copy(array, arr)
 	sort.Ints(array)
 	if len(array)%2 != 0 {
@@ -241,7 +241,7 @@ func AverageInt(array []int) float64 {
 func StandardDeviationInt(array []int) float64 {
 	// 1. Calculate average
 	mean := AverageInt(array)
-	// 2. Subtract every terms for the average and square the result. Sum every terms
+	// 2. Subtract every term for the average and square the result. Sum every terms
 	var sum float64
 	for i := range array {
 		sum += math.Pow(float64(array[i])-mean, 2)
@@ -253,11 +253,11 @@ func StandardDeviationInt(array []int) float64 {
 	return math.Sqrt(sum)
 }
 
-// StandardDeviationInt is delegated to calculate the STD for the given array
+// StandardDeviationFloat64 is delegated to calculate the STD for the given array
 func StandardDeviationFloat64(array []float64) float64 {
 	// 1. Calculate average
 	mean := AverageFloat64(array)
-	// 2. Subtract every terms for the average and square the result. Sum every terms
+	// 2. Subtract every term for the average and square the result. Sum every terms
 	var sum float64
 	for i := range array {
 		sum += math.Pow(array[i]-mean, 2)
@@ -298,7 +298,7 @@ func CovarianceInt(arr1, arr2 []int) float64 {
 	return sum / float64(len(arr1)-1)
 }
 
-// CovarianceInt is delegated to calculate the Covariance between the given arrays
+// CovarianceFloat64 is delegated to calculate the Covariance between the given arrays
 func CovarianceFloat64(arr1, arr2 []float64) float64 {
 	if len(arr1) != len(arr2) || len(arr1) == 0 {
 		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
@@ -400,7 +400,7 @@ func AverageInt64(array []int64) float64 {
 	return float64(total / int64(len(array)))
 }
 
-// AverageFloat32 is delegated to calculate the average of an float32 array
+// AverageFloat32 is delegated to calculate the average of a float32 array
 func AverageFloat32(array []float32) float64 {
 	var total float32
 	if array == nil {
@@ -414,7 +414,7 @@ func AverageFloat32(array []float32) float64 {
 	return float64(total / float32(len(array)))
 }
 
-// AverageFloat64 is delegated to calculate the average of an float64 array
+// AverageFloat64 is delegated to calculate the average of a float64 array
 func AverageFloat64(array []float64) float64 {
 	var total float64
 	if array == nil {

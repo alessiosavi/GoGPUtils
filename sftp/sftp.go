@@ -1,6 +1,6 @@
-// Package sftp can be used in order to copy file from SSH too.
+// Package sftputils can be used in order to copy file from SSH too.
 // You just need to set SSH port instead of SFTP
-package sftp
+package sftputils
 
 import (
 	"bytes"
@@ -46,7 +46,7 @@ func (c *SFTPConf) validate() error {
 	return nil
 }
 
-// Create a new SFTP connection by given parameters
+//NewConn Create a new SFTP connection by given parameters
 func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	if err := c.validate(); err != nil {
 		return nil, err
@@ -126,6 +126,33 @@ func (c *SFTPClient) DeleteFile(path string) error {
 
 func (c *SFTPClient) DeleteDirectory(path string) error {
 	return c.Client.RemoveDirectory(path)
+}
+
+func (c *SFTPClient) List(path string) ([]string, error) {
+	exist, err := c.Exist(path)
+	if err != nil {
+		return nil, err
+	} else if !exist {
+		return nil, errors.New(fmt.Sprintf("path %s does not exists!", path))
+	}
+	isDir, err := c.IsDir(path)
+	if err != nil {
+		return nil, err
+	}
+	if !isDir {
+		return nil, errors.New(fmt.Sprintf("path %s is not a dir!", path))
+	}
+
+	walker := c.Client.Walk(path)
+	var files []string
+	for walker.Step() {
+		if err = walker.Err(); err != nil {
+			log.Printf("Error with file: %s | Err: %s\n", walker.Path(), err)
+			continue
+		}
+		files = append(files, walker.Path())
+	}
+	return files, nil
 }
 
 func (c *SFTPClient) Exist(path string) (bool, error) {

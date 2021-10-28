@@ -15,7 +15,7 @@ var port string
 func init() {
 	for {
 
-		_port := 		helper.RandomInt(1024, 65535)
+		_port := helper.RandomInt(1024, 65535)
 		timeout := time.Second
 		host := fmt.Sprintf("localhost:%d", _port)
 		conn, err := net.DialTimeout("tcp", host, timeout)

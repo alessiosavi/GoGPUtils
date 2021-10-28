@@ -1,4 +1,4 @@
-package ec2
+package ec2utils
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -17,8 +17,8 @@ func TestDescribeInstanceByName(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "",
-			args:    args{
+			name: "",
+			args: args{
 				instanceName: "qa-bbl-server",
 			},
 			want:    nil,

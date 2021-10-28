@@ -1,4 +1,4 @@
-package secrets
+package secretsutils
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func ListSecret() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var s []string = make([]string, len(secrets.SecretList))
+	var s = make([]string, len(secrets.SecretList))
 	for i, secret := range secrets.SecretList {
 		s[i] = *secret.Name
 	}

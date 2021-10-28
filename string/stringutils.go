@@ -45,7 +45,7 @@ func CheckPresence(array []string, target string) bool {
 	return false
 }
 
-// IsUpper verify that a string does contains only upper character
+// IsUpper verify that a string contains only upper character
 func IsUpper(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -56,7 +56,7 @@ func IsUpper(str string) bool {
 	return true
 }
 
-// IsLower verify that a string does contains only lower character
+// IsLower verify that a string contains only lower character
 func IsLower(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -230,7 +230,7 @@ func RemoveNonASCII(str string) string {
 	return RemoveDoubleWhiteSpace(b.String())
 }
 
-// IsBlank is delegated to verify that the does not contains only empty char
+// IsBlank is delegated to verify that the string does not contain only empty char
 func IsBlank(str string) bool {
 	// Check length
 	if len(str) > 0 {
@@ -246,7 +246,7 @@ func IsBlank(str string) bool {
 }
 
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
-// It also convert every new line in a space
+// It also converts every new line in a space
 func Trim(str string) string {
 	if str == "" {
 		return str
@@ -468,7 +468,7 @@ func DiceCoefficient(string1, string2 string) float64 {
 	return matches / float64(strlen1+strlen2)
 }
 
-// Join is a quite efficient string concatenator
+// Join is a quite efficient string "concatenator"
 func Join(strs ...string) string {
 	var sb strings.Builder
 	for _, str := range strs {
@@ -477,7 +477,7 @@ func Join(strs ...string) string {
 	return sb.String()
 }
 
-// Join is a quite efficient string concatenator
+// JoinSeparator is a quite efficient string "concatenator"
 func JoinSeparator(sep string, strs ...string) string {
 	var sb strings.Builder
 	for _, str := range strs {

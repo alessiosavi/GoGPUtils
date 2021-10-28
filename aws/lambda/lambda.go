@@ -1,4 +1,4 @@
-package lambda
+package lambdautils
 
 import (
 	"context"

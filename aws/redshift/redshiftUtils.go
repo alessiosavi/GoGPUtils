@@ -1,4 +1,4 @@
-package redshift
+package redshiftutils
 
 import (
 	"database/sql"
@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 )
 
 type Conf struct {
@@ -71,7 +72,7 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 
 // CreateTableByType is delegated to create the `CREATE TABLE` query for the given table
 // tableName: Name of the table
-// headers: List of headers necessarya to preserve orders
+// headers: List of headers necessary to preserve orders
 // tableType: Map of headers:type for the given table
 func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
 	var sb strings.Builder
@@ -85,4 +86,74 @@ func CreateTableByType(tableName string, headers []string, tableType map[string]
 	data = strings.TrimSuffix(data, ",\n")
 	data = data + ");"
 	return data
+}
+
+type Result struct {
+	Userid          int       `json:"userid,omitempty"`
+	Slice           int       `json:"slice,omitempty"`
+	Tbl             int       `json:"tbl,omitempty"`
+	Starttime       time.Time `json:"starttime,omitempty"`
+	Session         int       `json:"session,omitempty"`
+	Query           int       `json:"query,omitempty"`
+	Filename        string    `json:"filename,omitempty"`
+	Line_number     int       `json:"line_number,omitempty"`
+	Colname         string    `json:"colname,omitempty"`
+	Type            string    `json:"type,omitempty"`
+	Col_length      string    `json:"col_length,omitempty"`
+	Position        int       `json:"position,omitempty"`
+	Raw_line        string    `json:"raw_line,omitempty"`
+	Raw_field_value string    `json:"raw_field_value,omitempty"`
+	Err_code        int       `json:"err_code,omitempty"`
+	Err_reason      string    `json:"err_reason,omitempty"`
+	Is_partial      string    `json:"is_partial,omitempty"`
+	Start_offset    string    `json:"start_offset,omitempty"`
+}
+
+func (r *Result) Trim() {
+	r.Filename = stringutils.Trim(r.Filename)
+	r.Colname = stringutils.Trim(r.Colname)
+	r.Type = stringutils.Trim(r.Type)
+	r.Col_length = stringutils.Trim(r.Col_length)
+	r.Raw_line = stringutils.Trim(r.Raw_line)
+	r.Raw_field_value = stringutils.Trim(r.Raw_field_value)
+	r.Err_reason = stringutils.Trim(r.Err_reason)
+	r.Is_partial = stringutils.Trim(r.Is_partial)
+	r.Start_offset = stringutils.Trim(r.Start_offset)
+}
+
+// GetCOPYErrors is delegated to retrieve the loading error related to the COPY commands, sorted by time
+func GetCOPYErrors(connection *sql.DB) []Result {
+	rows, err := connection.Query("select * from stl_load_errors order by starttime desc")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	var errorsResult []Result
+	for rows.Next() {
+		var res Result
+		if err = rows.Scan(&res.Userid,
+			&res.Slice,
+			&res.Tbl,
+			&res.Starttime,
+			&res.Session,
+			&res.Query,
+			&res.Filename,
+			&res.Line_number,
+			&res.Colname,
+			&res.Type,
+			&res.Col_length,
+			&res.Position,
+			&res.Raw_line,
+			&res.Raw_field_value,
+			&res.Err_code,
+			&res.Err_reason,
+			&res.Is_partial,
+			&res.Start_offset); err != nil {
+			panic(err)
+		} else {
+			res.Trim()
+			errorsResult = append(errorsResult, res)
+		}
+	}
+	return errorsResult
 }

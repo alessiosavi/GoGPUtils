@@ -10,7 +10,7 @@ project.
 ## Benchmark
 
 ```text
-$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws | grep sftp`
+$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws | grep -v sftp`
 ?       github.com/alessiosavi/GoGPUtils        [no test files]
 PASS
 ok      github.com/alessiosavi/GoGPUtils/array  0.058s

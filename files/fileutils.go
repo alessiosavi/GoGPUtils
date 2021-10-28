@@ -93,7 +93,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error)
 			stringsArray[N_STRING-linesReaded-1] = stringBuffer
 			stringBuffer = ""
 			linesReaded++
-			// Continue to read, we have not found a new line and we have enough file to read
+			// Continue to read, we have not found a new line, and we have enough file to read
 		}
 		iteration++
 	}
@@ -215,8 +215,7 @@ func FindFiles(path, target string, caseSensitive bool) []string {
 			return nil
 		}
 	} else {
-		// Case insensitive
-		// Read all the file recursively, without taking care about the case of the string
+		// case-insensitive, read all the file recursively, without taking care about the case of the string
 		target = strings.ToLower(target)
 		err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 			if IsFile(file) && strings.Contains(strings.ToLower(file), target) {

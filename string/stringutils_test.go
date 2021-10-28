@@ -327,12 +327,6 @@ func BenchmarkRemoveFromString(t *testing.B) {
 	}
 }
 
-func BenchmarkRandomString(t *testing.B) {
-	for n := 0; n < t.N; n++ {
-		RandomString(5000)
-	}
-}
-
 func BenchmarkExtractTextFromQuery(b *testing.B) {
 	content, err := ioutil.ReadFile(danteDataset)
 	if err != nil {

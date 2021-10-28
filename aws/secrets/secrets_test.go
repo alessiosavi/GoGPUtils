@@ -1,4 +1,4 @@
-package secrets
+package secretsutils
 
 import (
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -103,4 +103,3 @@ func TestListSecret(t *testing.T) {
 		})
 	}
 }
-

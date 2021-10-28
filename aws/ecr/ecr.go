@@ -1,4 +1,4 @@
-package ecr
+package ecrutils
 
 import (
 	"context"

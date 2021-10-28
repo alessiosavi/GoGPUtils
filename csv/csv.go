@@ -1,10 +1,10 @@
-package csv
+package csvutils
 
 import (
 	"bytes"
 	"encoding/csv"
 	"errors"
-	"github.com/alessiosavi/GoGPUtils/files/processing"
+	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"strconv"
 )
@@ -13,7 +13,7 @@ import (
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
 func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
-	terminator, err := processing.DetectLineTerminator(bytes.NewReader(buf))
+	terminator, err := processingutils.DetectLineTerminator(bytes.NewReader(buf))
 	// Clean file if possible ...
 	if err == nil {
 		buf = bytes.Replace(buf, stringutils.BOM, []byte{}, 1)
@@ -116,7 +116,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 func DecodeNonUTF8CSV(data [][]string) [][]string {
 	for i := range data {
 		for j := range data[i] {
-			data[i][j] = processing.DecodeNonUTF8String(data[i][j])
+			data[i][j] = processingutils.DecodeNonUTF8String(data[i][j])
 		}
 	}
 	return data

@@ -42,7 +42,7 @@ func ExtractFunctionFromFile(codeFile, prefix string) ([]string, error) {
 	return functions, nil
 }
 
-// CreateBenchmarkSignature Is delegated to create the the benchmark test signature for the input codeFile
+// CreateBenchmarkSignature Is delegated to create the benchmark test signature for the input codeFile
 func CreateBenchmarkSignature(codeFile string) (string, error) {
 	// function will save the method present in the file
 	functions, err := ExtractFunctionFromFile(codeFile, "")
@@ -72,7 +72,7 @@ func CreateBenchmarkSignature(codeFile string) (string, error) {
 	return testfileContent.String(), nil
 }
 
-// CreateTestSignature Is Delegated to create the the benchmark test signature for the input codeFile
+// CreateTestSignature Is Delegated to create the benchmark test signature for the input codeFile
 func CreateTestSignature(codeFile string) (string, error) {
 	// function will save the method present in the file
 	functions, err := ExtractFunctionFromFile(codeFile, "")

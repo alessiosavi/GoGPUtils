@@ -74,7 +74,7 @@ func RemoveElement(s []string, i int) []string {
 }
 
 // JoinStrings use a strings.Builder for concatenate the input string array.
-// It concatenate the strings among the delimiter in input
+// It concatenates the strings among the delimiter in input
 func JoinStrings(strs []string, delimiter string) string {
 	if len(strs) == 0 {
 		return ""
@@ -91,7 +91,7 @@ func JoinStrings(strs []string, delimiter string) string {
 }
 
 // JoinInts use a strings.Builder for concatenate the input string array.
-// It concatenate the strings among the delimiter in input
+// It concatenates the strings among the delimiter in input
 func JoinInts(ints []int, delimiter string) string {
 	if len(ints) == 0 {
 		return ""
@@ -146,7 +146,7 @@ func RemoveIntByValue(slice []int, value int) []int {
 	return slice
 }
 
-// In is delegated to verify if the given value is present in the target slice
+// InInt is delegated to verify if the given value is present in the target slice
 func InInt(slice []int, target int) bool {
 	for _, b := range slice {
 		if b == target {
@@ -156,7 +156,7 @@ func InInt(slice []int, target int) bool {
 	return false
 }
 
-// In is delegated to verify if the given value is present in the target slice
+// InRune is delegated to verify if the given value is present in the target slice
 func InRune(slice []rune, target rune) bool {
 	for _, b := range slice {
 		if b == target {

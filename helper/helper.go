@@ -95,11 +95,12 @@ func (rander RandomGenerator) RandomFloat64Array(min, max float64, length int) [
 	}
 	return array
 }
+
 const LETTER_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const (
 	LETTER_IDX_BYTES = 6                       // 6 bits to represent a letter index
 	LETTER_IDX_MASK  = 1<<LETTER_IDX_BYTES - 1 // All 1-bits, as many as LETTER_IDX_BYTES
-	LETTER_IDX_MAX     = 63 / LETTER_IDX_BYTES   // # of letter indices fitting in 63 bits
+	LETTER_IDX_MAX   = 63 / LETTER_IDX_BYTES   // # of letter indices fitting in 63 bits
 )
 
 func (rander RandomGenerator) RandomString(n int) string {
