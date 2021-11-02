@@ -10,7 +10,14 @@ import (
 	"strings"
 )
 
-var BOM = []byte{0xef, 0xbb, 0xbf} // UTF-8
+var BOMS = [][]byte{
+	{0xef, 0xbb, 0xbf},       // UTF-8
+	{0xfe, 0xff},             // UTF-16 BE
+	{0xff, 0xfe},             // UTF-16 LE
+	{0x00, 0x00, 0xfe, 0xff}, // UTF-32 BE
+	{0xff, 0xfe, 0x00, 0x00}, // UTF-32 LE
+
+}
 
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
 // It can be viewed as a tokenzier that use whitespace for delimit the word

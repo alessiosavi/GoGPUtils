@@ -6,6 +6,11 @@ import (
 	"errors"
 	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"strconv"
 )
 
@@ -14,9 +19,22 @@ import (
 // [][]string -> Content of the CSV
 func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	terminator, err := processingutils.DetectLineTerminator(bytes.NewReader(buf))
+	contentType := http.DetectContentType(buf)
+	encoder, encoding, ok := charset.DetermineEncoding(buf, contentType)
+	if ok {
+		var errRead error
+		log.Println("WARNING | Data is encoded using:", encoding)
+		r := transform.NewReader(bytes.NewReader(buf), encoder.NewDecoder())
+		buf, errRead = ioutil.ReadAll(r)
+		if errRead != nil {
+			return nil, nil, errRead
+		}
+	}
 	// Clean file if possible ...
 	if err == nil {
-		buf = bytes.Replace(buf, stringutils.BOM, []byte{}, 1)
+		for _, BOM := range stringutils.BOMS {
+			buf = bytes.TrimPrefix(buf, BOM)
+		}
 		buf = bytes.ReplaceAll(buf, []byte(terminator), []byte("\n"))
 		buf = bytes.ReplaceAll(buf, []byte("\u001D"), []byte{}) // Remove group separator
 		buf = bytes.ReplaceAll(buf, []byte("\u000B"), []byte{}) // Remove vertical tab
