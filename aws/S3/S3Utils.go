@@ -31,7 +31,6 @@ func init() {
 }
 
 func GetObject(bucket, fileName string) ([]byte, error) {
-
 	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fileName)})
@@ -72,7 +71,6 @@ func PutObject(bucket, filename string, data []byte) error {
 }
 
 func DeleteObject(bucket, key string) error {
-
 	_, err := S3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -81,7 +79,6 @@ func DeleteObject(bucket, key string) error {
 }
 
 func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
-
 	defer stream.Close()
 	uploader := manager.NewUploader(S3Client)
 	uploader.Concurrency = 10
@@ -98,7 +95,6 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 }
 
 func ListBucketObject(bucket, prefix string) ([]string, error) {
-
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(prefix),
@@ -134,7 +130,6 @@ func ListBucketObject(bucket, prefix string) ([]string, error) {
 }
 
 func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
-
 	if _, err := S3Client.CopyObject(context.Background(), &s3.CopyObjectInput{
 		Bucket:     aws.String(bucketTarget),
 		CopySource: aws.String(path.Join(bucketSource, keySource)),
@@ -146,7 +141,6 @@ func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
 }
 
 func ObjectExists(bucket, key string) bool {
-
 	if _, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}); err != nil {
 		return false
 	}
@@ -177,7 +171,6 @@ func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 }
 
 func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
-
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
 	if err != nil {
 		return true
@@ -187,5 +180,5 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 		return true
 	}
 
-	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
+	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
 }
