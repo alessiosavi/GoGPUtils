@@ -29,7 +29,7 @@ func InvokeLambda(name string, payload []byte, invocationType types.InvocationTy
 		Payload:        payload})
 }
 
-func ListLambda() ([]string, error) {
+func ListLambdas() ([]string, error) {
 	f, err := lambdaClient.ListFunctions(context.Background(), &lambda.ListFunctionsInput{})
 
 	if err != nil {
@@ -53,6 +53,18 @@ func ListLambda() ([]string, error) {
 		}
 	}
 	return functions, nil
+}
+
+func DeleteLambda(lambdaName string) (*lambda.DeleteFunctionOutput, error) {
+	return lambdaClient.DeleteFunction(context.Background(), &lambda.DeleteFunctionInput{FunctionName: aws.String(lambdaName)})
+}
+
+func DescribeLambda(lambdaName string) (*lambda.GetFunctionOutput, error) {
+	function, err := lambdaClient.GetFunction(context.Background(), &lambda.GetFunctionInput{FunctionName: aws.String(lambdaName)})
+	if err != nil {
+		return nil, err
+	}
+	return function, nil
 }
 
 func DeployLambdaFromS3(functionName, bucket, key string) error {

@@ -20,7 +20,7 @@ var BOMS = [][]byte{
 }
 
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
-// It can be viewed as a tokenzier that use whitespace for delimit the word
+// It can be viewed as a tokenizer that use whitespace for delimit the word
 func ExtractTextFromQuery(target string, ignore []string) []string {
 	var queries []string
 	rgxp := regexp.MustCompile(`(\w+)`)

@@ -1,33 +1,16 @@
 package lambdautils
 
 import (
-	"reflect"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"testing"
 )
 
 func TestListLambda(t *testing.T) {
-	tests := []struct {
-		name    string
-		want    []string
-		wantErr bool
-	}{{
-		name:    "ok",
-		want:    nil,
-		wantErr: false,
-	},
+	lambdas, err := ListLambdas()
+	if err != nil {
+		panic(err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ListLambda()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ListLambda() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListLambda() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Log(helper.MarshalIndent(lambdas))
 }
 
 func TestDeployLambdaFromS3(t *testing.T) {
@@ -46,5 +29,18 @@ func TestDeployLambdaFromZIP(t *testing.T) {
 	err := DeployLambdaFromZIP(functionName, zipFile)
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestDeleteAllLambda(t *testing.T) {
+	lambdas, err := ListLambdas()
+	if err != nil {
+		panic(err)
+	}
+	for _, lambda := range lambdas {
+		if _, err = DeleteLambda(lambda); err != nil {
+			panic(err)
+		}
+
 	}
 }
