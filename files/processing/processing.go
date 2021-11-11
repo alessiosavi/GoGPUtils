@@ -1,11 +1,11 @@
-package processing
+package processingutils
 
 import (
-	"bufio"
 	"bytes"
-	"errors"
 	"io"
 	"io/ioutil"
+	"log"
+	"unicode/utf8"
 )
 
 type LineTerminatorType string
@@ -19,34 +19,40 @@ const (
 	ND   LineTerminatorType = `unable to detect line terminator`
 )
 
-// FIXME: Select the line terminator by reading all the file and finding the one that occurs more time
 func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
-	buff := make([]byte, 1024*10)
+	// Read 1mb of file
+	log.SetFlags(log.Llongfile | log.LstdFlags)
 
+	buff := make([]byte, 1024*1000)
+	var counts = make(map[LineTerminatorType]int)
 	for {
 		if _, err := reader.Read(buff); err != nil {
 			if err != io.EOF {
-				return "", err
+				return ND, err
 			} else {
-				return "", errors.New(string(ND))
+				break
 			}
 		}
-		if bytes.Contains(buff, []byte("\r\n")) {
-			return CRLF, nil
-		}
-		if bytes.Contains(buff, []byte("\n\r")) {
-			return LFCR, nil
-		}
-		if bytes.Contains(buff, []byte("\r")) {
-			return CR, nil
-		}
-		if bytes.Contains(buff, []byte("\n")) {
-			return LF, nil
-		}
-		if bytes.Contains(buff, []byte("\036")) {
-			return RS, nil
+		counts[CRLF] = bytes.Count(buff, []byte("\r\n"))
+		counts[LFCR] = bytes.Count(buff, []byte("\n\r"))
+		counts[CR] = bytes.Count(buff, []byte("\r"))
+		counts[LF] = bytes.Count(buff, []byte("\n"))
+		counts[RS] = bytes.Count(buff, []byte("\036"))
+
+	}
+
+	counts[CR] -= counts[CRLF] + counts[LFCR]
+	counts[LF] -= counts[CRLF] + counts[LFCR]
+	maxV := 0
+	var maxKey = ND
+	for k, v := range counts {
+		if v > maxV {
+			maxV = v
+			maxKey = k
 		}
 	}
+	//log.Println(helper.MarshalIndent(counts))
+	return maxKey, nil
 }
 
 // ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
@@ -60,10 +66,9 @@ func ReplaceLineTerminator(data, newLineTerminator []byte) ([]byte, error) {
 	return bytes.Trim(newData, string(newLineTerminator)), nil
 }
 
-// ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
+// ReplaceLineTerminatorBytesReader is delegated to find the line terminator of the given byte array and replace them without the one provided in input
 func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []byte) ([]byte, error) {
-
-	terminator, err := DetectLineTerminator(bufio.NewReader(data))
+	terminator, err := DetectLineTerminator(data)
 	if err != nil {
 		return nil, err
 	}
@@ -78,4 +83,20 @@ func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []by
 	newData = bytes.ReplaceAll(newData, []byte(terminator), newLineTerminator)
 	newData = bytes.TrimSpace(newData)
 	return bytes.Trim(newData, string(newLineTerminator)), nil
+}
+
+func DecodeNonUTF8String(data string) string {
+	if !utf8.ValidString(data) {
+		v := make([]rune, 0, len(data))
+		for k, r := range data {
+			if r == utf8.RuneError {
+				if _, size := utf8.DecodeRuneInString(data[k:]); size == 1 {
+					continue
+				}
+			}
+			v = append(v, r)
+		}
+		return string(v)
+	}
+	return data
 }

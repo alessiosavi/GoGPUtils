@@ -1,9 +1,36 @@
 package arrayutils
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
+
+func RemoveElementsFromMatrixByIndex(data [][]string, j []int) [][]string {
+	var (
+		newArray [][]string
+		toAdd    = true
+	)
+
+	if len(j) == 0 {
+		return data
+	}
+	for i := 0; i < len(data); i++ {
+		for _, k := range j {
+			if i == k {
+				toAdd = false
+				break
+			}
+		}
+
+		if toAdd {
+			newArray = append(newArray, data[i])
+		}
+		toAdd = true
+	}
+
+	return newArray
+}
 
 //RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
 func RemoveElementsFromStringByIndex(data []string, j []int) []string {
@@ -47,7 +74,7 @@ func RemoveElement(s []string, i int) []string {
 }
 
 // JoinStrings use a strings.Builder for concatenate the input string array.
-// It concatenate the strings among the delimiter in input
+// It concatenates the strings among the delimiter in input
 func JoinStrings(strs []string, delimiter string) string {
 	if len(strs) == 0 {
 		return ""
@@ -64,7 +91,7 @@ func JoinStrings(strs []string, delimiter string) string {
 }
 
 // JoinInts use a strings.Builder for concatenate the input string array.
-// It concatenate the strings among the delimiter in input
+// It concatenates the strings among the delimiter in input
 func JoinInts(ints []int, delimiter string) string {
 	if len(ints) == 0 {
 		return ""
@@ -119,7 +146,7 @@ func RemoveIntByValue(slice []int, value int) []int {
 	return slice
 }
 
-// In is delegated to verify if the given value is present in the target slice
+// InInt is delegated to verify if the given value is present in the target slice
 func InInt(slice []int, target int) bool {
 	for _, b := range slice {
 		if b == target {
@@ -129,7 +156,7 @@ func InInt(slice []int, target int) bool {
 	return false
 }
 
-// In is delegated to verify if the given value is present in the target slice
+// InRune is delegated to verify if the given value is present in the target slice
 func InRune(slice []rune, target rune) bool {
 	for _, b := range slice {
 		if b == target {
@@ -160,4 +187,37 @@ func RemoveStrings(slice, toRemove []string) []string {
 		}
 	}
 	return slice
+}
+
+// InStrings is delegated to verify if the given string arrays contains the target
+func InStrings(slice []string, target string) bool {
+	for _, element := range slice {
+		if element == target {
+			return true
+		}
+	}
+	return false
+}
+
+func UniqueString(slice []string) []string {
+	var m = make(map[string]struct{})
+	for _, x := range slice {
+		m[x] = struct{}{}
+	}
+	slice = []string{}
+	for x := range m {
+		slice = append(slice, x)
+	}
+
+	sort.Strings(slice)
+	return slice
+}
+
+func ToByte(slice []string, separator string) []byte {
+	var sb strings.Builder
+	for _, x := range slice {
+		sb.WriteString(x)
+		sb.WriteString(separator)
+	}
+	return []byte(strings.TrimSuffix(sb.String(), separator))
 }

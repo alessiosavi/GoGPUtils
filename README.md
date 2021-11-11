@@ -4,12 +4,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/alessiosavi/GoGPUtils)](https://goreportcard.com/report/github.com/alessiosavi/GoGPUtils) [![GoDoc](https://godoc.org/github.com/alessiosavi/GoGPUtils?status.svg)](https://godoc.org/github.com/alessiosavi/GoGPUtils) [![License](https://img.shields.io/github/license/alessiosavi/GoGPUtils)](https://img.shields.io/github/license/alessiosavi/GoGPUtils) [![Version](https://img.shields.io/github/v/tag/alessiosavi/GoGPUtils)](https://img.shields.io/github/v/tag/alessiosavi/GoGPUtils) [![Code size](https://img.shields.io/github/languages/code-size/alessiosavi/GoGPUtils)](https://img.shields.io/github/languages/code-size/alessiosavi/GoGPUtils) [![Repo size](https://img.shields.io/github/repo-size/alessiosavi/GoGPUtils)](https://img.shields.io/github/repo-size/alessiosavi/GoGPUtils) [![Issue open](https://img.shields.io/github/issues/alessiosavi/GoGPUtils)](https://img.shields.io/github/issues/alessiosavi/GoGPUtils)
 [![Issue closed](https://img.shields.io/github/issues-closed/alessiosavi/GoGPUtils)](https://img.shields.io/github/issues-closed/alessiosavi/GoGPUtils)
 
-A simple Go general-purpose utility repository for avoid reinventing the wheel every time that I need to start a new project.
+A simple Go general-purpose utility repository for avoid reinventing the wheel every time that I need to start a new
+project.
 
 ## Benchmark
 
 ```text
-$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws`
+$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws | grep -v sftp`
 ?       github.com/alessiosavi/GoGPUtils        [no test files]
 PASS
 ok      github.com/alessiosavi/GoGPUtils/array  0.058s

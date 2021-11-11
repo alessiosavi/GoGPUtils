@@ -1,5 +1,5 @@
 package main
 
 func main() {
-	// Empty main for Github actions CI
+	// Empty main for GitHub actions CI
 }

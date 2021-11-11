@@ -93,7 +93,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error)
 			stringsArray[N_STRING-linesReaded-1] = stringBuffer
 			stringBuffer = ""
 			linesReaded++
-			// Continue to read, we have not found a new line and we have enough file to read
+			// Continue to read, we have not found a new line, and we have enough file to read
 		}
 		iteration++
 	}
@@ -115,6 +115,8 @@ func ReadFileInArray(filePath string) []string {
 	if err != nil {
 		return nil
 	}
+
+	data = bytes.Trim(data, "\n")
 	return strings.Split(string(data), "\n")
 }
 
@@ -178,9 +180,12 @@ func GetFileDate(filepath string) string {
 }
 
 // ListFile is delegated to find the files from the given directory, recursively for each dir
-func ListFile(path string) []string {
+func ListFile(path string) ([]string, error) {
 	var fileList []string
 	// Read all the file recursively
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
 	err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 		if IsFile(file) {
 			fileList = append(fileList, file)
@@ -188,10 +193,9 @@ func ListFile(path string) []string {
 		return nil
 	})
 	if err != nil {
-		log.Println(err)
-		return nil
+		return nil, err
 	}
-	return fileList
+	return fileList, nil
 }
 
 // FindFiles is delegated to find the files from the given directory, recursively for each dir, and extract only the one that match the input
@@ -211,8 +215,7 @@ func FindFiles(path, target string, caseSensitive bool) []string {
 			return nil
 		}
 	} else {
-		// Case insensitive
-		// Read all the file recursively, without taking care about the case of the string
+		// case-insensitive, read all the file recursively, without taking care about the case of the string
 		target = strings.ToLower(target)
 		err := filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
 			if IsFile(file) && strings.Contains(strings.ToLower(file), target) {
@@ -392,7 +395,10 @@ func FilterFromFile(filename, target string, ignorecase bool) []string {
 
 	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 	for scanner.Scan() {
-		data := strings.ToLower(scanner.Text())
+		var data = scanner.Text()
+		if ignorecase {
+			data = strings.ToLower(data)
+		}
 		if strings.Contains(data, target) {
 			result = append(result, data)
 		}
@@ -515,4 +521,8 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 		}
 	}
 	return false
+}
+
+func Move(source, dest string) error {
+	return os.Rename(source, dest)
 }

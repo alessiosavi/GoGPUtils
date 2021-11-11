@@ -1,38 +1,42 @@
-package redshift
+package redshiftutils
 
 import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/alessiosavi/GoGPUtils/helper"
+	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
+	"strings"
+	"time"
 )
 
 type Conf struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	DBName   string `json:"dbname"`
+	Username string      `json:"username"`
+	Password string      `json:"password"`
+	Host     string      `json:"host"`
+	Port     json.Number `json:"port"`
+	DBName   string      `json:"dbname"`
 }
 
 func (c *Conf) Validate() error {
 	if stringutils.IsBlank(c.Username) {
-		return fmt.Errorf("username is empty:[%+v]", *c)
+		return fmt.Errorf("username is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	if stringutils.IsBlank(c.Password) {
-		return fmt.Errorf("password is empty:[%+v]", *c)
+		return fmt.Errorf("password is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	if stringutils.IsBlank(c.Host) {
-		return fmt.Errorf("host is empty:[%+v]", *c)
+		return fmt.Errorf("host is empty:[%+v]", helper.MarshalIndent(*c))
 	}
-	if stringutils.IsBlank(c.Port) {
-		return fmt.Errorf("port is empty:[%+v]", *c)
+	if stringutils.IsBlank(c.Port.String()) {
+		return fmt.Errorf("password is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	if stringutils.IsBlank(c.DBName) {
-		return fmt.Errorf("DBName is empty:[%+v]", *c)
+		return fmt.Errorf("DBName is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	return nil
 }
@@ -40,18 +44,13 @@ func (c *Conf) Validate() error {
 func (c *Conf) Load(confFile string) error {
 	data, err := ioutil.ReadFile(confFile)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if err = json.Unmarshal(data, &c); err != nil {
-		panic(err)
+		return err
 	}
 	if err = c.Validate(); err != nil {
-		indent, err := json.MarshalIndent(c, " ", "  ")
-		if err != nil {
-			log.Printf("%+v\n", c.Validate())
-		} else {
-			log.Println(string(indent))
-		}
+		log.Println(helper.MarshalIndent(c))
 		return err
 	}
 	return nil
@@ -65,13 +64,96 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 	}
 	url := fmt.Sprintf("sslmode=require user=%v password=%v host=%v port=%v dbname=%v",
 		conf.Username, conf.Password, conf.Host, conf.Port, conf.DBName)
-
 	if db, err = sql.Open("postgres", url); err != nil {
 		return nil, fmt.Errorf("redshift connect error : (%s)", err.Error())
 	}
+	return db, db.Ping()
+}
 
-	if err = db.Ping(); err != nil {
-		return nil, fmt.Errorf("redshift ping error : (%s)", err.Error())
+// CreateTableByType is delegated to create the `CREATE TABLE` query for the given table
+// tableName: Name of the table
+// headers: List of headers necessary to preserve orders
+// tableType: Map of headers:type for the given table
+func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
+	var sb strings.Builder
+	translator := sqlutils.GetRedshiftTranslator()
+	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
+	for _, header := range headers {
+		//for k, v := range tableType {
+		sb.WriteString("\t" + header + " " + translator[tableType[header]] + ",\n")
 	}
-	return db, nil
+	data := sb.String()
+	data = strings.TrimSuffix(data, ",\n")
+	data = data + ");"
+	return data
+}
+
+type Result struct {
+	Userid          int       `json:"userid,omitempty"`
+	Slice           int       `json:"slice,omitempty"`
+	Tbl             int       `json:"tbl,omitempty"`
+	Starttime       time.Time `json:"starttime,omitempty"`
+	Session         int       `json:"session,omitempty"`
+	Query           int       `json:"query,omitempty"`
+	Filename        string    `json:"filename,omitempty"`
+	Line_number     int       `json:"line_number,omitempty"`
+	Colname         string    `json:"colname,omitempty"`
+	Type            string    `json:"type,omitempty"`
+	Col_length      string    `json:"col_length,omitempty"`
+	Position        int       `json:"position,omitempty"`
+	Raw_line        string    `json:"raw_line,omitempty"`
+	Raw_field_value string    `json:"raw_field_value,omitempty"`
+	Err_code        int       `json:"err_code,omitempty"`
+	Err_reason      string    `json:"err_reason,omitempty"`
+	Is_partial      string    `json:"is_partial,omitempty"`
+	Start_offset    string    `json:"start_offset,omitempty"`
+}
+
+func (r *Result) Trim() {
+	r.Filename = stringutils.Trim(r.Filename)
+	r.Colname = stringutils.Trim(r.Colname)
+	r.Type = stringutils.Trim(r.Type)
+	r.Col_length = stringutils.Trim(r.Col_length)
+	r.Raw_line = stringutils.Trim(r.Raw_line)
+	r.Raw_field_value = stringutils.Trim(r.Raw_field_value)
+	r.Err_reason = stringutils.Trim(r.Err_reason)
+	r.Is_partial = stringutils.Trim(r.Is_partial)
+	r.Start_offset = stringutils.Trim(r.Start_offset)
+}
+
+// GetCOPYErrors is delegated to retrieve the loading error related to the COPY commands, sorted by time
+func GetCOPYErrors(connection *sql.DB) []Result {
+	rows, err := connection.Query("select * from stl_load_errors order by starttime desc")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	var errorsResult []Result
+	for rows.Next() {
+		var res Result
+		if err = rows.Scan(&res.Userid,
+			&res.Slice,
+			&res.Tbl,
+			&res.Starttime,
+			&res.Session,
+			&res.Query,
+			&res.Filename,
+			&res.Line_number,
+			&res.Colname,
+			&res.Type,
+			&res.Col_length,
+			&res.Position,
+			&res.Raw_line,
+			&res.Raw_field_value,
+			&res.Err_code,
+			&res.Err_reason,
+			&res.Is_partial,
+			&res.Start_offset); err != nil {
+			panic(err)
+		} else {
+			res.Trim()
+			errorsResult = append(errorsResult, res)
+		}
+	}
+	return errorsResult
 }

@@ -1,21 +1,23 @@
-package csv
+package csvutils
 
 import (
 	"reflect"
 	"testing"
 )
 
-func TestReadCsv(t *testing.T) {
+func TestReadCSV(t *testing.T) {
 	type args struct {
 		buf       []byte
 		separator rune
 	}
 	tests := []struct {
-		name  string
-		args  args
-		want  []string
-		want1 [][]string
+		name    string
+		args    args
+		want    []string
+		want1   [][]string
+		wantErr bool
 	}{
+		// TODO: Add test cases.
 		{
 			name: "testOK",
 			args: args{
@@ -24,18 +26,23 @@ data1,data2,data3
 data4,data5,data6`),
 				separator: ',',
 			},
-			want:  []string{"HEADER1", "HEADER2", "HEADER3"},
-			want1: [][]string{{"data1", "data2", "data3"}, {"data4", "data5", "data6"}},
+			want:    []string{"HEADER1", "HEADER2", "HEADER3"},
+			want1:   [][]string{{"data1", "data2", "data3"}, {"data4", "data5", "data6"}},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := ReadCsv(tt.args.buf, tt.args.separator)
+			got, got1, err := ReadCSV(tt.args.buf, tt.args.separator)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadCSV() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadCsv() got = %v, want %v", got, tt.want)
+				t.Errorf("ReadCSV() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ReadCsv() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("ReadCSV() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

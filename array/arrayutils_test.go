@@ -6,11 +6,36 @@ import (
 	"testing"
 )
 
+func TestRemoveElementsFromMatrixByIndex(t *testing.T) {
+
+	var data = [][]string{
+		{"0", "0", "0", "0", "0", "0", "0", "0", "0"},
+		{"1", "1", "1", "1", "1", "1", "1", "1", "1"},
+		{"2", "2", "2", "2", "2", "2", "2", "2", "2"},
+		{"3", "3", "3", "3", "3", "3", "3", "3", "3"},
+		{"4", "4", "4", "4", "4", "4", "4", "4", "4"},
+		{"5", "5", "5", "5", "5", "5", "5", "5", "5"},
+		{"6", "6", "6", "6", "6", "6", "6", "6", "6"},
+	}
+	var target = [][]string{
+		{"0", "0", "0", "0", "0", "0", "0", "0", "0"},
+		{"1", "1", "1", "1", "1", "1", "1", "1", "1"},
+		{"4", "4", "4", "4", "4", "4", "4", "4", "4"},
+		{"5", "5", "5", "5", "5", "5", "5", "5", "5"},
+		{"6", "6", "6", "6", "6", "6", "6", "6", "6"},
+	}
+
+	data = RemoveElementsFromMatrixByIndex(data, []int{2, 3})
+
+	if !reflect.DeepEqual(data, target) {
+		t.Errorf("Got: %v\nExpected:%+v\n", data, target)
+	}
+
+}
+
 func TestRemoveElementsFromString1(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
-	t.Log("Before remove:", data, "Len:", len(data))
 	data = RemoveElementsFromStringByIndex(data, []int{0, 1, 2})
-	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+4) {
 			t.Fail()
@@ -20,9 +45,7 @@ func TestRemoveElementsFromString1(t *testing.T) {
 
 func TestRemoveElementsFromString2(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
-	t.Log("Before remove:", data, "Len:", len(data))
 	data = RemoveElementsFromStringByIndex(data, []int{5, 4, 3})
-	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+1) {
 			t.Fail()
@@ -32,9 +55,7 @@ func TestRemoveElementsFromString2(t *testing.T) {
 
 func TestRemoveElementsFromString3(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
-	t.Log("Before remove:", data, "Len:", len(data))
 	data = RemoveElementsFromStringByIndex(data, []int{1, 2, 3, 5, 4, 3, 0})
-	t.Log("After remove:", data, "Len:", len(data))
 	for i := range data {
 		if data[i] != strconv.Itoa(i+1) {
 			t.Fail()
@@ -45,9 +66,7 @@ func TestRemoveElementsFromString3(t *testing.T) {
 func TestRemoveElement(t *testing.T) {
 	data := []string{"1", "2", "3", "4", "5", "6"}
 	lenBefore := len(data)
-	t.Log("Before remove:", data, "Len:", len(data))
 	data = RemoveElement(data, 0)
-	t.Log("After remove:", data, "Len:", len(data))
 	if lenBefore-1 != len(data) {
 		t.Fail()
 	}

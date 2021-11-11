@@ -1,6 +1,6 @@
 package byteutils
 
-// IsUpperByte verify that a string does contains only upper character (byte version)
+// IsUpperByte verify that a string contains only upper character (byte version)
 func IsUpperByte(str []byte) bool {
 	for i := range str {
 		ascii := str[i]
@@ -11,7 +11,7 @@ func IsUpperByte(str []byte) bool {
 	return true
 }
 
-// IsLowerByte verify that a string does contains only lower character (byte version)
+// IsLowerByte verify that a string contains only lower character (byte version)
 func IsLowerByte(str []byte) bool {
 	for i := range str {
 		ascii := str[i]

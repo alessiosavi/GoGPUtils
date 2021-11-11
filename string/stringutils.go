@@ -3,19 +3,24 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
-	"log"
-	"math/rand"
-	"regexp"
-	"strings"
-	"time"
-	"unsafe"
-
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	mathutils "github.com/alessiosavi/GoGPUtils/math"
+	"log"
+	"regexp"
+	"strings"
 )
 
+var BOMS = [][]byte{
+	{0xef, 0xbb, 0xbf},       // UTF-8
+	{0xfe, 0xff},             // UTF-16 BE
+	{0xff, 0xfe},             // UTF-16 LE
+	{0x00, 0x00, 0xfe, 0xff}, // UTF-32 BE
+	{0xff, 0xfe, 0x00, 0x00}, // UTF-32 LE
+
+}
+
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
-// It can be viewed as a tokenzier that use whitespace for delimit the word
+// It can be viewed as a tokenizer that use whitespace for delimit the word
 func ExtractTextFromQuery(target string, ignore []string) []string {
 	var queries []string
 	rgxp := regexp.MustCompile(`(\w+)`)
@@ -28,6 +33,15 @@ func ExtractTextFromQuery(target string, ignore []string) []string {
 	return queries
 }
 
+func HasPrefixArray(prefixs []string, target string) bool {
+	for _, prefix := range prefixs {
+		if strings.HasPrefix(target, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 // CheckPresence verify that the given array contains the target string
 func CheckPresence(array []string, target string) bool {
 	for i := range array {
@@ -38,7 +52,7 @@ func CheckPresence(array []string, target string) bool {
 	return false
 }
 
-// IsUpper verify that a string does contains only upper character
+// IsUpper verify that a string contains only upper character
 func IsUpper(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -49,7 +63,7 @@ func IsUpper(str string) bool {
 	return true
 }
 
-// IsLower verify that a string does contains only lower character
+// IsLower verify that a string contains only lower character
 func IsLower(str string) bool {
 	for i := range str {
 		ascii := int(str[i])
@@ -223,7 +237,7 @@ func RemoveNonASCII(str string) string {
 	return RemoveDoubleWhiteSpace(b.String())
 }
 
-// IsBlank is delegated to verify that the does not contains only empty char
+// IsBlank is delegated to verify that the string does not contain only empty char
 func IsBlank(str string) bool {
 	// Check length
 	if len(str) > 0 {
@@ -239,7 +253,7 @@ func IsBlank(str string) bool {
 }
 
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
-// It also convert every new line in a space
+// It also converts every new line in a space
 func Trim(str string) string {
 	if str == "" {
 		return str
@@ -272,33 +286,6 @@ func Trim(str string) string {
 		}
 	}
 	return data
-}
-
-const (
-	letterBytes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-var src = rand.NewSource(time.Now().UnixNano())
-
-// RandomString is delegated to create a random string with whitespace included as fast as possible
-func RandomString(n int) string {
-	b := make([]byte, n)
-	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i > -1; {
-		if remain == 0 {
-			cache, remain = src.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-	return *(*string)(unsafe.Pointer(&b))
 }
 
 // CheckPalindrome is delegated to verify if the given string is palindrome
@@ -488,7 +475,7 @@ func DiceCoefficient(string1, string2 string) float64 {
 	return matches / float64(strlen1+strlen2)
 }
 
-// Join is a quite efficient string concatenator
+// Join is a quite efficient string "concatenator"
 func Join(strs ...string) string {
 	var sb strings.Builder
 	for _, str := range strs {
@@ -497,7 +484,7 @@ func Join(strs ...string) string {
 	return sb.String()
 }
 
-// Join is a quite efficient string concatenator
+// JoinSeparator is a quite efficient string "concatenator"
 func JoinSeparator(sep string, strs ...string) string {
 	var sb strings.Builder
 	for _, str := range strs {
@@ -513,4 +500,18 @@ func GetFirstRune(data string) rune {
 		return c
 	}
 	return 0
+}
+
+func Unique(data []string) []string {
+	var filter = make(map[string]struct{})
+	for _, s := range data {
+		filter[s] = struct{}{}
+	}
+	var unique = make([]string, len(filter))
+	var i = 0
+	for k := range filter {
+		unique[i] = k
+		i++
+	}
+	return unique
 }

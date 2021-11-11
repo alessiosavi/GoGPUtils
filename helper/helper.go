@@ -1,12 +1,18 @@
 package helper
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
 	"strings"
 	"time"
+	"unsafe"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // RandomGenerator is delegated to generate random without call seed every time
 type RandomGenerator struct {
@@ -17,7 +23,6 @@ type RandomGenerator struct {
 func InitRandomizer() RandomGenerator {
 	var random RandomGenerator
 	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	return random
 }
 
@@ -91,6 +96,30 @@ func (rander RandomGenerator) RandomFloat64Array(min, max float64, length int) [
 	return array
 }
 
+const LETTER_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	LETTER_IDX_BYTES = 6                       // 6 bits to represent a letter index
+	LETTER_IDX_MASK  = 1<<LETTER_IDX_BYTES - 1 // All 1-bits, as many as LETTER_IDX_BYTES
+	LETTER_IDX_MAX   = 63 / LETTER_IDX_BYTES   // # of letter indices fitting in 63 bits
+)
+
+func (rander RandomGenerator) RandomString(n int) string {
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, rander.randomizer.Int63(), LETTER_IDX_MAX; i >= 0; {
+		if remain == 0 {
+			cache, remain = rander.randomizer.Int63(), LETTER_IDX_MAX
+		}
+		if idx := int(cache & LETTER_IDX_MASK); idx < len(LETTER_BYTES) {
+			b[i] = LETTER_BYTES[idx]
+			i--
+		}
+		cache >>= LETTER_IDX_BYTES
+		remain--
+	}
+	return *(*string)(unsafe.Pointer(&b))
+}
+
 // RandomByte is delegated to generate a byte array with the given input length
 func RandomByte(length int) []byte {
 	data := make([]byte, length)
@@ -101,31 +130,26 @@ func RandomByte(length int) []byte {
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
 // RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt32(min, max int32) int32 {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int31n(max-min) + min
 }
 
 // RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt64(min, max int64) int64 {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int63n(max-min) + min
 }
 
 // RandomFloat64 initialize a new seed using the UNIX Nano time and return a float64 between the 2 input value
 func RandomFloat64(min, max float64) float64 {
-	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float64()*(max-min)
 }
 
 // RandomFloat32 initialize a new seed using the UNIX Nano time and return a float32 between the 2 input value
 func RandomFloat32(min, max float32) float32 {
-	rand.Seed(time.Now().UnixNano())
 	return min + rand.Float32()*(max-min)
 }
 
@@ -200,4 +224,20 @@ func ConvertSize(bytes float64, dimension string) float64 {
 		value = bytes / math.Pow(1000, 7)
 	}
 	return value
+}
+
+func Marshal(data interface{}) string {
+	if indent, err := json.Marshal(data); err == nil {
+		return string(indent)
+	} else {
+		return fmt.Sprintf("%+v\n", data)
+	}
+}
+
+func MarshalIndent(data interface{}) string {
+	if indent, err := json.MarshalIndent(data, " ", "  "); err == nil {
+		return string(indent)
+	} else {
+		return fmt.Sprintf("%+v\n", data)
+	}
 }

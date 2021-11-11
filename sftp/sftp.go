@@ -1,0 +1,183 @@
+// Package sftputils can be used in order to copy file from SSH too.
+// You just need to set SSH port instead of SFTP
+package sftputils
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	httputils "github.com/alessiosavi/GoGPUtils/http"
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"io"
+	"log"
+	"path"
+	"time"
+)
+
+var DEFAULT_KEY_EXCHANGE_ALGO = []string{"diffie-hellman-group-exchange-sha256"}
+
+type SFTPConf struct {
+	Host     string `json:"host"`
+	User     string `json:"user"`
+	Password string `json:"pass"`
+	Port     int    `json:"port"`
+	Timeout  int    `json:"timeout"`
+}
+type SFTPClient struct {
+	Client *sftp.Client
+}
+
+func (c *SFTPConf) validate() error {
+	if stringutils.IsBlank(c.Host) {
+		return errors.New("SFTP host not provided")
+	}
+	if stringutils.IsBlank(c.User) {
+		return errors.New("SFTP user not provided")
+	}
+	if stringutils.IsBlank(c.Password) {
+		return errors.New("SFTP password not provided")
+	}
+	if !httputils.ValidatePort(c.Port) {
+		return errors.New("SFTP port not provided")
+	}
+	return nil
+}
+
+//NewConn Create a new SFTP connection by given parameters
+func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
+	if err := c.validate(); err != nil {
+		return nil, err
+	}
+
+	// Add default key exchange algorithm
+	for _, algo := range DEFAULT_KEY_EXCHANGE_ALGO {
+		if !arrayutils.InStrings(keyExchanges, algo) {
+			keyExchanges = append(keyExchanges, algo)
+		}
+	}
+
+	config := &ssh.ClientConfig{
+		User:            c.User,
+		Auth:            []ssh.AuthMethod{ssh.Password(c.Password)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         time.Duration(c.Timeout) * time.Second,
+	}
+
+	config.Config.KeyExchanges = append(config.Config.KeyExchanges, keyExchanges...)
+	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
+	log.Println("Connecting to: " + addr)
+	conn, err := ssh.Dial("tcp", addr, config)
+	if err != nil {
+		return nil, err
+	}
+	client, err := sftp.NewClient(conn) // create sftp client
+	if err != nil {
+		return nil, err
+	}
+	return &SFTPClient{Client: client}, nil
+}
+
+func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
+	srcFile, err := c.Client.Open(remoteFile)
+	if err != nil {
+		return nil, err
+	}
+	defer srcFile.Close()
+	var buf *bytes.Buffer
+	_, err = io.Copy(buf, srcFile)
+	return buf, err
+}
+func (c *SFTPClient) Put(data []byte, fpath string) error {
+	dirname := path.Dir(fpath)
+	exist, err := c.Exist(dirname)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		if err := c.CreateDirectory(dirname); err != nil {
+			return err
+		}
+	}
+	f, err := c.Client.Create(fpath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(data)
+	return err
+}
+
+func (c *SFTPClient) CreateDirectory(path string) error {
+	return c.Client.MkdirAll(path)
+}
+
+func (c *SFTPClient) DeleteFile(path string) error {
+	if exists, err := c.Exist(path); err != nil {
+		return err
+	} else if exists {
+		return c.Client.Remove(path)
+	} else {
+		return errors.New(fmt.Sprintf("file %s does not exists", path))
+	}
+}
+
+func (c *SFTPClient) DeleteDirectory(path string) error {
+	return c.Client.RemoveDirectory(path)
+}
+
+func (c *SFTPClient) List(path string) ([]string, error) {
+	exist, err := c.Exist(path)
+	if err != nil {
+		return nil, err
+	} else if !exist {
+		return nil, errors.New(fmt.Sprintf("path %s does not exists!", path))
+	}
+	isDir, err := c.IsDir(path)
+	if err != nil {
+		return nil, err
+	}
+	if !isDir {
+		return nil, errors.New(fmt.Sprintf("path %s is not a dir!", path))
+	}
+
+	walker := c.Client.Walk(path)
+	var files []string
+	for walker.Step() {
+		if err = walker.Err(); err != nil {
+			log.Printf("Error with file: %s | Err: %s\n", walker.Path(), err)
+			continue
+		}
+		files = append(files, walker.Path())
+	}
+	return files, nil
+}
+
+func (c *SFTPClient) Exist(path string) (bool, error) {
+	_, err := c.Client.Lstat(path)
+	if err != nil && err.Error() == "file does not exist" {
+		return false, nil
+	}
+	return err == nil, err
+}
+
+func (c *SFTPClient) IsDir(path string) (bool, error) {
+	lstat, err := c.Client.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+	return lstat.IsDir(), nil
+}
+func (c *SFTPClient) IsFile(path string) (bool, error) {
+	lstat, err := c.Client.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+	return !lstat.IsDir(), nil
+}
+
+func (c *SFTPClient) Close() error {
+	return c.Client.Close()
+}

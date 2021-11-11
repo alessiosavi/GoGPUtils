@@ -6,20 +6,19 @@ import (
 )
 
 func TestReadZip01(t *testing.T) {
-	t.Log("----TestReadZip01---")
+	//t.Log("----TestReadZip01---")
 	file := `../testdata/ziputils/test1.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()
 	}
-	t.Log(data)
 	if data == nil || len(data) != 1 {
 		t.Fail()
 	}
 }
 
 func TestReadZip02(t *testing.T) {
-	t.Log("----TestReadZip02---")
+	//t.Log("----TestReadZip02---")
 	file := `../testdata/ziputils/test1.zip_error`
 	data, err := ReadZip(file)
 	if err == nil {
@@ -31,7 +30,7 @@ func TestReadZip02(t *testing.T) {
 }
 
 func TestReadZip03(t *testing.T) {
-	t.Log("----TestReadZip03---")
+	//t.Log("----TestReadZip03---")
 	file := `../testdata/ziputils/test2.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -43,7 +42,7 @@ func TestReadZip03(t *testing.T) {
 }
 
 func TestReadZip04(t *testing.T) {
-	t.Log("----TestReadZip04---")
+	//t.Log("----TestReadZip04---")
 	file := `../testdata/ziputils/test3.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -55,7 +54,7 @@ func TestReadZip04(t *testing.T) {
 }
 
 func TestReadZip05(t *testing.T) {
-	t.Log("----TestReadZip05---")
+	//t.Log("----TestReadZip05---")
 	file := `../testdata/ziputils/test4.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -67,7 +66,7 @@ func TestReadZip05(t *testing.T) {
 }
 
 func TestReadZip06(t *testing.T) {
-	t.Log("----TestReadZip06---")
+	//t.Log("----TestReadZip06---")
 	file := `../testdata/ziputils/test5.zip`
 	data, err := ReadZip(file)
 	if err != nil {
@@ -82,18 +81,16 @@ func TestReadZipFile(t *testing.T) {
 	filename := `../testdata/ziputils/test1.zip`
 	zf, err := zip.OpenReader(filename)
 	if err != nil {
-		t.Log("Error! ", err)
-		t.Fail()
+		t.Error("Error! ", err)
 	}
 	defer zf.Close()
 	for _, file := range zf.File {
 		if file.Mode().IsRegular() {
-			data, err := ReadZipFile(file)
+			_, err = ReadZipFile(file)
 			if err != nil {
 				t.Log("ReadZip | Unable to unzip file " + file.Name)
 				t.Fail()
 			}
-			t.Log(data)
 		}
 	}
 }
@@ -103,16 +100,14 @@ func BenchmarkReadZipFile(t *testing.B) {
 	for n := 0; n < t.N; n++ {
 		zf, err := zip.OpenReader(filename)
 		if err != nil {
-			t.Log("Error! ", err)
-			t.Fail()
+			t.Error("Error! ", err)
 		}
 
 		for _, file := range zf.File {
 			if file.Mode().IsRegular() {
 				_, err := ReadZipFile(file)
 				if err != nil {
-					t.Log("ReadZip | Unable to unzip file " + file.Name)
-					t.Fail()
+					t.Error("ReadZip | Unable to unzip file " + file.Name)
 				}
 			}
 		}

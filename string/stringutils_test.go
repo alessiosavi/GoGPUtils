@@ -2,6 +2,8 @@ package stringutils
 
 import (
 	"io/ioutil"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -76,9 +78,14 @@ func TestContainsMultiple(t *testing.T) {
 }
 
 func TestRemoveNonAscii(t *testing.T) {
-	dataOK := []string{`AÀ È Ì Ò Ù Ỳ Ǹ ẀA`, `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`, `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`}
-	for _, item := range dataOK {
-		t.Log(RemoveNonASCII(item))
+	testData := []string{`AÀ È Ì Ò Ù Ỳ Ǹ ẀA`, `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`, `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`}
+	dataOK := []string{`A A`, `A A`, `AA AA`}
+	var data []string
+	for _, item := range testData {
+		data = append(data, RemoveNonASCII(item))
+	}
+	if !reflect.DeepEqual(dataOK, data) {
+		t.Errorf("Expected: %v | Found: %v", dataOK, data)
 	}
 }
 
@@ -107,7 +114,6 @@ func TestTrimDoubleSpace(t *testing.T) {
 	data := []string{`  test`, `test  `, `t  st`}
 	for _, item := range data {
 		str := Trim(item)
-		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
 		if len(str) != 4 {
 			t.Fail()
 		}
@@ -118,7 +124,6 @@ func TestRemoveDoubleWhiteSpace(t *testing.T) {
 	data := []string{`  test`, `test  `, `te  st`}
 	for _, item := range data {
 		str := RemoveDoubleWhiteSpace(item)
-		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
 		if len(str) != 5 {
 			t.Fail()
 		}
@@ -147,7 +152,6 @@ func TestTrim(t *testing.T) {
 	data := []string{` test`, `test `, `te s`}
 	for _, item := range data {
 		str := Trim(item)
-		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
 		if len(str) != 4 {
 			t.Fail()
 		}
@@ -157,7 +161,6 @@ func TestTrimNewLine(t *testing.T) {
 	data := []string{"test\n", "\ntest", "\ntest\n", "\ntest \n"}
 	for _, item := range data {
 		str := Trim(item)
-		t.Log("Data ->|"+item+"|Found: |"+str+"| Len: ", len(str))
 		if len(str) != 4 {
 			t.Fail()
 		}
@@ -211,7 +214,9 @@ func TestLevenshteinDistanceLegacy(t *testing.T) {
 
 func TestJaroDistance(t *testing.T) {
 	var str1, str2 = "MARTHA", "MARHTA"
-	t.Log(JaroDistance(str1, str2))
+	if JaroDistance(str1, str2) != 0.9444444444444445 {
+		t.Fail()
+	}
 }
 
 func TestDiceCoefficient(t *testing.T) {
@@ -319,12 +324,6 @@ func BenchmarkRemoveFromString(t *testing.B) {
 	t.ResetTimer()
 	for n := 0; n < t.N; n++ {
 		RemoveFromString(data, len(data)-1)
-	}
-}
-
-func BenchmarkRandomString(t *testing.B) {
-	for n := 0; n < t.N; n++ {
-		RandomString(5000)
 	}
 }
 
@@ -566,6 +565,46 @@ func TestContainsMultiple1(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ContainsMultiple(tt.args.lower, tt.args.s, tt.args.substring...); got != tt.want {
 				t.Errorf("ContainsMultiple() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUnique(t *testing.T) {
+	type args struct {
+		data []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Ok",
+			args: args{
+				data: []string{"a", "b", "c", "c"},
+			},
+			want: []string{"a", "b", "c"},
+		},
+		{
+			name: "Ok",
+			args: args{
+				data: []string{"a", "b", "c"},
+			},
+			want: []string{"a", "b", "c"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Unique(tt.args.data)
+			sort.Slice(got, func(i, j int) bool {
+				return got[i] < got[j]
+			})
+			sort.Slice(tt.want, func(i, j int) bool {
+				return tt.want[i] < tt.want[j]
+			})
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Unique() = %v, want %v", got, tt.want)
 			}
 		})
 	}
