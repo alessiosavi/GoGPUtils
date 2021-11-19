@@ -54,6 +54,8 @@ github.com/aws/aws-sdk-go-v2/service/sso v1.6.0 h1:JDgKIUZOmLFu/Rv6zXLrVTWCmzA0j
 github.com/aws/aws-sdk-go-v2/service/sso v1.6.0/go.mod h1:Q/l0ON1annSU+mc0JybDy1Gy6dnJxIcWjphO6qJPzvM=
 github.com/aws/aws-sdk-go-v2/service/sts v1.10.0 h1:1jh8J+JjYRp+QWKOsaZt7rGUgoyrqiiVwIm+w0ymeUw=
 github.com/aws/aws-sdk-go-v2/service/sts v1.10.0/go.mod h1:jLKCFqS+1T4i7HDqCP9GM4Uk75YW1cS0o82LdxpMyOE=
+github.com/aws/aws-sdk-go-v2/service/workspaces v1.10.0 h1:gPzGX3OXSHxKQwJIb5KjS2KNEa0Uasm7r5ZbjqUgioA=
+github.com/aws/aws-sdk-go-v2/service/workspaces v1.10.0/go.mod h1:gK3oCF51jcNYWfZE3Q+3sCEdyHdQHnUGP3ZJUaPZlW8=
 github.com/aws/smithy-go v1.9.0 h1:c7FUdEqrQA1/UVKKCNDFQPNKGp4FQg3YW4Ck5SLTG58=
 github.com/aws/smithy-go v1.9.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -82,8 +84,8 @@ golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b/go.mod h1:T9bdIzuCu7OtxOm
 golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 h1:/pEO3GD/ABYAjuakUS6xSEmmlyVS4kxBNkeA9tLJiTI=
 golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
-golang.org/x/net v0.0.0-20211116231205-47ca1ff31462 h1:2vmJlzGKvQ7e/X9XT0XydeWDxmqx8DnegiIMRT+5ssI=
-golang.org/x/net v0.0.0-20211116231205-47ca1ff31462/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
+golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4 h1:DZshvxDdVoeKIbudAdFEKi+f70l51luSy/7b76ibTY0=
+golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 h1:SrN+KX8Art/Sf4HNj6Zcz06G7VEz+7w9tdXTPOZ7+l4=

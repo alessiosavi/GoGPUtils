@@ -18,11 +18,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.8.0
+	github.com/aws/aws-sdk-go-v2/service/workspaces v1.10.0
 	github.com/lib/pq v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.4
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
-	golang.org/x/net v0.0.0-20211116231205-47ca1ff31462
+	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
 	golang.org/x/text v0.3.7
 )
 

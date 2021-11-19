@@ -94,7 +94,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	return err
 }
 
-func ListBucketObject(bucket, prefix string) ([]string, error) {
+func ListBucketObjects(bucket, prefix string) ([]string, error) {
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(prefix),
@@ -149,7 +149,7 @@ func ObjectExists(bucket, key string) bool {
 func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 	var fileNotSynced []string
 	var err error
-	objects, err := ListBucketObject(bucket, "")
+	objects, err := ListBucketObjects(bucket, "")
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,40 @@ func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
 	return fileNotSynced, nil
 }
 
+func HeadObject(bucket, key string) (*s3.HeadObjectOutput, error) {
+	return S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)})
+}
+
 func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
+	var (
+		head_base, head_target *s3.HeadObjectOutput
+		err1, err2             error
+	)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		head_base, err1 = HeadObject(bucket_base, key_base)
+		wg.Done()
+	}()
+	go func() {
+		head_target, err2 = HeadObject(bucket_target, key_target)
+		wg.Done()
+	}()
+	wg.Wait()
+
+	if err1 != nil || err2 != nil {
+		log.Println("Error calling AWS")
+		if err1 != nil {
+			log.Println("INPUT: ", bucket_base, key_base)
+			log.Println(err1)
+		} else {
+			log.Println("INPUT: ", bucket_target, key_target)
+			log.Println(err2)
+		}
+	}
+	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
+}
+func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) bool {
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
 	if err != nil {
 		return true
@@ -180,5 +213,5 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 		return true
 	}
 
-	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
+	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }

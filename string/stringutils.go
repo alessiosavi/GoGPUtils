@@ -515,3 +515,11 @@ func Unique(data []string) []string {
 	}
 	return unique
 }
+
+func ArrayToMap(slice []string) map[string]struct{} {
+	result := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		result[s] = struct{}{}
+	}
+	return result
+}
