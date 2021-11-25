@@ -1,13 +1,15 @@
 package S3utils
 
 import (
-	"context"
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"log"
 	"reflect"
 	"testing"
+	"time"
 )
 
 // FIXME: create test method that create the S3 bucket for test the methods
@@ -41,7 +43,7 @@ func TestListBucketObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ListBucketObject(tt.args.bucket, "")
+			got, err := ListBucketObjects(tt.args.bucket, "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ListBucketObject() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -178,5 +180,51 @@ func TestHead(t *testing.T) {
 		return
 	} else {
 		t.Log(helper.MarshalIndent(head))
+	}
+}
+
+func TestIsDifferent(t *testing.T) {
+	object, err := ListBucketObjects("qa-lambda-asset", "")
+	if err != nil {
+		t.Error(err)
+	}
+	object = arrayutils.RemoveStrings(object, []string{"orchestrator/", "orchestrator/entrypoint.zip"})
+	log.Println(object)
+	now := time.Now()
+	for _, lambda := range object {
+		IsDifferent("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
+	}
+	log.Printf("Executed time: %s\n", time.Now().Sub(now))
+
+	now = time.Now()
+	for _, lambda := range object {
+		IsDifferentLegacy("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
+	}
+	log.Printf("Executed time: %s\n", time.Now().Sub(now))
+}
+
+func BenchmarkIsDifferent(b *testing.B) {
+	object, err := ListBucketObjects("qa-lambda-asset", "")
+	if err != nil {
+		b.Error(err)
+	}
+	object = arrayutils.RemoveStrings(object, []string{"orchestrator/", "orchestrator/entrypoint.zip"})
+	for i := 0; i < b.N; i++ {
+		for _, lambda := range object {
+			IsDifferent("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
+		}
+	}
+}
+
+func BenchmarkIsDifferentLegacy(b *testing.B) {
+	object, err := ListBucketObjects("qa-lambda-asset", "")
+	if err != nil {
+		b.Error(err)
+	}
+	object = arrayutils.RemoveStrings(object, []string{"orchestrator/", "orchestrator/entrypoint.zip"})
+	for i := 0; i < b.N; i++ {
+		for _, lambda := range object {
+			IsDifferentLegacy("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
+		}
 	}
 }

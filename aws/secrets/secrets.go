@@ -30,7 +30,7 @@ func GetSecret(secretName string) (string, error) {
 	return *value.SecretString, err
 }
 
-func ListSecret() ([]string, error) {
+func ListSecrets() ([]string, error) {
 	secrets, err := secretClient.ListSecrets(context.Background(), &secretsmanager.ListSecretsInput{SortOrder: secretTypes.SortOrderTypeAsc})
 	if err != nil {
 		return nil, err

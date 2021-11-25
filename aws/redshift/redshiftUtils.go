@@ -78,9 +78,11 @@ func CreateTableByType(tableName string, headers []string, tableType map[string]
 	var sb strings.Builder
 	translator := sqlutils.GetRedshiftTranslator()
 	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
+	replacer := strings.NewReplacer(".", "", ",", "", " ", "", "(", "", ")", "")
 	for _, header := range headers {
+		fixHeader := replacer.Replace(header)
 		//for k, v := range tableType {
-		sb.WriteString("\t" + header + " " + translator[tableType[header]] + ",\n")
+		sb.WriteString("\t" + fixHeader + " " + translator[tableType[header]] + ",\n")
 	}
 	data := sb.String()
 	data = strings.TrimSuffix(data, ",\n")
