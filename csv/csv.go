@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"errors"
+	"fmt"
 	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"golang.org/x/net/html/charset"
@@ -38,8 +39,8 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 		buf = bytes.ReplaceAll(buf, []byte(terminator), []byte("\n"))
 		buf = bytes.ReplaceAll(buf, []byte("\u001D"), []byte{}) // Remove group separator
 		buf = bytes.ReplaceAll(buf, []byte("\u000B"), []byte{}) // Remove vertical tab
-		buf = bytes.Trim(buf, "\n")
 		buf = bytes.TrimSpace(buf)
+		buf = bytes.Trim(buf, "\n")
 	}
 
 	csvReader := csv.NewReader(bytes.NewReader(buf))
@@ -91,13 +92,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 		// e[<type>] = True -> Error, skip check for the give <type>
 		// e[<type>] = False -> Not checked, continue trying to parse the field
 		var e = make(map[string]bool)
-		for _, row := range data {
-			if row[i][0] == '0' {
-				// A number that start with 0 is a valid number for golang, but from a data warehouse POV, it has to be saved as is, so it's better to use a string.
-				// Example: 00100 will be saved as 100, that is not correct
-				dataType[header] = "string"
-				break
-			}
+		for lineN, row := range data {
 			// INT was not checked for this header
 			if !e["int"] {
 				if _, err = strconv.ParseInt(row[i], 10, 64); err == nil {
@@ -105,6 +100,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 					continue
 				} else {
 					// Error, INT can be used as type for this headers
+					log.Println(fmt.Sprintf("Line %d break the int rule [%s] for header %s", lineN+2, row[i], header))
 					e["int"] = true
 				}
 			}
@@ -113,6 +109,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 					dataType[header] = "float"
 					continue
 				} else {
+					log.Println(fmt.Sprintf("Line %d break the float rule [%s] for header %s", lineN+2, row[i], header))
 					e["float"] = true
 				}
 			}
@@ -123,6 +120,17 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 				} else {
 					e["bool"] = true
 				}
+			}
+			if row[i] == "" {
+				dataType[header] = "string"
+				log.Println("Found empty value in line", lineN+2, "of column", header, "| Setting text type")
+				break
+			}
+			if row[i][0] == '0' {
+				// A number that start with 0 is a valid number for golang, but from a data warehouse POV, it has to be saved as is, so it's better to use a string.
+				// Example: 00100 will be saved as 100, that is not correct
+				dataType[header] = "string"
+				break
 			}
 			// fallback data type
 			dataType[header] = "string"

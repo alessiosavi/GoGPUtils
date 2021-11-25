@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetWorkspaces(t *testing.T) {
-	workspaces, err := GetWorkspaces("maurizio.jon.scotta")
+	workspaces, err := GetWorkspaces("")
 	if err != nil {
 		panic(err)
 	}
