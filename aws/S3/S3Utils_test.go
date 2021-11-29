@@ -1,6 +1,7 @@
 package S3utils
 
 import (
+	"context"
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -194,13 +195,13 @@ func TestIsDifferent(t *testing.T) {
 	for _, lambda := range object {
 		IsDifferent("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
 	}
-	log.Printf("Executed time: %s\n", time.Now().Sub(now))
+	log.Printf("Executed time: %s\n", time.Since(now))
 
 	now = time.Now()
 	for _, lambda := range object {
 		IsDifferentLegacy("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
 	}
-	log.Printf("Executed time: %s\n", time.Now().Sub(now))
+	log.Printf("Executed time: %s\n", time.Since(now))
 }
 
 func BenchmarkIsDifferent(b *testing.B) {

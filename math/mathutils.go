@@ -838,6 +838,14 @@ func MinInt(a, b int) int {
 	return b
 }
 
+// MinInt64 is delegated to return the min int from the two given int
+func MinInt64(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // MaxFloat64 is delegated to return the max int from the two given int
 func MaxFloat64(a, b float64) float64 {
 	if a > b {

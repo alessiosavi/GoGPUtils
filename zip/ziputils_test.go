@@ -7,7 +7,7 @@ import (
 
 func TestReadZip01(t *testing.T) {
 	//t.Log("----TestReadZip01---")
-	file := `../testdata/ziputils/test1.zip`
+	var file = `../testdata/ziputils/test1.zip`
 	data, err := ReadZip(file)
 	if err != nil {
 		t.Fail()

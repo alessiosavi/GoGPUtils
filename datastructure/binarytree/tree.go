@@ -140,7 +140,7 @@ func (n *Node) remove(val int) {
 	}
 }
 
-// Height is delegated to compute the lenght of the tree
+// Height is delegated to compute the length of the tree
 func (t *Tree) Height() int {
 	if t == nil || t.Root == nil {
 		return 0

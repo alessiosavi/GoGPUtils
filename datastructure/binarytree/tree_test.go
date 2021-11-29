@@ -188,7 +188,7 @@ func Test_Height(t *testing.T) {
 	if h != 4 {
 		t.Errorf("Expected height 4, found %d.\nTree: %+v", h, tree.Print())
 	}
-	t.Logf("Lenght: %d\n", h)
+	t.Logf("length: %d\n", h)
 }
 func Test_Print(t *testing.T) {
 	tree := initTestTree()

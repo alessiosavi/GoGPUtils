@@ -2,7 +2,6 @@ package ec2utils
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -44,10 +43,9 @@ func ListEC2() ([]ec2types.Instance, error) {
 	}
 	var ec2instances []ec2types.Instance
 	nextToken := instances.NextToken
+
 	for _, reservation := range instances.Reservations {
-		for _, instance := range reservation.Instances {
-			ec2instances = append(ec2instances, instance)
-		}
+		ec2instances = append(ec2instances, reservation.Instances...)
 	}
 	for nextToken != nil {
 		instances, err = ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{})
@@ -56,9 +54,7 @@ func ListEC2() ([]ec2types.Instance, error) {
 		}
 		nextToken = instances.NextToken
 		for _, reservation := range instances.Reservations {
-			for _, instance := range reservation.Instances {
-				ec2instances = append(ec2instances, instance)
-			}
+			ec2instances = append(ec2instances, reservation.Instances...)
 		}
 	}
 	return ec2instances, nil
@@ -155,5 +151,5 @@ func DescribeInstanceByName(instanceName string) (*ec2.DescribeInstancesOutput, 
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("instance %s not found", instanceName))
+	return nil, fmt.Errorf("instance %s not found", instanceName)
 }

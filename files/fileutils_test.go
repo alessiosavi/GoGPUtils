@@ -229,3 +229,43 @@ func TestGetFileSize(t *testing.T) {
 func TestExtractWordFromFile(t *testing.T) {
 	ExtractWordFromFile(dante)
 }
+
+func TestCompareBinaryFile(t *testing.T) {
+	type args struct {
+		file1 string
+		file2 string
+		nByte int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+
+		{
+			name: "ko",
+			args: args{
+				file1: "/opt/Workspace/Go/GoGPUtils/testdata/files/test2.pdf",
+				file2: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
+				nByte: 0,
+			},
+			want: false,
+		},
+		{
+			name: "ok",
+			args: args{
+				file1: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
+				file2: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
+				nByte: 0,
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CompareBinaryFile(tt.args.file1, tt.args.file2, tt.args.nByte); got != tt.want {
+				t.Errorf("CompareBinaryFile() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

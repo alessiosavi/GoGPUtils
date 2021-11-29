@@ -5,6 +5,8 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	helper "github.com/alessiosavi/GoGPUtils/helper"
+	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"io"
 	"io/ioutil"
 	"log"
@@ -446,12 +448,6 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	var size1, size2 int64
 	var err, err1, err2 error
 
-	// Preliminary check
-	if nByte < 1 {
-		log.Println("Chunks of bytes size not provided, using 1k byte")
-		nByte = 1024
-	}
-
 	if !FileExists(file1) {
 		log.Fatal("File [", file1, "] does not exist!")
 	}
@@ -479,6 +475,23 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 		log.Println("Size of ["+file2+"]-> ", size2)
 		log.Println("Files are not equals! Dimension mismatch!")
 		return false
+	}
+
+	// Preliminary check
+	if nByte < 1 {
+
+		size := mathutils.MinInt64(size1, size2)
+		nByte = 1024
+		si := helper.ByteCountSI(size)
+		if strings.Contains(si, "kB") {
+			nByte = 1024
+		} else if strings.Contains(si, "MB") {
+			nByte = 1024 * 1024
+		} else if strings.Contains(si, "GB") {
+			nByte = 1024 * 1024 * 250
+		}
+
+		log.Printf("Chunks of bytes size not provided, using %s \n", helper.ByteCountIEC(int64(nByte)))
 	}
 
 	// Open first file
@@ -515,7 +528,6 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 				break
 			}
 		}
-
 		if !bytes.Equal(data1, data2) {
 			return false
 		}

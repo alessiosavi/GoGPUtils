@@ -30,7 +30,7 @@ func LinearSearchParallelInt(data []int, target, thread int) int {
 
 	wg = sync.WaitGroup{}
 	result = make([]int, thread)
-	//var result []int
+	// var result []int
 	wg.Add(thread)
 	for i := 0; i < thread; i++ {
 		go LinearSearchParallelIntHelper(&wg, data[i*dataXThread:(i+1)*dataXThread], target, i, result)

@@ -120,7 +120,7 @@ func (c *SFTPClient) DeleteFile(path string) error {
 	} else if exists {
 		return c.Client.Remove(path)
 	} else {
-		return errors.New(fmt.Sprintf("file %s does not exists", path))
+		return fmt.Errorf("file %s does not exists", path)
 	}
 }
 
@@ -133,14 +133,14 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if !exist {
-		return nil, errors.New(fmt.Sprintf("path %s does not exists!", path))
+		return nil, fmt.Errorf("path %s does not exists!", path)
 	}
 	isDir, err := c.IsDir(path)
 	if err != nil {
 		return nil, err
 	}
 	if !isDir {
-		return nil, errors.New(fmt.Sprintf("path %s is not a dir!", path))
+		return nil, fmt.Errorf("path %s is not a dir!", path)
 	}
 
 	walker := c.Client.Walk(path)

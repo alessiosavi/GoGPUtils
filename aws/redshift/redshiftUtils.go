@@ -84,9 +84,7 @@ func CreateTableByType(tableName string, headers []string, tableType map[string]
 		//for k, v := range tableType {
 		sb.WriteString("\t" + fixHeader + " " + translator[tableType[header]] + ",\n")
 	}
-	data := sb.String()
-	data = strings.TrimSuffix(data, ",\n")
-	data = data + ");"
+	data := strings.TrimSuffix(sb.String(), ",\n") + ");"
 	return data
 }
 
