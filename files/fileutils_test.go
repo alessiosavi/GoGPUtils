@@ -245,8 +245,8 @@ func TestCompareBinaryFile(t *testing.T) {
 		{
 			name: "ko",
 			args: args{
-				file1: "/opt/Workspace/Go/GoGPUtils/testdata/files/test2.pdf",
-				file2: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
+				file1: gogputils,
+				file2: dante,
 				nByte: 0,
 			},
 			want: false,
@@ -254,8 +254,8 @@ func TestCompareBinaryFile(t *testing.T) {
 		{
 			name: "ok",
 			args: args{
-				file1: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
-				file2: "/opt/Workspace/Go/GoGPUtils/testdata/files/test3.odt",
+				file1: dante,
+				file2: dante,
 				nByte: 0,
 			},
 			want: true,
