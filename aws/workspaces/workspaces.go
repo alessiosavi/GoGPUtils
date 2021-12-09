@@ -2,7 +2,6 @@ package workspaces
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/service/workspaces"
@@ -56,7 +55,7 @@ func GetWorkspaces(username string) (*workspaces.DescribeWorkspacesOutput, error
 		return nil, nil
 	}
 	if v, ok := listWorkspaces[username]; !ok {
-		return nil, errors.New(fmt.Sprintf("Username %s not found!", username))
+		return nil, fmt.Errorf("Username %s not found!", username)
 	} else {
 		return workspaceClient.DescribeWorkspaces(context.Background(), &workspaces.DescribeWorkspacesInput{
 			WorkspaceIds: v,

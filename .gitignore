@@ -17,3 +17,5 @@ bench_new.txt
 .bench.txt
 testdata/files/dante.txt
 .idea/
+
+testdata/*

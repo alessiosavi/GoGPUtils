@@ -32,7 +32,7 @@ func RemoveElementsFromMatrixByIndex(data [][]string, j []int) [][]string {
 	return newArray
 }
 
-//RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
+// RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
 func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	var (
 		newArray []string
@@ -42,7 +42,7 @@ func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	if len(j) == 0 {
 		return data
 	}
-	//sort.Ints(j)
+	// sort.Ints(j)
 	for i := 0; i < len(data); i++ {
 		for _, k := range j {
 			// if k < i || k > i {
@@ -64,7 +64,7 @@ func RemoveElementsFromStringByIndex(data []string, j []int) []string {
 	return newArray
 }
 
-//RemoveElement is delegated to delete the element related to index i
+// RemoveElement is delegated to delete the element related to index i
 func RemoveElement(s []string, i int) []string {
 	if i < len(s) {
 		s[len(s)-1], s[i] = s[i], s[len(s)-1]

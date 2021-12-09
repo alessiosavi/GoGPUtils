@@ -86,7 +86,6 @@ func DeployLambdaFromS3(functionName, bucket, key string) error {
 	}); err != nil {
 		return err
 	}
-	//log.Println(helper.MarshalIndent(code))
 	return nil
 }
 

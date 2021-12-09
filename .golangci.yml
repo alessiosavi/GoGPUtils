@@ -1,0 +1,30 @@
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - unparam
+    - unconvert
+    - interfacer
+    - megacheck
+    - staticcheck
+    - unused
+    - gosimple
+    - dupl
+    - goconst
+    - gocyclo
+    - nakedret
+    - scopelint
+    - gocritic
+    - misspell
+
+  issues:
+  # Not using default exclusions because we want to require comments on public
+  #   # functions and types.
+  #     exclude-use-default: false
+  #       exclude:
+  #           # errcheck: Almost all programs ignore errors on these functions and in most cases it's ok
+  #               - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked
+  #                   # golint: False positive when tests are defined in package 'test'
+  #                       - func name will be used as test\.Test.* by other packages, and that stutters; consider calling this
+  #                           # govet: Common false positives
+  #                               - (possible misuse of unsafe.Pointer|should have signature)

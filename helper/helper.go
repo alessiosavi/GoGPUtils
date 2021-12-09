@@ -229,15 +229,15 @@ func ConvertSize(bytes float64, dimension string) float64 {
 func Marshal(data interface{}) string {
 	if indent, err := json.Marshal(data); err == nil {
 		return string(indent)
-	} else {
-		return fmt.Sprintf("%+v\n", data)
 	}
+	return fmt.Sprintf("%+v\n", data)
+
 }
 
 func MarshalIndent(data interface{}) string {
 	if indent, err := json.MarshalIndent(data, " ", "  "); err == nil {
 		return string(indent)
-	} else {
-		return fmt.Sprintf("%+v\n", data)
 	}
+	return fmt.Sprintf("%+v\n", data)
+
 }
