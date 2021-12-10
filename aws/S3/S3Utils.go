@@ -8,13 +8,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
+	"sort"
 	"sync"
+	"time"
 )
 
 var S3Client *s3.Client = nil
@@ -92,6 +95,39 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 		ContentType:     contentType,
 	})
 	return err
+}
+func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
+	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(prefix),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var buckets = make([]types.Object, len(objects.Contents))
+	for i, bucketData := range objects.Contents {
+		buckets[i] = bucketData
+	}
+
+	continuationToken := objects.NextContinuationToken
+	truncated := objects.IsTruncated
+	for truncated {
+		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
+			Bucket:            aws.String(bucket),
+			Prefix:            aws.String(prefix),
+			ContinuationToken: continuationToken,
+		})
+		if err != nil {
+			return nil, err
+		}
+		continuationToken = newObjects.NextContinuationToken
+		for _, bucketData := range newObjects.Contents {
+			buckets = append(buckets, bucketData)
+		}
+		truncated = newObjects.IsTruncated
+	}
+
+	return buckets, nil
 }
 
 func ListBucketObjects(bucket, prefix string) ([]string, error) {
@@ -214,4 +250,22 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	}
 
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
+}
+
+func GetAfterDate(bucket, prefix string, date time.Time) ([]string, error) {
+	details, err := ListBucketObjectsDetails(bucket, prefix)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+
+	sort.Slice(details, func(i, j int) bool {
+		return details[i].LastModified.Before(*details[j].LastModified)
+	})
+	for _, detail := range details {
+		if detail.LastModified.After(date) {
+			res = append(res, *detail.Key)
+		}
+	}
+	return res, nil
 }

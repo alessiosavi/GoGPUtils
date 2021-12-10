@@ -7,7 +7,9 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"io/ioutil"
 	"log"
+	"path"
 	"reflect"
 	"testing"
 	"time"
@@ -226,6 +228,24 @@ func BenchmarkIsDifferentLegacy(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, lambda := range object {
 			IsDifferentLegacy("qa-lambda-asset", "prod-lambda-asset", lambda, lambda)
+		}
+	}
+}
+
+func TestGetAfterDate(t *testing.T) {
+	dates, err := GetAfterDate("prod-data-lake-bucket", "input/CENTRIC/upload/", time.Date(2021, 12, 2, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		panic(err)
+	}
+	log.Println(helper.MarshalIndent(dates))
+
+	for _, date := range dates {
+		object, err := GetObject("prod-data-lake-bucket", date)
+		if err != nil {
+			panic(err)
+		}
+		if err = ioutil.WriteFile("/tmp/centric/data/Style/"+path.Base(date), object, 0755); err != nil {
+			panic(err)
 		}
 	}
 }
