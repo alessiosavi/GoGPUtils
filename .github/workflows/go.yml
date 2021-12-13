@@ -26,4 +26,4 @@ jobs:
         run: go build -v .
 
       - name: Test
-        run: go test -race `go list ./... | grep -v "aws\|sftp\|http"
+        run: go test -race `go list ./... | grep -v "aws\|sftp\|http"`
