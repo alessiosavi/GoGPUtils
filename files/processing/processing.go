@@ -2,9 +2,14 @@ package processingutils
 
 import (
 	"bytes"
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
+	"html"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"unicode/utf8"
 )
 
@@ -99,4 +104,51 @@ func DecodeNonUTF8String(data string) string {
 		return string(v)
 	}
 	return data
+}
+
+func DecodeNonUTF8Bytes(data []byte) []byte {
+	if !utf8.Valid(data) {
+		v := make([]rune, 0, len(data))
+		for k, r := range string(data) {
+			if r == utf8.RuneError {
+				if _, size := utf8.DecodeRune(data[k:]); size == 1 {
+					continue
+				}
+			}
+			v = append(v, r)
+		}
+		return []byte(string(v))
+	}
+	return data
+}
+
+func ToUTF8(data []byte) ([]byte, error) {
+	// Clean file if possible ...
+	if terminator, err := DetectLineTerminator(bytes.NewReader(data)); err == nil {
+		data = bytes.ReplaceAll(data, []byte(terminator), []byte("\n"))
+		// Remove other line terminator if present
+		for _, ter := range []LineTerminatorType{CR, CRLF, LFCR, RS} {
+			data = bytes.ReplaceAll(data, []byte(ter), []byte(" "))
+		}
+	}
+	var err error
+	encoder, _, ok := charset.DetermineEncoding(data, http.DetectContentType(data))
+	if ok {
+		r := transform.NewReader(bytes.NewReader(data), encoder.NewDecoder())
+		data, err = ioutil.ReadAll(r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for _, BOM := range stringutils.BOMS {
+		data = bytes.TrimPrefix(data, BOM)
+	}
+	//buf = bytes.ReplaceAll(buf, []byte("\u001D"), []byte{}) // Remove group separator
+	//buf = bytes.ReplaceAll(buf, []byte("\u000B"), []byte{}) // Remove vertical tab
+	data = []byte(html.UnescapeString(string(data)))
+	data = bytes.TrimSpace(data)
+	data = bytes.Trim(data, "\n")
+
+	return DecodeNonUTF8Bytes(data), nil
 }

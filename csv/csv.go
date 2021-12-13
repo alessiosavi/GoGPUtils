@@ -6,12 +6,7 @@ import (
 	"errors"
 	"fmt"
 	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
-	stringutils "github.com/alessiosavi/GoGPUtils/string"
-	"golang.org/x/net/html/charset"
-	"golang.org/x/text/transform"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"strconv"
 )
 
@@ -19,28 +14,9 @@ import (
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
 func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
-	terminator, err := processingutils.DetectLineTerminator(bytes.NewReader(buf))
-	contentType := http.DetectContentType(buf)
-	encoder, encoding, ok := charset.DetermineEncoding(buf, contentType)
-	if ok {
-		var errRead error
-		log.Println("WARNING | Data is encoded using:", encoding)
-		r := transform.NewReader(bytes.NewReader(buf), encoder.NewDecoder())
-		buf, errRead = ioutil.ReadAll(r)
-		if errRead != nil {
-			return nil, nil, errRead
-		}
-	}
-	// Clean file if possible ...
-	if err == nil {
-		for _, BOM := range stringutils.BOMS {
-			buf = bytes.TrimPrefix(buf, BOM)
-		}
-		buf = bytes.ReplaceAll(buf, []byte(terminator), []byte("\n"))
-		buf = bytes.ReplaceAll(buf, []byte("\u001D"), []byte{}) // Remove group separator
-		buf = bytes.ReplaceAll(buf, []byte("\u000B"), []byte{}) // Remove vertical tab
-		buf = bytes.TrimSpace(buf)
-		buf = bytes.Trim(buf, "\n")
+	buf, err := processingutils.ToUTF8(buf)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	csvReader := csv.NewReader(bytes.NewReader(buf))
@@ -52,7 +28,7 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	csvData = DecodeNonUTF8CSV(csvData)
+	//csvData = DecodeNonUTF8CSV(csvData)
 
 	if len(csvData) < 2 {
 		return nil, nil, errors.New("input data does not contains at least 2 rows (headers + data)")

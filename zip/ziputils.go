@@ -2,14 +2,15 @@ package ziputils
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
+	"log"
 )
 
 // ReadZip is delegated to extract the files and read the content
 func ReadZip(filename string) (map[string]string, error) {
-	var filesContent map[string]string
-
 	//log.Println("ReadZip | Opening zipped content from [" + filename + "]")
 	zf, err := zip.OpenReader(filename)
 	if err != nil {
@@ -17,20 +18,48 @@ func ReadZip(filename string) (map[string]string, error) {
 		return nil, err
 	}
 	defer zf.Close()
-	filesContent = make(map[string]string)
+	return read(zf)
+}
+
+func read(zf *zip.ReadCloser) (map[string]string, error) {
+	var filesContent = make(map[string]string)
 	for _, file := range zf.File {
 		if file.Mode().IsRegular() {
-			//log.Println("ReadZip | Unzipping regular file " + file.Name)
-			data, err := ReadZipFile(file)
-			if err != nil {
-				//log.Println("ReadZip | Unable to unzip file " + file.Name)
+			if data, err := ReadZipFile(file); err != nil {
+				continue
 			} else {
-				//log.Println("ReadZip | File unzipped successfully!")
 				filesContent[file.Name] = data
 			}
 		}
 	}
-	//log.Println("ReadZip | Unzipped ", len(filesContent), " files")
+	return filesContent, nil
+}
+
+// ReadZipBytes is delegated to extract the files and read the content
+func ReadZipBytes(raw io.ReadCloser) (map[string]string, error) {
+	bytesData, err := io.ReadAll(raw)
+	if err != nil {
+		return nil, err
+	}
+	if err = raw.Close(); err != nil {
+		return nil, err
+	}
+	var filesContent map[string]string
+	zf, err := zip.NewReader(bytes.NewReader(bytesData), int64(len(bytesData)))
+	if err != nil {
+		return nil, err
+	}
+	filesContent = make(map[string]string)
+	for _, file := range zf.File {
+		if file.Mode().IsRegular() {
+			if data, err := ReadZipFile(file); err != nil {
+				log.Printf("Error on file:%s\n", file.Name)
+				continue
+			} else {
+				filesContent[file.Name] = data
+			}
+		}
+	}
 	return filesContent, nil
 }
 

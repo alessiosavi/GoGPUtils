@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	helper "github.com/alessiosavi/GoGPUtils/helper"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"io"
 	"io/ioutil"
@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -181,8 +182,8 @@ func GetFileDate(filepath string) string {
 	return ""
 }
 
-// ListFile is delegated to find the files from the given directory, recursively for each dir
-func ListFile(path string) ([]string, error) {
+// ListFiles is delegated to find the files from the given directory, recursively for each dir
+func ListFiles(path string) ([]string, error) {
 	var fileList []string
 	// Read all the file recursively
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -537,4 +538,36 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 
 func Move(source, dest string) error {
 	return os.Rename(source, dest)
+}
+
+type orderedFile struct {
+	file string
+	time int64
+}
+
+func ListFilesOrdered(path string) ([]string, error) {
+	// ListFile is delegated to find the files from the given directory, recursively for each dir
+	var fileList []orderedFile
+	// Read all the file recursively
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
+	_ = filepath.Walk(path, func(file string, f os.FileInfo, err error) error {
+		if IsFile(file) {
+			f := orderedFile{
+				file: file,
+				time: GetFileModification(file),
+			}
+			fileList = append(fileList, f)
+		}
+		return nil
+	})
+	sort.Slice(fileList, func(i, j int) bool {
+		return fileList[i].time < fileList[j].time
+	})
+	var files = make([]string, len(fileList))
+	for i := range fileList {
+		files[i] = fileList[i].file
+	}
+	return files, nil
 }

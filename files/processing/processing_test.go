@@ -11,7 +11,7 @@ import (
 
 func TestDetectCarriageReturn(t *testing.T) {
 	log.SetFlags(log.Llongfile | log.LstdFlags)
-	files, err := fileutils.ListFile(".")
+	files, err := fileutils.ListFiles(".")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -66,3 +66,26 @@ func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
 	}
 	return fakeDataCR
 }
+
+//func TestToUTF8(t *testing.T) {
+//	files, err := fileutils.ListFiles("/tmp/sap/data")
+//	if err != nil {
+//		panic(err)
+//	}
+//	for _, f := range files {
+//
+//		file, err := ioutil.ReadFile(f)
+//		if err != nil {
+//			panic(err)
+//		}
+//		file, err = ToUTF8(file)
+//		if err != nil {
+//			return
+//		}
+//
+//		err = ioutil.WriteFile(f, file, 0755)
+//		if err != nil {
+//			panic(err)
+//		}
+//	}
+//}

@@ -181,12 +181,12 @@ func TestGetFileContentTypeBIN(t *testing.T) {
 }
 
 func TestListFile(t *testing.T) {
-	t.Log(ListFile(codeFolder))
+	t.Log(ListFiles(codeFolder))
 }
 
 func BenchmarkListFile(t *testing.B) {
 	for n := 0; n < t.N; n++ {
-		ListFile(codeFolder)
+		ListFiles(codeFolder)
 	}
 }
 
