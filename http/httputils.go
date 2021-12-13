@@ -3,6 +3,7 @@ package httputils
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -204,4 +205,9 @@ func ValidatePort(port int) bool {
 	// Registered/user ports: 1024 to 49151
 	// Dynamic/private ports: 49152 to 65535. (not used for the servers rather the clients e.g. in NATing service)
 	return port <= 65535 && port >= 0
+}
+
+func ReadBody(resp *http.Response) ([]byte, error) {
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
 }
