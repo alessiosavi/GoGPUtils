@@ -4,7 +4,6 @@ import (
 	"bytes"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -68,25 +67,25 @@ func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
 	return fakeDataCR
 }
 
-func TestToUTF8(t *testing.T) {
-	files, err := fileutils.ListFiles("/tmp/sap/data")
-	if err != nil {
-		panic(err)
-	}
-	for _, f := range files {
-
-		file, err := ioutil.ReadFile(f)
-		if err != nil {
-			panic(err)
-		}
-		file, err = ToUTF8(file)
-		if err != nil {
-			return
-		}
-
-		err = ioutil.WriteFile(f, file, 0755)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
+//func TestToUTF8(t *testing.T) {
+//	files, err := fileutils.ListFiles("/tmp/sap/data")
+//	if err != nil {
+//		panic(err)
+//	}
+//	for _, f := range files {
+//
+//		file, err := ioutil.ReadFile(f)
+//		if err != nil {
+//			panic(err)
+//		}
+//		file, err = ToUTF8(file)
+//		if err != nil {
+//			return
+//		}
+//
+//		err = ioutil.WriteFile(f, file, 0755)
+//		if err != nil {
+//			panic(err)
+//		}
+//	}
+//}
