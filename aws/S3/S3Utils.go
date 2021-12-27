@@ -237,7 +237,7 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 			log.Println(err2)
 		}
 	}
-	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
+	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag || head_base.LastModified.Second() != head_target.LastModified.Second()
 }
 func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) bool {
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})
@@ -248,7 +248,6 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	if err != nil {
 		return true
 	}
-
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
-	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -156,4 +155,99 @@ func GetCOPYErrors(connection *sql.DB) []Result {
 		}
 	}
 	return errorsResult
+}
+
+// SetAutoOptimization is delegated to scan all the tables in a redshift cluster and set the automatic diststyle and sortkey
+func SetAutoOptimization(connection *sql.DB) error {
+	query := `
+select t.table_name
+from information_schema.tables t
+where t.table_schema = 'public' and table_type = 'BASE TABLE'
+order by t.table_name;`
+
+	rows, err := connection.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var result []string
+	for rows.Next() {
+		var s string
+		if err = rows.Scan(&s); err != nil {
+			return err
+		}
+		result = append(result, s)
+	}
+
+	// Convert a table to a diststyle AUTO table
+	var dist = `ALTER TABLE %s ALTER DISTSTYLE AUTO;`
+	// Convert a table to a sort key AUTO table
+	var sort = `ALTER TABLE %s ALTER SORTKEY AUTO;`
+	for _, table := range result {
+		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
+		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
+	}
+	return nil
+}
+
+//func SetEncodeAuto(connection *sql.DB) error {
+//	query := `
+//select t.table_name
+//from information_schema.tables t
+//where t.table_schema = 'public' and table_type = 'BASE TABLE'
+//order by t.table_name;`
+//
+//	rows, err := connection.Query(query)
+//	if err != nil {
+//		return err
+//	}
+//	defer rows.Close()
+//	var result []string
+//	for rows.Next() {
+//		var s string
+//		if err = rows.Scan(&s); err != nil {
+//			return err
+//		}
+//		result = append(result, s)
+//	}
+//	// Convert a table to a sort key AUTO table
+//	var encode = `ALTER TABLE %s ENCODE AUTO;`
+//	for _, table := range result {
+//		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(encode, table)); err != nil {
+//			log.Println(err)
+//			log.Println()
+//		}
+//	}
+//	return nil
+//}
+
+// PhysicalDelete is delegated to perform the physical delete of the items marked as deleted
+func PhysicalDelete(connection *sql.DB) error {
+	query := `
+	SELECT tablename
+	FROM pg_table_def
+	WHERE schemaname = 'public'
+	and "column" = 'flag_delete';`
+
+	rows, err := connection.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var result []string
+	for rows.Next() {
+		var s string
+		if err = rows.Scan(&s); err != nil {
+			return err
+		}
+		result = append(result, s)
+	}
+	var remove = `delete from %s where flag_delete=true;`
+	for _, table := range result {
+		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(remove, table)); err != nil {
+			log.Println(err)
+			log.Println()
+		}
+	}
+	return nil
 }
