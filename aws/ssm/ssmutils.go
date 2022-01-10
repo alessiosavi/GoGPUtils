@@ -55,3 +55,10 @@ func List() ([]string, error) {
 
 	return params, nil
 }
+
+func Describe(paramName string) (*ssm.GetParameterOutput, error) {
+	return ssmClient.GetParameter(context.Background(), &ssm.GetParameterInput{
+		Name:           aws.String(paramName),
+		WithDecryption: true,
+	})
+}

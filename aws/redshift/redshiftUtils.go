@@ -7,6 +7,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -189,37 +190,6 @@ order by t.table_name;`
 	}
 	return nil
 }
-
-//func SetEncodeAuto(connection *sql.DB) error {
-//	query := `
-//select t.table_name
-//from information_schema.tables t
-//where t.table_schema = 'public' and table_type = 'BASE TABLE'
-//order by t.table_name;`
-//
-//	rows, err := connection.Query(query)
-//	if err != nil {
-//		return err
-//	}
-//	defer rows.Close()
-//	var result []string
-//	for rows.Next() {
-//		var s string
-//		if err = rows.Scan(&s); err != nil {
-//			return err
-//		}
-//		result = append(result, s)
-//	}
-//	// Convert a table to a sort key AUTO table
-//	var encode = `ALTER TABLE %s ENCODE AUTO;`
-//	for _, table := range result {
-//		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(encode, table)); err != nil {
-//			log.Println(err)
-//			log.Println()
-//		}
-//	}
-//	return nil
-//}
 
 // PhysicalDelete is delegated to perform the physical delete of the items marked as deleted
 func PhysicalDelete(connection *sql.DB) error {
