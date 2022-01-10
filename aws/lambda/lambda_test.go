@@ -36,7 +36,8 @@ func TestDeployLambdaFromZIP(t *testing.T) {
 }
 
 func TestDeployAllLambda(t *testing.T) {
-	objects, err := S3utils.ListBucketObjects("prod-lambda-asset", "go-")
+	env := "qa"
+	objects, err := S3utils.ListBucketObjects(env+"-lambda-asset", "go-")
 	if err != nil {
 		panic(err)
 	}
@@ -48,18 +49,17 @@ func TestDeployAllLambda(t *testing.T) {
 	}
 	log.Println(helper.MarshalIndent(lambdas))
 
-	for _, env := range []string{"qa-", "prod-"} {
-		for _, object := range objects {
-			lambdaName := strings.TrimSuffix(object, ".zip")
-			for _, lambda := range lambdas {
-				if lambda == env+lambdaName || lambda == lambdaName+env {
-					log.Println("Uploading lambda", lambda)
-					if err = DeployLambdaFromS3(lambda, env+"lambda-asset", object); err != nil {
-						panic(err)
-					}
+	for _, object := range objects {
+		lambdaName := strings.TrimSuffix(object, ".zip")
+		for _, lambda := range lambdas {
+			if lambda == env+"-"+lambdaName || lambda == lambdaName+"-"+env {
+				log.Println("Uploading lambda", lambda)
+				if err = DeployLambdaFromS3(lambda, env+"-lambda-asset", object); err != nil {
+					panic(err)
 				}
 			}
 		}
+
 	}
 }
 
