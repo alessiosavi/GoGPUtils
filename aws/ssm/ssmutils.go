@@ -1,8 +1,9 @@
-package ssm
+package ssmutils
 
 import (
 	"context"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"sync"
 )
@@ -22,11 +23,35 @@ func init() {
 
 func Get(paramName string) (string, error) {
 	parameter, err := ssmClient.GetParameter(context.Background(), &ssm.GetParameterInput{
-		Name:           nil,
+		Name:           aws.String(paramName),
 		WithDecryption: true,
 	})
 	if err != nil {
 		return "", err
 	}
 	return *parameter.Parameter.Value, nil
+}
+
+func List() ([]string, error) {
+	parameters, err := ssmClient.DescribeParameters(context.Background(), &ssm.DescribeParametersInput{})
+	if err != nil {
+		return nil, err
+	}
+
+	var params []string
+	for _, p := range parameters.Parameters {
+		params = append(params, *p.Name)
+	}
+	continuationToken := parameters.NextToken
+	for continuationToken != nil {
+		parameters, err = ssmClient.DescribeParameters(context.Background(), &ssm.DescribeParametersInput{})
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range parameters.Parameters {
+			params = append(params, *p.Name)
+		}
+	}
+
+	return params, nil
 }
