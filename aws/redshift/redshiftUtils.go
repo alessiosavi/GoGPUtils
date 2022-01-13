@@ -190,6 +190,7 @@ order by t.table_name;`
 	return nil
 }
 
+<<<<<<< HEAD
 //func SetEncodeAuto(connection *sql.DB) error {
 //	query := `
 //select t.table_name
@@ -221,6 +222,8 @@ order by t.table_name;`
 //	return nil
 //}
 
+=======
+>>>>>>> master
 // PhysicalDelete is delegated to perform the physical delete of the items marked as deleted
 func PhysicalDelete(connection *sql.DB) error {
 	query := `
