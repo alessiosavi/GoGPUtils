@@ -3,18 +3,11 @@ package sqlutils
 import (
 	"database/sql"
 	"fmt"
-	redshiftutils "github.com/alessiosavi/GoGPUtils/aws/redshift"
-	"github.com/alessiosavi/GoGPUtils/helper"
-	"log"
-	"strings"
 )
 
 func ExecuteStatement(connection *sql.DB, queries ...string) error {
 	for _, query := range queries {
 		if _, err := connection.Exec(query); err != nil {
-			if strings.Contains(err.Error(), "stl_load_errors") {
-				log.Println(helper.MarshalIndent(redshiftutils.GetCOPYErrors(connection)[0]))
-			}
 			return fmt.Errorf("ERROR Executing the following query:\n%s\n | Error: %s", query, err.Error())
 		}
 	}
