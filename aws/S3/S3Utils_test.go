@@ -11,6 +11,7 @@ import (
 	"log"
 	"path"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 )
@@ -186,6 +187,21 @@ func TestHead(t *testing.T) {
 	}
 }
 
+func TestIsDifferent2(t *testing.T) {
+	diff := IsDifferent("qa-lambda-asset", "prod-lambda-asset", "go-am-parser.zip", "test.zip")
+	if diff != true {
+		t.Error()
+	}
+}
+
+func TestSyncBucket(t *testing.T) {
+	bucket, err := SyncBucket("cegid-prod-output-from-data-lake", "", "cegid-prod-output-from-data-lake-history")
+	if err != nil {
+		panic(err)
+	}
+	log.Println(helper.MarshalIndent(bucket))
+}
+
 func TestIsDifferent(t *testing.T) {
 	object, err := ListBucketObjects("qa-lambda-asset", "")
 	if err != nil {
@@ -248,4 +264,18 @@ func TestGetAfterDate(t *testing.T) {
 			panic(err)
 		}
 	}
+}
+
+func TestList(t *testing.T) {
+
+	details, err := ListBucketObjectsDetails("bbl-prod-input-for-data-lake", "")
+	if err != nil {
+		return
+	}
+
+	sort.Slice(details, func(i, j int) bool {
+		return details[i].LastModified.After(*details[j].LastModified)
+
+	})
+	ioutil.WriteFile("/tmp/list.json", []byte(helper.MarshalIndent(details)), 0755)
 }

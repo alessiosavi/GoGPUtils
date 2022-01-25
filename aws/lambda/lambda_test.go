@@ -36,7 +36,7 @@ func TestDeployLambdaFromZIP(t *testing.T) {
 }
 
 func TestDeployAllLambda(t *testing.T) {
-	env := "qa"
+	env := "prod"
 	objects, err := S3utils.ListBucketObjects(env+"-lambda-asset", "go-")
 	if err != nil {
 		panic(err)
@@ -75,3 +75,28 @@ func TestDeployAllLambda(t *testing.T) {
 //
 //	}
 //}
+
+func TestDescribeLambda(t *testing.T) {
+	lambdas, err := ListLambdas()
+	if err != nil {
+		panic(err)
+	}
+
+	var envs = make(map[string]string)
+	for _, lambda := range lambdas {
+		if strings.Contains(lambda, "prod") {
+			d, err := DescribeLambda(lambda)
+			if err != nil {
+				panic(err)
+			}
+
+			if d.Configuration.Environment != nil {
+				for k, v := range d.Configuration.Environment.Variables {
+					envs[k] = v
+				}
+			}
+		}
+	}
+
+	t.Log(helper.MarshalIndent(envs))
+}
