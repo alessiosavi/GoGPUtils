@@ -27,7 +27,7 @@ func ListWorkspaces() (map[string][]string, error) {
 		return nil, err
 	}
 
-	var workspacesList map[string][]string = make(map[string][]string)
+	var workspacesList = make(map[string][]string)
 
 	for _, workspace := range wsList.Workspaces {
 		workspacesList[*workspace.UserName] = append(workspacesList[*workspace.UserName], *workspace.WorkspaceId)

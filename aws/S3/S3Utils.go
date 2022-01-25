@@ -182,17 +182,17 @@ func ObjectExists(bucket, key string) bool {
 	}
 	return true
 }
-func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
+
+func SyncBucket(bucket, prefix string, bucketsTarget ...string) ([]string, error) {
 	var fileNotSynced []string
 	var err error
-	objects, err := ListBucketObjects(bucket, "")
+	objects, err := ListBucketObjects(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			exist := ObjectExists(bucketTarget, object)
-			if !exist || IsDifferent(bucket, bucketTarget, object, object) {
+			if IsDifferent(bucket, bucketTarget, object, object) {
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
 					fileNotSynced = append(fileNotSynced, object)
@@ -236,8 +236,9 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 			log.Println("INPUT: ", bucket_target, key_target)
 			log.Println(err2)
 		}
+		return true
 	}
-	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag || head_base.LastModified.Second() != head_target.LastModified.Second()
+	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
 }
 func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) bool {
 	head_base, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String(bucket_base), Key: aws.String(key_base)})

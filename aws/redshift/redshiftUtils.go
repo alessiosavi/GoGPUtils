@@ -7,7 +7,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
-	_ "github.com/lib/pq"
+	"github.com/schollz/progressbar/v3"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -184,9 +184,13 @@ order by t.table_name;`
 	var dist = `ALTER TABLE %s ALTER DISTSTYLE AUTO;`
 	// Convert a table to a sort key AUTO table
 	var sort = `ALTER TABLE %s ALTER SORTKEY AUTO;`
+	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
+		bar.Describe(dist)
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
+		bar.Describe(sort)
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
+		bar.Add(1)
 	}
 	return nil
 }
