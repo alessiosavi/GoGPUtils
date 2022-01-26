@@ -21,6 +21,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.20.0
 	github.com/aws/aws-sdk-go-v2/service/workspaces v1.14.0
+	github.com/lib/pq v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.4
 	github.com/schollz/progressbar/v3 v3.8.5
