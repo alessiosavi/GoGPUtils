@@ -7,6 +7,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	_ "github.com/lib/pq"
 	"github.com/schollz/progressbar/v3"
 	"io/ioutil"
 	"log"
