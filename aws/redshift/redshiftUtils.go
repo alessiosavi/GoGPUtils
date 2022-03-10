@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	S3utils "github.com/alessiosavi/GoGPUtils/aws/S3"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
@@ -11,6 +12,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"io/ioutil"
 	"log"
+	"path"
 	"strings"
 	"time"
 )
@@ -77,13 +79,18 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 // tableType: Map of headers:type for the given table
 func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
 	var sb strings.Builder
+
+	//for i := range headers {
+	//	headers[i] = stringutils.ExtractUpperBlock(headers[i])
+	//}
+
 	translator := sqlutils.GetRedshiftTranslator()
 	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
 	replacer := strings.NewReplacer(".", "", ",", "", " ", "", "(", "", ")", "")
 	for _, header := range headers {
 		fixHeader := replacer.Replace(header)
 		//for k, v := range tableType {
-		sb.WriteString("\t" + fixHeader + " " + translator[tableType[header]] + ",\n")
+		sb.WriteString("\t" + stringutils.ExtractUpperBlock(fixHeader, nil) + " " + translator[tableType[header]] + ",\n")
 	}
 	data := strings.TrimSuffix(sb.String(), ",\n") + ");"
 	return data
@@ -218,11 +225,149 @@ func PhysicalDelete(connection *sql.DB) error {
 		result = append(result, s)
 	}
 	var remove = `delete from %s where flag_delete=true;`
+
+	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
+		bar.Describe(table)
 		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(remove, table)); err != nil {
-			log.Println(err)
-			log.Println()
+			log.Println(fmt.Sprintf("Error with table: %s | %s", table, err.Error()))
 		}
+		bar.Add(1)
 	}
 	return nil
+}
+
+// Check the number of rows for every table
+//select table_name, diststyle, sortkey1, tbl_rows
+//from svv_tables t1,
+//svv_table_info t2
+//where t1.table_schema = t2.schema
+//and t1.table_name = t2.table
+//and t1.table_schema not in ('pg_catalog', 'information_schema')
+//and t1.table_type = 'BASE TABLE'
+//order by tbl_rows desc;
+
+// UnloadDB is delegated to dump all the DATABASE data into an S3 folder
+func UnloadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
+	tables, err := GetAllTables(conn, schemaName)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(helper.MarshalIndent(tables))
+	bar := progressbar.Default(int64(len(tables)))
+	for _, table := range tables {
+		bar.Describe(table)
+		var q string = fmt.Sprintf(`unload ('select * from %[1]s')
+				to 's3://%[2]s/%[3]s/%[1]s_'
+				iam_role '%[4]s'
+				header
+				parallel off
+				CSV DELIMITER AS '|' ;`, table, bucket, prefix, role)
+
+		_, err := conn.Exec(q)
+		if err != nil {
+			log.Println(fmt.Sprintf("Error with table: %s | %s", table, err.Error()))
+		}
+		bar.Add(1)
+	}
+	bar.Close()
+}
+
+func LoadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
+	// Get all tables from the DB
+	tables, err := GetAllTables(conn, schemaName)
+	if err != nil {
+		panic(err)
+	}
+
+	// Get all table dump
+	objects, err := S3utils.ListBucketObjects(bucket, prefix)
+	if err != nil {
+		panic(err)
+	}
+
+	for i := range objects {
+		split := strings.Split(path.Base(objects[i]), "_")
+		objects[i] = stringutils.JoinSeparator("_", split[:len(split)-1]...)
+	}
+
+	tablesMap := stringutils.ArrayToMap(tables)
+	//objectsMap := stringutils.ArrayToMap(objects)
+
+	var qTest string = `copy %s
+    from '%s'
+    iam_role '%s'
+    DELIMITER '|'
+	NOLOAD
+    IGNOREHEADER 1
+    IGNOREBLANKLINES
+    REMOVEQUOTES
+    EMPTYASNULL;`
+
+	var q string = `copy %s
+    from '%s'
+    iam_role '%s'
+    DELIMITER '|'
+    IGNOREHEADER 1
+    IGNOREBLANKLINES
+    REMOVEQUOTES
+    EMPTYASNULL;`
+
+	bar := progressbar.Default(int64(len(tablesMap)))
+
+	for k := range tablesMap {
+		bar.Describe(k)
+		bar.Add(1)
+		count := stringutils.Count(objects, k)
+		var sb strings.Builder
+		for i := 0; i < count; i++ {
+			fname := fmt.Sprintf("s3://%s/%s/%s_00%d", bucket, prefix, k, i)
+			sb.WriteString(fmt.Sprintf(qTest, k, fname, role))
+		}
+		_, err := conn.Exec(sb.String())
+		if err != nil {
+			log.Println("QUERY:\n", sb.String())
+			log.Println(fmt.Sprintf("Error with table: %s | %s", k, err.Error()))
+		} else {
+			sb.Reset()
+			sb.WriteString(fmt.Sprintf("truncate %s;\n", k))
+			for i := 0; i < count; i++ {
+				fname := fmt.Sprintf("s3://%s/%s/%s_00%d", bucket, prefix, k, i)
+				sb.WriteString(fmt.Sprintf(q, k, fname, role))
+			}
+			_, err := conn.Exec(sb.String())
+			if err != nil {
+				log.Println("QUERY:\n", sb.String())
+				log.Println(fmt.Sprintf("Error with table: %s | %s", k, err.Error()))
+			}
+		}
+	}
+	bar.Finish()
+	log.Println()
+
+}
+
+func GetAllTables(conn *sql.DB, schema string) ([]string, error) {
+	rows, err := conn.Query(`
+		select t.table_name
+		from information_schema.tables t
+		where t.table_schema = $1
+		  and t.table_type = 'BASE TABLE'
+		order by t.table_name;`, schema)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var tables []string
+	for rows.Next() {
+		var table string
+		if err = rows.Scan(&table); err != nil {
+			return nil, err
+		}
+		tables = append(tables, table)
+	}
+	return tables, nil
 }

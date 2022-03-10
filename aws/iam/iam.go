@@ -3,8 +3,10 @@ package iamutils
 import (
 	"context"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamTypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"sync"
 )
 
@@ -59,4 +61,39 @@ func CreateIamUser(username, password string, passwordResetRequired, accessKeys 
 	}
 
 	return &IamUser{Username: username, Password: password, AccessKeyId: accessKeyId, SecretAccessKey: secretAccessKey}, nil
+}
+func ListRoles(prefix *string) ([]iamTypes.Role, error) {
+	var res []iamTypes.Role
+	roles, err := iamClient.ListRoles(context.Background(), &iam.ListRolesInput{PathPrefix: prefix})
+	if err != nil {
+		return nil, err
+	}
+
+	var marker *string = roles.Marker
+	for roles.IsTruncated {
+		roles, err = iamClient.ListRoles(context.Background(), &iam.ListRolesInput{
+			Marker:     marker,
+			PathPrefix: prefix,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, roles.Roles...)
+		marker = roles.Marker
+	}
+
+	return res, nil
+}
+
+func Info(r iamTypes.Role) string {
+	return helper.MarshalIndent(r)
+}
+
+func GetRole(name string) (*iamTypes.Role, error) {
+	role, err := iamClient.GetRole(context.Background(), &iam.GetRoleInput{RoleName: aws.String(name)})
+	if err != nil {
+		return nil, err
+	}
+	return role.Role, nil
 }

@@ -228,7 +228,6 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 	wg.Wait()
 
 	if err1 != nil || err2 != nil {
-		log.Println("Error calling AWS")
 		if err1 != nil {
 			log.Println("INPUT: ", bucket_base, key_base)
 			log.Println(err1)

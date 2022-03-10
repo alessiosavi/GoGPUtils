@@ -14,6 +14,18 @@ const distance1 string = `../testdata/files/testDistance.txt`
 const distance2 string = `../testdata/files/testDistance1.txt`
 const danteDataset string = `../testdata/files/dante.txt`
 
+func TestExtractUpperBlock(t *testing.T) {
+	for _, test := range []string{"test_ID", "test_ID_test", "Test_ID_TEST", "test_ID_test_ID", "test ID", "test_ID test", "Test ID TEST", "test ID_test ID", "TestID", "TestId"} {
+
+		//for _, test := range []string{"CompanyName"} {
+		r := strings.NewReplacer(" ", "_")
+
+		expected := r.Replace(strings.ToLower(test))
+		if res := ExtractUpperBlock(test, r); res != expected {
+			t.Errorf("Expected: %s | Found: %s", expected, res)
+		}
+	}
+}
 func TestIsUpper(t *testing.T) {
 	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
 	dataKO := []string{`aaa`, `bbb`, `zzz`, `<<<`, `!!!`}
