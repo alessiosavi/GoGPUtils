@@ -194,10 +194,17 @@ order by t.table_name;`
 	var sort = `ALTER TABLE %s ALTER SORTKEY AUTO;`
 	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
-		bar.Describe(dist)
-		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
-		bar.Describe(sort)
-		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
+		d := fmt.Sprintf(dist, table)
+		s := fmt.Sprintf(sort, table)
+		for _, q := range []string{d, s} {
+			bar.Describe(q)
+			if err = sqlutils.ExecuteStatement(connection, q); err != nil {
+				if !(strings.Contains(err.Error(), "This table is already SORTKEY AUTO") || strings.Contains(err.Error(), "Can not alter table to same distribution style.")) {
+					log.Println("ERROR ON TABLE", table)
+					log.Println(err)
+				}
+			}
+		}
 		bar.Add(1)
 	}
 	return nil
@@ -258,7 +265,7 @@ func UnloadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
 	bar := progressbar.Default(int64(len(tables)))
 	for _, table := range tables {
 		bar.Describe(table)
-		var q string = fmt.Sprintf(`unload ('select * from %[1]s')
+		var q = fmt.Sprintf(`unload ('select * from %[1]s')
 				to 's3://%[2]s/%[3]s/%[1]s_'
 				iam_role '%[4]s'
 				header
@@ -295,7 +302,7 @@ func LoadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
 	tablesMap := stringutils.ArrayToMap(tables)
 	//objectsMap := stringutils.ArrayToMap(objects)
 
-	var qTest string = `copy %s
+	var qTest = `copy %s
     from '%s'
     iam_role '%s'
     DELIMITER '|'
@@ -305,7 +312,7 @@ func LoadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
     REMOVEQUOTES
     EMPTYASNULL;`
 
-	var q string = `copy %s
+	var q = `copy %s
     from '%s'
     iam_role '%s'
     DELIMITER '|'

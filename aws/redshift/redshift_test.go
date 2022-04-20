@@ -8,6 +8,15 @@ import (
 	"testing"
 )
 
+var connection *sql.DB
+
+func init() {
+	var err error
+	if connection, err = InitRedshiftConnection(); err != nil {
+		panic(err)
+	}
+
+}
 func InitRedshiftConnection() (*sql.DB, error) {
 	var c Conf
 	if err := secretutils.UnmarshalSecret(os.Getenv("secret_redshift"), &c); err != nil {
@@ -17,40 +26,26 @@ func InitRedshiftConnection() (*sql.DB, error) {
 	c.Host = "localhost"
 	c.Port = "5439"
 	log.Println("Initializing connection for Redshift @" + c.Host)
-	connection, err := MakeRedshfitConnection(c)
-	if err != nil {
-		return nil, err
-	}
-	return connection, err
+	return MakeRedshfitConnection(c)
 }
 
 func TestUnloadDB(t *testing.T) {
-	connection, err := InitRedshiftConnection()
-	if err != nil {
-		panic(err)
-	}
-	defer connection.Close()
 	UnloadDB(connection, "public", "prod-demand-planning-forecast-temp", "dump/REDSHIFT_PROD", os.Getenv("test_role_redshift"))
 
 }
 
 func TestLoadDB(t *testing.T) {
-	connection, err := InitRedshiftConnection()
-	if err != nil {
-		panic(err)
-	}
-	defer connection.Close()
 	LoadDB(connection, "public", "qa-demand-planning-forecast-temp", "dump/REDSHIFT_PARSED", os.Getenv("test_role_redshift"))
 }
 
 func TestPhysicalDelete(t *testing.T) {
-	connection, err := InitRedshiftConnection()
-	if err != nil {
+	if err := PhysicalDelete(connection); err != nil {
 		panic(err)
 	}
-	defer connection.Close()
+}
 
-	if err = PhysicalDelete(connection); err != nil {
+func TestSetAutoOptimization(t *testing.T) {
+	if err := SetAutoOptimization(connection); err != nil {
 		panic(err)
 	}
 }
