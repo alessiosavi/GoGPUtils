@@ -96,6 +96,8 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	})
 	return err
 }
+
+//ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
@@ -127,42 +129,24 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 		truncated = newObjects.IsTruncated
 	}
 
+	sort.Slice(buckets, func(i, j int) bool {
+		return buckets[i].LastModified.Before(*buckets[i].LastModified)
+	})
 	return buckets, nil
 }
 
+//ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjects(bucket, prefix string) ([]string, error) {
-	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
-		Bucket: aws.String(bucket),
-		Prefix: aws.String(prefix),
-	})
+	objects, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
-
-	var buckets = make([]string, len(objects.Contents))
-	for i, bucketName := range objects.Contents {
-		buckets[i] = *bucketName.Key
+	var data []string = make([]string, len(objects))
+	for i := range objects {
+		data[i] = *objects[i].Key
 	}
+	return data, nil
 
-	continuationToken := objects.NextContinuationToken
-	truncated := objects.IsTruncated
-	for truncated {
-		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			Prefix:            aws.String(prefix),
-			ContinuationToken: continuationToken,
-		})
-		if err != nil {
-			return nil, err
-		}
-		continuationToken = newObjects.NextContinuationToken
-		for _, bucketName := range newObjects.Contents {
-			buckets = append(buckets, *bucketName.Key)
-		}
-		truncated = newObjects.IsTruncated
-	}
-
-	return buckets, nil
 }
 
 func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {

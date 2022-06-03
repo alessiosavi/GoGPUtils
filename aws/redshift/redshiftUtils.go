@@ -188,10 +188,10 @@ order by t.table_name;`
 	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
 		bar.Describe(dist)
+		bar.Add(1)
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
 		bar.Describe(sort)
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
-		bar.Add(1)
 	}
 	return nil
 }
@@ -218,7 +218,10 @@ func PhysicalDelete(connection *sql.DB) error {
 		result = append(result, s)
 	}
 	var remove = `delete from %s where flag_delete=true;`
+	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
+		bar.Describe(table)
+		bar.Add(1)
 		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(remove, table)); err != nil {
 			log.Println(err)
 			log.Println()
