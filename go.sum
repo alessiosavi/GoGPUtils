@@ -28,12 +28,12 @@ github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.9 h1:QTPDno4J5TyfpPi3dqCZpD+
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.9/go.mod h1:Req/32OLRbXpPX5TxHkwf2Ln9qclJCV6n1S7v0v+FWo=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.9 h1:5wt4xEuHFV6ymSb19N0+T9iPYs9TqzHW2Sz4p3bKAlA=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.9/go.mod h1:Meb0gqL2SgBbh3xHtcak5GPJDZ1QGwRcGPEo7w1G2vg=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.48.0 h1:bUWFmcE27bkcORJ8olaxJwpz/B3EMAr4swvrHo20s2A=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.48.0/go.mod h1:VoBcwURHnJVCWuXHdqVuG03i2lUlHJ5DTTqDSyCdEcc=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.49.0 h1:X+FiYw5iyCDaqa9+tMZlqcIB7PudQOXR+FOlbIoa7XE=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.49.0/go.mod h1:VoBcwURHnJVCWuXHdqVuG03i2lUlHJ5DTTqDSyCdEcc=
 github.com/aws/aws-sdk-go-v2/service/ecr v1.17.8 h1:wgZo/yeY0f+2RWy2q1rTtZSPMmq37Zy3pY4QypHeurg=
 github.com/aws/aws-sdk-go-v2/service/ecr v1.17.8/go.mod h1:ItZADKTnGxqcqXABHyNpoBljQ8ORt4h+D39RToM/3Ds=
-github.com/aws/aws-sdk-go-v2/service/glue v1.27.1 h1:8sVBQ0RYBRV334mXx0WvoGTYZwPYKWIQE+HEh9/1NRs=
-github.com/aws/aws-sdk-go-v2/service/glue v1.27.1/go.mod h1:JpqCaI8ytHaConkpUXxhWibisAti9SA3KvYR5GLxHXk=
+github.com/aws/aws-sdk-go-v2/service/glue v1.28.0 h1:tiqxMronHwH6OPlJLrug7/PWW6/gEA7Fn2a2xDDfpx8=
+github.com/aws/aws-sdk-go-v2/service/glue v1.28.0/go.mod h1:JpqCaI8ytHaConkpUXxhWibisAti9SA3KvYR5GLxHXk=
 github.com/aws/aws-sdk-go-v2/service/iam v1.18.9 h1:pVHvEz+KIsTwRKufwvGZr90X/YJ7swVshaBZNY4ESIY=
 github.com/aws/aws-sdk-go-v2/service/iam v1.18.9/go.mod h1:ARVuo+lYC2ibYxny/PKC3maaWKLAg25KSq0dkSkE2WE=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.3 h1:4n4KCtv5SUoT5Er5XV41huuzrCqepxlW3SDI9qHQebc=
@@ -73,6 +73,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/google/go-cmp v0.5.8/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=

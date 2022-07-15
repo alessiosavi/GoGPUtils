@@ -10,9 +10,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.20
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.15.10
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.9
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.48.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.49.0
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.17.8
-	github.com/aws/aws-sdk-go-v2/service/glue v1.27.1
+	github.com/aws/aws-sdk-go-v2/service/glue v1.28.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.18.9
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.23.4
 	github.com/aws/aws-sdk-go-v2/service/rds v1.22.0
@@ -22,6 +22,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.27.4
 	github.com/aws/aws-sdk-go-v2/service/workspaces v1.19.2
+	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.6
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.5

@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	guuid "github.com/google/uuid"
 	"html"
 	"sync"
 )
@@ -55,4 +56,38 @@ func DeleteMessage(queueName, receiptHandle string) error {
 		ReceiptHandle: aws.String(receiptHandle),
 	})
 	return err
+}
+
+func GetQueueURL(queueName string) (string, error) {
+	url, err := sqsClient.GetQueueUrl(context.Background(), &sqs.GetQueueUrlInput{
+		QueueName: aws.String(queueName),
+	})
+	if err != nil {
+		return "", err
+	}
+	return *url.QueueUrl, nil
+}
+
+func WriteMessage(queueURL, message string) (*sqs.SendMessageOutput, error) {
+	return sqsClient.SendMessage(context.Background(), &sqs.SendMessageInput{
+		MessageBody: &message,
+		QueueUrl:    &queueURL,
+	})
+}
+
+func WriteMessages(queueURL string, messages []string) (*sqs.SendMessageBatchOutput, error) {
+	var msgs []sqsTypes.SendMessageBatchRequestEntry
+
+	for _, message := range messages {
+		guid := guuid.New().String()
+		msgs = append(msgs, sqsTypes.SendMessageBatchRequestEntry{
+			Id:          &guid,
+			MessageBody: &message,
+		})
+	}
+
+	return sqsClient.SendMessageBatch(context.Background(), &sqs.SendMessageBatchInput{
+		Entries:  msgs,
+		QueueUrl: &queueURL,
+	})
 }
