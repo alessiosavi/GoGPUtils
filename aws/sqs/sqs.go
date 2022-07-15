@@ -5,7 +5,7 @@ import (
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"html"
 	"sync"
 )
@@ -23,14 +23,13 @@ func init() {
 	})
 }
 
-func GetMessage(queueName string) ([]types.Message, error) {
+func GetMessage(queueName string) ([]sqsTypes.Message, error) {
 	url, err := sqsClient.GetQueueUrl(context.Background(), &sqs.GetQueueUrlInput{
 		QueueName: aws.String(queueName),
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	messages, err := sqsClient.ReceiveMessage(context.Background(), &sqs.ReceiveMessageInput{
 		QueueUrl: url.QueueUrl,
 	})
@@ -40,7 +39,6 @@ func GetMessage(queueName string) ([]types.Message, error) {
 
 	for i, message := range messages.Messages {
 		*messages.Messages[i].Body = html.UnescapeString(*message.Body)
-		break
 	}
 	return messages.Messages, nil
 }
