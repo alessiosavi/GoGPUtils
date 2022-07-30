@@ -96,6 +96,8 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	})
 	return err
 }
+
+//ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
@@ -127,42 +129,24 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 		truncated = newObjects.IsTruncated
 	}
 
+	sort.Slice(buckets, func(i, j int) bool {
+		return buckets[i].LastModified.Before(*buckets[i].LastModified)
+	})
 	return buckets, nil
 }
 
+//ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjects(bucket, prefix string) ([]string, error) {
-	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
-		Bucket: aws.String(bucket),
-		Prefix: aws.String(prefix),
-	})
+	objects, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
-
-	var buckets = make([]string, len(objects.Contents))
-	for i, bucketName := range objects.Contents {
-		buckets[i] = *bucketName.Key
+	var data []string = make([]string, len(objects))
+	for i := range objects {
+		data[i] = *objects[i].Key
 	}
+	return data, nil
 
-	continuationToken := objects.NextContinuationToken
-	truncated := objects.IsTruncated
-	for truncated {
-		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			Prefix:            aws.String(prefix),
-			ContinuationToken: continuationToken,
-		})
-		if err != nil {
-			return nil, err
-		}
-		continuationToken = newObjects.NextContinuationToken
-		for _, bucketName := range newObjects.Contents {
-			buckets = append(buckets, *bucketName.Key)
-		}
-		truncated = newObjects.IsTruncated
-	}
-
-	return buckets, nil
 }
 
 func CopyObject(bucketSource, bucketTarget, keySource, keyTarget string) error {
@@ -182,17 +166,17 @@ func ObjectExists(bucket, key string) bool {
 	}
 	return true
 }
-func SyncBucket(bucket string, bucketsTarget ...string) ([]string, error) {
+
+func SyncBucket(bucket, prefix string, bucketsTarget ...string) ([]string, error) {
 	var fileNotSynced []string
 	var err error
-	objects, err := ListBucketObjects(bucket, "")
+	objects, err := ListBucketObjects(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			exist := ObjectExists(bucketTarget, object)
-			if !exist || IsDifferent(bucket, bucketTarget, object, object) {
+			if IsDifferent(bucket, bucketTarget, object, object) {
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
 					fileNotSynced = append(fileNotSynced, object)
@@ -236,6 +220,7 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 			log.Println("INPUT: ", bucket_target, key_target)
 			log.Println(err2)
 		}
+		return true
 	}
 	return head_base.ContentLength != head_target.ContentLength || *head_base.ETag != *head_target.ETag
 }
@@ -248,7 +233,6 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	if err != nil {
 		return true
 	}
-
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 

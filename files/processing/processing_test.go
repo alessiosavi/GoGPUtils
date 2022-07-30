@@ -4,13 +4,11 @@ import (
 	"bytes"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
-	"log"
 	"os"
 	"testing"
 )
 
 func TestDetectCarriageReturn(t *testing.T) {
-	log.SetFlags(log.Llongfile | log.LstdFlags)
 	files, err := fileutils.ListFiles(".")
 	if err != nil {
 		t.Errorf(err.Error())

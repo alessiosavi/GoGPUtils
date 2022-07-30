@@ -8,7 +8,6 @@ import (
 	"html"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"unicode/utf8"
 )
@@ -26,8 +25,6 @@ const (
 
 func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 	// Read 1mb of file
-	log.SetFlags(log.Llongfile | log.LstdFlags)
-
 	buff := make([]byte, 1024*1000)
 	var counts = make(map[LineTerminatorType]int)
 	for {
@@ -56,7 +53,6 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 			maxKey = k
 		}
 	}
-	//log.Println(helper.MarshalIndent(counts))
 	return maxKey, nil
 }
 
