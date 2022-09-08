@@ -33,3 +33,7 @@ func InitRedshiftConnection() (*sql.DB, error) {
 	}
 	return connection, err
 }
+
+func TestManualSnapshot(t *testing.T) {
+	ManualSnapshot()
+}

@@ -75,6 +75,20 @@ func WriteMessage(queueURL, message string) (*sqs.SendMessageOutput, error) {
 	})
 }
 
+func WriteMessageBatch(queueURL string, messages []string) (*sqs.SendMessageBatchOutput, error) {
+	var msgs = make([]sqsTypes.SendMessageBatchRequestEntry, len(messages))
+	for i := range messages {
+		msgs[i] = sqsTypes.SendMessageBatchRequestEntry{
+			Id:          aws.String(guuid.New().String()),
+			MessageBody: aws.String(messages[i]),
+		}
+	}
+	return sqsClient.SendMessageBatch(context.Background(), &sqs.SendMessageBatchInput{
+		Entries:  msgs,
+		QueueUrl: &queueURL,
+	})
+}
+
 func WriteMessages(queueURL string, messages []string) (*sqs.SendMessageBatchOutput, error) {
 	var msgs []sqsTypes.SendMessageBatchRequestEntry
 

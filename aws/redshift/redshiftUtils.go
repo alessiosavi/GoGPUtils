@@ -1,18 +1,23 @@
 package redshiftutils
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	_ "github.com/lib/pq"
 	"github.com/schollz/progressbar/v3"
 	"io/ioutil"
 	"log"
 	"strings"
-	"time"
+	"sync"
+	time "time"
 )
 
 type Conf struct {
@@ -40,6 +45,42 @@ func (c *Conf) Validate() error {
 		return fmt.Errorf("DBName is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	return nil
+}
+
+var redshiftClient *redshift.Client = nil
+var once sync.Once
+
+func init() {
+	once.Do(func() {
+		cfg, err := awsutils.New()
+		if err != nil {
+			panic(err)
+		}
+		redshiftClient = redshift.New(redshift.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	})
+}
+func ManualSnapshot() {
+	//clusters, err := redshiftClient.DescribeClusters(context.Background(), &redshift.DescribeClustersInput{
+	//	ClusterIdentifier: nil,
+	//	Marker:            nil,
+	//	MaxRecords:        nil,
+	//	TagKeys:           nil,
+	//	TagValues:         nil,
+	//})
+	//if err != nil {
+	//	return
+	//}
+	//log.Println(helper.MarshalIndent(clusters))
+	t := time.Now().Format(time.RFC3339)
+	snapshot, err := redshiftClient.CreateClusterSnapshot(context.Background(), &redshift.CreateClusterSnapshotInput{
+		ClusterIdentifier:  aws.String("qa-data-warehouse"),
+		SnapshotIdentifier: aws.String(fmt.Sprintf("%s-%s", "qa-data-warehouse", t)),
+	})
+	if err != nil {
+		return
+	}
+	log.Println(helper.MarshalIndent(snapshot))
+
 }
 
 func (c *Conf) Load(confFile string) error {
