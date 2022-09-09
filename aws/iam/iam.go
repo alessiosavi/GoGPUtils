@@ -69,7 +69,7 @@ func ListRoles(prefix *string) ([]iamTypes.Role, error) {
 		return nil, err
 	}
 
-	var marker *string = roles.Marker
+	var marker = roles.Marker
 	for roles.IsTruncated {
 		roles, err = iamClient.ListRoles(context.Background(), &iam.ListRolesInput{
 			Marker:     marker,

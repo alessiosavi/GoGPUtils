@@ -13,6 +13,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
+	"net"
 	"path"
 	"time"
 )
@@ -46,7 +47,7 @@ func (c *SFTPConf) validate() error {
 	return nil
 }
 
-//NewConn Create a new SFTP connection by given parameters
+// NewConn Create a new SFTP connection by given parameters
 func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	if err := c.validate(); err != nil {
 		return nil, err
@@ -67,7 +68,7 @@ func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	}
 
 	config.Config.KeyExchanges = append(config.Config.KeyExchanges, keyExchanges...)
-	addr := fmt.Sprintf("%s:%d", c.Host, c.Port)
+	addr := net.JoinHostPort(c.Host, fmt.Sprintf("%d", c.Port))
 	log.Println("Connecting to: " + addr)
 	conn, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
@@ -133,14 +134,14 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if !exist {
-		return nil, fmt.Errorf("path %s does not exists!", path)
+		return nil, fmt.Errorf("path %s does not exists", path)
 	}
 	isDir, err := c.IsDir(path)
 	if err != nil {
 		return nil, err
 	}
 	if !isDir {
-		return nil, fmt.Errorf("path %s is not a dir!", path)
+		return nil, fmt.Errorf("path %s is not a dir", path)
 	}
 
 	walker := c.Client.Walk(path)

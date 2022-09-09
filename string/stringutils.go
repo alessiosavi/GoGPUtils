@@ -59,7 +59,7 @@ func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
 }
 
 func Count(data []string, target string) int {
-	var c int = 0
+	var c = 0
 
 	for i := range data {
 		if data[i] == target {
@@ -254,7 +254,7 @@ func CountLines(str string) int {
 	return counter
 }
 
-//ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
+// ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
 func ExtractString(data *string, first, last string) string {
 	// Find the first instance of 'start' in the give string data
 	startHeder := strings.Index(*data, first)

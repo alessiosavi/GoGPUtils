@@ -72,7 +72,7 @@ func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
 //	}
 //	for _, f := range files {
 //
-//		file, err := ioutil.ReadFile(f)
+//		file, err := os.ReadFile(f)
 //		if err != nil {
 //			panic(err)
 //		}
@@ -81,7 +81,7 @@ func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
 //			return
 //		}
 //
-//		err = ioutil.WriteFile(f, file, 0755)
+//		err = os.WriteFile(f, file, 0600)
 //		if err != nil {
 //			panic(err)
 //		}

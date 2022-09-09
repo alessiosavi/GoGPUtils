@@ -10,8 +10,8 @@ import (
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	_ "github.com/lib/pq"
 	"github.com/schollz/progressbar/v3"
-	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -45,7 +45,7 @@ func (c *Conf) Validate() error {
 }
 
 func (c *Conf) Load(confFile string) error {
-	data, err := ioutil.ReadFile(confFile)
+	data, err := os.ReadFile(confFile)
 	if err != nil {
 		return err
 	}

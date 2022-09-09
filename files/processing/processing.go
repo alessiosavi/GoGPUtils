@@ -7,7 +7,6 @@ import (
 	"golang.org/x/text/transform"
 	"html"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"unicode/utf8"
 )
@@ -75,7 +74,7 @@ func ReplaceLineTerminatorBytesReader(data *bytes.Reader, newLineTerminator []by
 	}
 
 	// Read all the file
-	newData, err := ioutil.ReadAll(data)
+	newData, err := io.ReadAll(data)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +130,7 @@ func ToUTF8(data []byte) ([]byte, error) {
 	encoder, _, ok := charset.DetermineEncoding(data, http.DetectContentType(data))
 	if ok {
 		r := transform.NewReader(bytes.NewReader(data), encoder.NewDecoder())
-		data, err = ioutil.ReadAll(r)
+		data, err = io.ReadAll(r)
 		if err != nil {
 			return nil, err
 		}

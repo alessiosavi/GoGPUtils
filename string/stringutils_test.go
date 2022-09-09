@@ -1,7 +1,7 @@
 package stringutils
 
 import (
-	"io/ioutil"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -150,7 +150,7 @@ func TestIsASCII(t *testing.T) {
 }
 
 func TestCountLines(t *testing.T) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -249,12 +249,12 @@ func TestLevenshteinDistance(t *testing.T) {
 }
 
 func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
-	content, err := ioutil.ReadFile(distance1)
+	content, err := os.ReadFile(distance1)
 	if err != nil {
 		return
 	}
 	data1 := strings.ToUpper(string(content))
-	content, err = ioutil.ReadFile(distance2)
+	content, err = os.ReadFile(distance2)
 	if err != nil {
 		return
 	}
@@ -266,12 +266,12 @@ func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
 	}
 }
 func BenchmarkLevenshteinDistance(t *testing.B) {
-	content, err := ioutil.ReadFile(distance1)
+	content, err := os.ReadFile(distance1)
 	if err != nil {
 		return
 	}
 	data1 := strings.ToUpper(string(content))
-	content, err = ioutil.ReadFile(distance2)
+	content, err = os.ReadFile(distance2)
 	if err != nil {
 		return
 	}
@@ -283,12 +283,12 @@ func BenchmarkLevenshteinDistance(t *testing.B) {
 }
 
 func BenchmarkDiceCoefficient(t *testing.B) {
-	content, err := ioutil.ReadFile(distance1)
+	content, err := os.ReadFile(distance1)
 	if err != nil {
 		return
 	}
 	data1 := strings.ToUpper(string(content))
-	content, err = ioutil.ReadFile(distance2)
+	content, err = os.ReadFile(distance2)
 	if err != nil {
 		return
 	}
@@ -299,12 +299,12 @@ func BenchmarkDiceCoefficient(t *testing.B) {
 	}
 }
 func BenchmarkJaroDistance(t *testing.B) {
-	content, err := ioutil.ReadFile(distance1)
+	content, err := os.ReadFile(distance1)
 	if err != nil {
 		return
 	}
 	data1 := strings.ToUpper(string(content))
-	content, err = ioutil.ReadFile(distance2)
+	content, err = os.ReadFile(distance2)
 	if err != nil {
 		return
 	}
@@ -316,7 +316,7 @@ func BenchmarkJaroDistance(t *testing.B) {
 }
 
 func BenchmarkContainsOnlyLetter(t *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -328,7 +328,7 @@ func BenchmarkContainsOnlyLetter(t *testing.B) {
 }
 
 func BenchmarkRemoveFromString(t *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -340,7 +340,7 @@ func BenchmarkRemoveFromString(t *testing.B) {
 }
 
 func BenchmarkExtractTextFromQuery(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -351,7 +351,7 @@ func BenchmarkExtractTextFromQuery(b *testing.B) {
 	}
 }
 func BenchmarkCheckPresence(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -362,7 +362,7 @@ func BenchmarkCheckPresence(b *testing.B) {
 	}
 }
 func BenchmarkIsUpper(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -374,7 +374,7 @@ func BenchmarkIsUpper(b *testing.B) {
 }
 
 func BenchmarkIsLower(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -386,7 +386,7 @@ func BenchmarkIsLower(b *testing.B) {
 }
 
 func BenchmarkRemoveWhiteSpace(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -397,7 +397,7 @@ func BenchmarkRemoveWhiteSpace(b *testing.B) {
 	}
 }
 func BenchmarkIsASCII(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -409,7 +409,7 @@ func BenchmarkIsASCII(b *testing.B) {
 }
 
 func BenchmarkSplit(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -420,7 +420,7 @@ func BenchmarkSplit(b *testing.B) {
 	}
 }
 func BenchmarkSplitBuiltin(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -432,7 +432,7 @@ func BenchmarkSplitBuiltin(b *testing.B) {
 }
 
 func BenchmarkExtractString(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	initial := "LA DIVINA COMMEDIA"
 	final := "altre stelle."
 	if err != nil {
@@ -446,7 +446,7 @@ func BenchmarkExtractString(b *testing.B) {
 }
 
 func BenchmarkRemoveNonASCII(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -457,7 +457,7 @@ func BenchmarkRemoveNonASCII(b *testing.B) {
 	}
 }
 func BenchmarkTestIsUpperOK(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -469,7 +469,7 @@ func BenchmarkTestIsUpperOK(b *testing.B) {
 }
 
 func BenchmarkTestIsLowerOK(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -481,7 +481,7 @@ func BenchmarkTestIsLowerOK(b *testing.B) {
 }
 
 func BenchmarkCreateJSON(t *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -493,7 +493,7 @@ func BenchmarkCreateJSON(t *testing.B) {
 }
 
 func BenchmarkJoin(t *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -505,7 +505,7 @@ func BenchmarkJoin(t *testing.B) {
 }
 
 func BenchmarkTrim(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -517,7 +517,7 @@ func BenchmarkTrim(b *testing.B) {
 }
 
 func BenchmarkRemoveDoubleWhiteSpace(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -528,7 +528,7 @@ func BenchmarkRemoveDoubleWhiteSpace(b *testing.B) {
 	}
 }
 func BenchmarkCountLines(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -540,7 +540,7 @@ func BenchmarkCountLines(b *testing.B) {
 }
 
 func BenchmarkReverseString(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
