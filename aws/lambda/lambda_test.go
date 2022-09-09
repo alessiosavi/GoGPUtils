@@ -36,7 +36,7 @@ func TestDeployLambdaFromZIP(t *testing.T) {
 }
 
 func TestDeployAllLambda(t *testing.T) {
-	env := "prod"
+	env := "qa"
 	objects, err := S3utils.ListBucketObjects(env+"-lambda-asset", "go-")
 	if err != nil {
 		panic(err)
