@@ -1,8 +1,8 @@
 package searchutils
 
 import (
-	"io/ioutil"
 	"math"
+	"os"
 	"testing"
 
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -73,7 +73,7 @@ func BenchmarkLinearSearchParallelInt(t *testing.B) {
 }
 
 func BenchmarkContainsStringByte(t *testing.B) {
-	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	data, err := os.ReadFile("../testdata/files/dante.txt")
 	if err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func BenchmarkContainsStringByte(t *testing.B) {
 }
 
 func BenchmarkContainsStringsByte(t *testing.B) {
-	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	data, err := os.ReadFile("../testdata/files/dante.txt")
 	if err != nil {
 		return
 	}
@@ -94,7 +94,7 @@ func BenchmarkContainsStringsByte(t *testing.B) {
 }
 
 func BenchmarkContainsWhichStrings(t *testing.B) {
-	data, err := ioutil.ReadFile("../testdata/files/dante.txt")
+	data, err := os.ReadFile("../testdata/files/dante.txt")
 	if err != nil {
 		return
 	}

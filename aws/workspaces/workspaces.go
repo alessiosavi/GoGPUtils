@@ -55,7 +55,7 @@ func GetWorkspaces(username string) (*workspaces.DescribeWorkspacesOutput, error
 		return nil, nil
 	}
 	if v, ok := listWorkspaces[username]; !ok {
-		return nil, fmt.Errorf("Username %s not found!", username)
+		return nil, fmt.Errorf("username %s not found", username)
 	} else {
 		return workspaceClient.DescribeWorkspaces(context.Background(), &workspaces.DescribeWorkspacesInput{
 			WorkspaceIds: v,

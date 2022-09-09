@@ -161,8 +161,11 @@ func (n *Node) height() int {
 	return rheight + 1
 }
 
-/* Function to print level
-order traversal a tree*/
+/*
+	Function to print level
+
+order traversal a tree
+*/
 func (n *Node) print() string {
 
 	h := n.height()

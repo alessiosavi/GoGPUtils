@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 )
 
@@ -63,7 +62,7 @@ func ReadZipBytes(raw io.ReadCloser) (map[string]string, error) {
 	return filesContent, nil
 }
 
-// ReadZipFile is a wrapper function for ioutil.ReadAll. It accepts a zip.File as
+// ReadZipFile is a wrapper function for os.ReadAll. It accepts a zip.File as
 // its parameter, opens it, reads its content and returns it as a byte slice.
 func ReadZipFile(file *zip.File) (string, error) {
 	if !file.Mode().IsRegular() {
@@ -75,7 +74,7 @@ func ReadZipFile(file *zip.File) (string, error) {
 	}
 	defer fc.Close()
 
-	content, err := ioutil.ReadAll(fc)
+	content, err := io.ReadAll(fc)
 	if err != nil {
 		return "", err
 	}

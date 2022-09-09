@@ -39,6 +39,9 @@ func GetLogGroups() (map[string]types.LogGroup, error) {
 		groups, err = cloudwatchClient.DescribeLogGroups(context.Background(), &cloudwatchlogs.DescribeLogGroupsInput{
 			NextToken: groups.NextToken,
 		})
+		if err != nil {
+			return nil, err
+		}
 		for _, group := range groups.LogGroups {
 			res[*group.LogGroupName] = group
 		}
