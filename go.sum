@@ -50,12 +50,16 @@ github.com/aws/aws-sdk-go-v2/service/lambda v1.24.4 h1:TjBzpwWQwR0YXdtFITw0a54hF
 github.com/aws/aws-sdk-go-v2/service/lambda v1.24.4/go.mod h1:7nxxfr4DEkcWIT0VqoqBqSNCz3PGEJ9clXvS87SA9ig=
 github.com/aws/aws-sdk-go-v2/service/rds v1.25.5 h1:MCEH1CnQZzXzUgr4qAzo1KJobVU+8p1mlNsU5pgM4nc=
 github.com/aws/aws-sdk-go-v2/service/rds v1.25.5/go.mod h1:vxlyLxFwlDDp8Nsqn2dBVeFQmD9zBn+C1hKxcM+n21k=
+github.com/aws/aws-sdk-go-v2/service/redshift v1.26.8 h1:zwaxBfYQDtWWh4hA3nEhudQ87NlbLEFnoZAjxeBL9SE=
+github.com/aws/aws-sdk-go-v2/service/redshift v1.26.8/go.mod h1:4uHk4EpVrGlVHLHimpiRC8x0+hESx0kA6JfK0Hfns40=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.27.9 h1:imVonvre+AHMcDc3B9bPHHy5ZgjIkkYc/jyDBK8FHFw=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.27.9/go.mod h1:0Gfmg8gjPhVPy/IXkLAmyKZbAue+2s11BWKH+oXggmg=
 github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.15.22 h1:ggHTCgbIivTM85PFjv/rkJbchrmLSNL+Vcj5hg54TyM=
 github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.15.22/go.mod h1:zT2j7Ndi+FcBX+zfYLDppqODSgSdKlquB3LPLPVDAts=
 github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.16 h1:eJg4PKI1fHsdaY5Y6usxpDcaqs4b+fJr4PTBAifugJ0=
 github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.16/go.mod h1:bFoQ6uHJVKmqqNGpY5eNlLeRCtR/+bqcPTThjWE0Kcg=
+github.com/aws/aws-sdk-go-v2/service/sqs v1.19.8 h1:sgWMD5t0GYBw5QqSr7L5+oFonjdrgvpiGoyb1veOpXI=
+github.com/aws/aws-sdk-go-v2/service/sqs v1.19.8/go.mod h1:nMu/p558phDp5xa1USWHcofcWvoaat4Dr46w7ruM1XQ=
 github.com/aws/aws-sdk-go-v2/service/ssm v1.27.13 h1:frTWO9DxuGG9zzV5F3gvc9ondPUd/Ae7x1lXJt+4Fwg=
 github.com/aws/aws-sdk-go-v2/service/ssm v1.27.13/go.mod h1:DLGkJX+FzEhluRGOTf9eejrDPu1gZ+1GuNkgLYdnPFM=
 github.com/aws/aws-sdk-go-v2/service/sso v1.11.21 h1:7jUFr+7F4MzIjCZzy7ygRtXFQcQ0kAbT0gUvtUeAdyU=
@@ -73,6 +77,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/google/go-cmp v0.5.8/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=

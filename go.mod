@@ -16,11 +16,14 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.18.17
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.24.4
 	github.com/aws/aws-sdk-go-v2/service/rds v1.25.5
+	github.com/aws/aws-sdk-go-v2/service/redshift v1.26.8
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.9
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.15.22
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.16
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.19.8
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.27.13
 	github.com/aws/aws-sdk-go-v2/service/workspaces v1.22.6
+	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.7
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.5

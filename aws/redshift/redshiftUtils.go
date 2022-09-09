@@ -1,20 +1,23 @@
 package redshiftutils
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	S3utils "github.com/alessiosavi/GoGPUtils/aws/S3"
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	_ "github.com/lib/pq"
 	"github.com/schollz/progressbar/v3"
 	"log"
 	"os"
-	"path"
 	"strings"
-	"time"
+	"sync"
+	time "time"
 )
 
 type Conf struct {
@@ -42,6 +45,42 @@ func (c *Conf) Validate() error {
 		return fmt.Errorf("DBName is empty:[%+v]", helper.MarshalIndent(*c))
 	}
 	return nil
+}
+
+var redshiftClient *redshift.Client = nil
+var once sync.Once
+
+func init() {
+	once.Do(func() {
+		cfg, err := awsutils.New()
+		if err != nil {
+			panic(err)
+		}
+		redshiftClient = redshift.New(redshift.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+	})
+}
+func ManualSnapshot() {
+	//clusters, err := redshiftClient.DescribeClusters(context.Background(), &redshift.DescribeClustersInput{
+	//	ClusterIdentifier: nil,
+	//	Marker:            nil,
+	//	MaxRecords:        nil,
+	//	TagKeys:           nil,
+	//	TagValues:         nil,
+	//})
+	//if err != nil {
+	//	return
+	//}
+	//log.Println(helper.MarshalIndent(clusters))
+	t := time.Now().Format(time.RFC3339)
+	snapshot, err := redshiftClient.CreateClusterSnapshot(context.Background(), &redshift.CreateClusterSnapshotInput{
+		ClusterIdentifier:  aws.String("qa-data-warehouse"),
+		SnapshotIdentifier: aws.String(fmt.Sprintf("%s-%s", "qa-data-warehouse", t)),
+	})
+	if err != nil {
+		return
+	}
+	log.Println(helper.MarshalIndent(snapshot))
+
 }
 
 func (c *Conf) Load(confFile string) error {
@@ -79,18 +118,13 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 // tableType: Map of headers:type for the given table
 func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
 	var sb strings.Builder
-
-	//for i := range headers {
-	//	headers[i] = stringutils.ExtractUpperBlock(headers[i])
-	//}
-
 	translator := sqlutils.GetRedshiftTranslator()
 	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
 	replacer := strings.NewReplacer(".", "", ",", "", " ", "", "(", "", ")", "")
 	for _, header := range headers {
 		fixHeader := replacer.Replace(header)
 		//for k, v := range tableType {
-		sb.WriteString("\t" + stringutils.ExtractUpperBlock(fixHeader, nil) + " " + translator[tableType[header]] + ",\n")
+		sb.WriteString("\t" + fixHeader + " " + translator[tableType[header]] + ",\n")
 	}
 	data := strings.TrimSuffix(sb.String(), ",\n") + ");"
 	return data
@@ -199,17 +233,6 @@ order by t.table_name;`
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
 		bar.Describe(sort)
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
-		d := fmt.Sprintf(dist, table)
-		s := fmt.Sprintf(sort, table)
-		for _, q := range []string{d, s} {
-			bar.Describe(q)
-			if err = sqlutils.ExecuteStatement(connection, q); err != nil {
-				if !(strings.Contains(err.Error(), "This table is already SORTKEY AUTO") || strings.Contains(err.Error(), "Can not alter table to same distribution style.")) {
-					log.Println("ERROR ON TABLE", table)
-					log.Println(err)
-				}
-			}
-		}
 	}
 	return nil
 }
@@ -240,150 +263,10 @@ func PhysicalDelete(connection *sql.DB) error {
 	for _, table := range result {
 		bar.Describe(table)
 		bar.Add(1)
-
-	bar := progressbar.Default(int64(len(result)))
-	for _, table := range result {
-		bar.Describe(table)
-    bar.Add(1)
-        
 		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(remove, table)); err != nil {
-			log.Println(fmt.Sprintf("Error with table: %s | %s", table, err.Error()))
+			log.Println(err)
+			log.Println()
 		}
 	}
 	return nil
-}
-
-// Check the number of rows for every table
-//select table_name, diststyle, sortkey1, tbl_rows
-//from svv_tables t1,
-//svv_table_info t2
-//where t1.table_schema = t2.schema
-//and t1.table_name = t2.table
-//and t1.table_schema not in ('pg_catalog', 'information_schema')
-//and t1.table_type = 'BASE TABLE'
-//order by tbl_rows desc;
-
-// UnloadDB is delegated to dump all the DATABASE data into an S3 folder
-func UnloadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
-	tables, err := GetAllTables(conn, schemaName)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println(helper.MarshalIndent(tables))
-	bar := progressbar.Default(int64(len(tables)))
-	for _, table := range tables {
-		bar.Describe(table)
-		var q = fmt.Sprintf(`unload ('select * from %[1]s')
-				to 's3://%[2]s/%[3]s/%[1]s_'
-				iam_role '%[4]s'
-				header
-				parallel off
-				CSV DELIMITER AS '|' ;`, table, bucket, prefix, role)
-
-		_, err := conn.Exec(q)
-		if err != nil {
-			log.Println(fmt.Sprintf("Error with table: %s | %s", table, err.Error()))
-		}
-		bar.Add(1)
-	}
-	bar.Close()
-}
-
-func LoadDB(conn *sql.DB, schemaName, bucket, prefix, role string) {
-	// Get all tables from the DB
-	tables, err := GetAllTables(conn, schemaName)
-	if err != nil {
-		panic(err)
-	}
-
-	// Get all table dump
-	objects, err := S3utils.ListBucketObjects(bucket, prefix)
-	if err != nil {
-		panic(err)
-	}
-
-	for i := range objects {
-		split := strings.Split(path.Base(objects[i]), "_")
-		objects[i] = stringutils.JoinSeparator("_", split[:len(split)-1]...)
-	}
-
-	tablesMap := stringutils.ArrayToMap(tables)
-	//objectsMap := stringutils.ArrayToMap(objects)
-
-	var qTest = `copy %s
-    from '%s'
-    iam_role '%s'
-    DELIMITER '|'
-	NOLOAD
-    IGNOREHEADER 1
-    IGNOREBLANKLINES
-    REMOVEQUOTES
-    EMPTYASNULL;`
-
-	var q = `copy %s
-    from '%s'
-    iam_role '%s'
-    DELIMITER '|'
-    IGNOREHEADER 1
-    IGNOREBLANKLINES
-    REMOVEQUOTES
-    EMPTYASNULL;`
-
-	bar := progressbar.Default(int64(len(tablesMap)))
-
-	for k := range tablesMap {
-		bar.Describe(k)
-		bar.Add(1)
-		count := stringutils.Count(objects, k)
-		var sb strings.Builder
-		for i := 0; i < count; i++ {
-			fname := fmt.Sprintf("s3://%s/%s/%s_00%d", bucket, prefix, k, i)
-			sb.WriteString(fmt.Sprintf(qTest, k, fname, role))
-		}
-		_, err := conn.Exec(sb.String())
-		if err != nil {
-			log.Println("QUERY:\n", sb.String())
-			log.Println(fmt.Sprintf("Error with table: %s | %s", k, err.Error()))
-		} else {
-			sb.Reset()
-			sb.WriteString(fmt.Sprintf("truncate %s;\n", k))
-			for i := 0; i < count; i++ {
-				fname := fmt.Sprintf("s3://%s/%s/%s_00%d", bucket, prefix, k, i)
-				sb.WriteString(fmt.Sprintf(q, k, fname, role))
-			}
-			_, err := conn.Exec(sb.String())
-			if err != nil {
-				log.Println("QUERY:\n", sb.String())
-				log.Println(fmt.Sprintf("Error with table: %s | %s", k, err.Error()))
-			}
-		}
-	}
-	bar.Finish()
-	log.Println()
-
-}
-
-func GetAllTables(conn *sql.DB, schema string) ([]string, error) {
-	rows, err := conn.Query(`
-		select t.table_name
-		from information_schema.tables t
-		where t.table_schema = $1
-		  and t.table_type = 'BASE TABLE'
-		order by t.table_name;`, schema)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	var tables []string
-	for rows.Next() {
-		var table string
-		if err = rows.Scan(&table); err != nil {
-			return nil, err
-		}
-		tables = append(tables, table)
-	}
-	return tables, nil
 }
