@@ -24,7 +24,7 @@ func init() {
 func Get(paramName string) (string, error) {
 	parameter, err := ssmClient.GetParameter(context.Background(), &ssm.GetParameterInput{
 		Name:           aws.String(paramName),
-		WithDecryption: true,
+		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {
 		return "", err
@@ -59,6 +59,6 @@ func List() ([]string, error) {
 func Describe(paramName string) (*ssm.GetParameterOutput, error) {
 	return ssmClient.GetParameter(context.Background(), &ssm.GetParameterInput{
 		Name:           aws.String(paramName),
-		WithDecryption: true,
+		WithDecryption: aws.Bool(true),
 	})
 }

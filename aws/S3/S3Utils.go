@@ -96,7 +96,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	return err
 }
 
-//ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
+// ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
@@ -132,7 +132,7 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	return buckets, nil
 }
 
-//ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
+// ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjects(bucket, prefix string) ([]string, error) {
 	objects, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {

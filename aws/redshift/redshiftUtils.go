@@ -80,7 +80,6 @@ func ManualSnapshot() {
 		return
 	}
 	log.Println(helper.MarshalIndent(snapshot))
-
 }
 
 func (c *Conf) Load(confFile string) error {
