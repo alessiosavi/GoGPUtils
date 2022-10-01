@@ -2,14 +2,14 @@ package byteutils
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 const danteDataset string = `../testdata/files/dante.txt`
 
 func BenchmarkTestIsUpperByteOK(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}
@@ -21,7 +21,7 @@ func BenchmarkTestIsUpperByteOK(b *testing.B) {
 }
 
 func BenchmarkTestIsLowerByteKO(b *testing.B) {
-	content, err := ioutil.ReadFile(danteDataset)
+	content, err := os.ReadFile(danteDataset)
 	if err != nil {
 		return
 	}

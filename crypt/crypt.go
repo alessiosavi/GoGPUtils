@@ -2,65 +2,29 @@ package crypt
 
 import (
 	"crypto/aes"
-	"crypto/cipher"
-	"crypto/md5"
-	"crypto/rand"
-	b64 "encoding/base64"
 	"encoding/hex"
-	"io"
 )
 
-func Encrypt(data []byte, passphrase string) (string, error) {
-	h, err := HashMD5(passphrase)
+func EncryptAES(key []byte, plaintext string) string {
+	c, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
-	block, _ := aes.NewCipher([]byte(h))
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
-	}
-	ciphertext := gcm.Seal(nonce, nonce, data, nil)
-	return b64.StdEncoding.EncodeToString(ciphertext), nil
+
+	out := make([]byte, len(plaintext))
+	c.Encrypt(out, []byte(plaintext))
+	return hex.EncodeToString(out)
 }
 
-func Decrypt(data, passphrase string) (string, error) {
-	h, err := HashMD5(passphrase)
+func DecryptAES(key []byte, ct string) string {
+	ciphertext, _ := hex.DecodeString(ct)
+	c, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
-	key := []byte(h)
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return "", err
-	}
+	pt := make([]byte, len(ciphertext))
+	c.Decrypt(pt, ciphertext)
 
-	raw, err := b64.StdEncoding.DecodeString(data)
-	if err != nil {
-		return "", err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-	nonceSize := gcm.NonceSize()
-	nonce, ciphertext := raw[:nonceSize], raw[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return "", err
-	}
-	return string(plaintext), nil
-}
-
-func HashMD5(key string) (string, error) {
-	hasher := md5.New()
-	if _, err := hasher.Write([]byte(key)); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(hasher.Sum(nil)), nil
+	s := string(pt[:])
+	return s
 }

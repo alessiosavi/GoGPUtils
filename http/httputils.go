@@ -3,12 +3,11 @@ package httputils
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
-
-	stringutils "github.com/alessiosavi/GoGPUtils/string"
 )
 
 // CreateCookie is delegated to initialize and set a cookie with the given value
@@ -209,5 +208,5 @@ func ValidatePort(port int) bool {
 
 func ReadBody(resp *http.Response) ([]byte, error) {
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }

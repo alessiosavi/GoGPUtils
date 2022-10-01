@@ -5,8 +5,8 @@ import (
 	"errors"
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ func ExtractFunctionFromFile(codeFile, prefix string) ([]string, error) {
 	// functions will store the method present in the file
 	var functions []string
 	if fileutils.IsFile(codeFile) {
-		text, err := ioutil.ReadFile(codeFile)
+		text, err := os.ReadFile(codeFile)
 		if err != nil {
 			return nil, err
 		}

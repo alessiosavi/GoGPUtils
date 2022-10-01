@@ -59,7 +59,6 @@ func TestDeployAllLambda(t *testing.T) {
 				}
 			}
 		}
-
 	}
 }
 

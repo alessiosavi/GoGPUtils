@@ -7,8 +7,8 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"reflect"
 	"sort"
@@ -260,7 +260,7 @@ func TestGetAfterDate(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		if err = ioutil.WriteFile("/tmp/centric/data/Style/"+path.Base(date), object, 0755); err != nil {
+		if err = os.WriteFile("/tmp/centric/data/Style/"+path.Base(date), object, 0600); err != nil {
 			panic(err)
 		}
 	}
@@ -277,5 +277,5 @@ func TestList(t *testing.T) {
 		return details[i].LastModified.After(*details[j].LastModified)
 
 	})
-	ioutil.WriteFile("/tmp/list.json", []byte(helper.MarshalIndent(details)), 0755)
+	os.WriteFile("/tmp/list.json", []byte(helper.MarshalIndent(details)), 0600)
 }

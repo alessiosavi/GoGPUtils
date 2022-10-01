@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -97,7 +97,7 @@ func DeployLambdaFromZIP(functionName, zipPath string) error {
 		return err
 	}
 
-	file, err := ioutil.ReadFile(zipPath)
+	file, err := os.ReadFile(zipPath)
 	if err != nil {
 		return err
 	}
