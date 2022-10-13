@@ -15,6 +15,7 @@ var sqsClient *sqs.Client = nil
 var once sync.Once
 
 func init() {
+	guuid.EnableRandPool()
 	once.Do(func() {
 		cfg, err := awsutils.New()
 		if err != nil {

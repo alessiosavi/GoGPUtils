@@ -3,6 +3,7 @@ package helper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"math"
 	"math/rand"
 	"strings"
@@ -52,7 +53,7 @@ func (rander RandomGenerator) RandomFloat64(min, max float64) float64 {
 }
 
 // RandomIntArray return a new array with random number from min to max of length len
-func (rander RandomGenerator) RandomIntArray(min, max, length int) []int {
+func (rander RandomGenerator) RandomIntArray[T types.Number](min, max, length int) []int {
 	array := make([]int, length)
 	for i := 0; i < length; i++ {
 		array[i] = rander.RandomInt(min, max)
