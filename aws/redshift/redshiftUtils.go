@@ -115,11 +115,12 @@ func MakeRedshfitConnection(conf Conf) (*sql.DB, error) {
 // tableName: Name of the table
 // headers: List of headers necessary to preserve orders
 // tableType: Map of headers:type for the given table
+
 func CreateTableByType(tableName string, headers []string, tableType map[string]string) string {
 	var sb strings.Builder
 	translator := sqlutils.GetRedshiftTranslator()
 	sb.WriteString("CREATE TABLE IF NOT EXISTS " + tableName + " (\n")
-	replacer := strings.NewReplacer(".", "", ",", "", " ", "", "(", "", ")", "")
+	replacer := strings.NewReplacer(".", "_", ",", "_", " ", "_", "(", "_", ")", "_", "/", "_")
 	for _, header := range headers {
 		fixHeader := replacer.Replace(header)
 		//for k, v := range tableType {

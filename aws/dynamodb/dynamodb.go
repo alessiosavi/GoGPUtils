@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/pkg/errors"
 	"sync"
 	"time"
@@ -75,6 +76,38 @@ func WriteItem(tableName string, item interface{}) error {
 		Item:      av,
 	})
 
+	return err
+}
+
+func WriteBatchItem(tableName string, items []interface{}) error {
+	var writeReqs []types.WriteRequest
+	for i := range items {
+		item, err := attributevalue.MarshalMap(items[i])
+		if err != nil {
+			panic(err)
+		}
+		writeReqs = append(writeReqs, types.WriteRequest{PutRequest: &types.PutRequest{Item: item}})
+	}
+	requestItems := map[string][]types.WriteRequest{tableName: writeReqs}
+	result, err := dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]types.WriteRequest{tableName: writeReqs},
+	})
+	if err != nil {
+		for i := 0; err != nil; i++ {
+			if i > 5 {
+				return err
+			}
+			time.Sleep(time.Second * time.Duration(i))
+
+			if result != nil && len(result.UnprocessedItems) != 0 {
+				requestItems = result.UnprocessedItems
+			}
+
+			result, err = dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{
+				RequestItems: requestItems,
+			})
+		}
+	}
 	return err
 }
 
