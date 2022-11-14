@@ -62,6 +62,7 @@ func CreateIamUser(username, password string, passwordResetRequired, accessKeys 
 
 	return &IamUser{Username: username, Password: password, AccessKeyId: accessKeyId, SecretAccessKey: secretAccessKey}, nil
 }
+
 func ListRoles(prefix *string) ([]iamTypes.Role, error) {
 	var res []iamTypes.Role
 	roles, err := iamClient.ListRoles(context.Background(), &iam.ListRolesInput{PathPrefix: prefix})

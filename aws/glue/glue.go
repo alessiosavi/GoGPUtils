@@ -7,6 +7,7 @@ import (
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/glue"
+	"github.com/aws/aws-sdk-go-v2/service/glue/types"
 	"sync"
 )
 
@@ -43,6 +44,70 @@ func StartWorkflow(workflowName string, params map[string]string) error {
 
 	_, err = glueClient.StartWorkflowRun(context.Background(), &glue.StartWorkflowRunInput{Name: aws.String(workflowName)})
 	return err
+}
+
+func UpdateJob(jobname string) error {
+	_job, err := glueClient.GetJob(context.Background(), &glue.GetJobInput{JobName: aws.String(jobname)})
+	if err != nil {
+		return err
+	}
+	job := _job.Job
+	if _, err = glueClient.UpdateJob(context.Background(), &glue.UpdateJobInput{
+		JobName: job.Name,
+		JobUpdate: &types.JobUpdate{
+			CodeGenConfigurationNodes: job.CodeGenConfigurationNodes,
+			Command:                   job.Command,
+			Connections:               job.Connections,
+			DefaultArguments:          job.DefaultArguments,
+			Description:               job.Description,
+			ExecutionClass:            job.ExecutionClass,
+			ExecutionProperty:         job.ExecutionProperty,
+			GlueVersion:               aws.String("3.0"),
+			LogUri:                    job.LogUri,
+			MaxRetries:                job.MaxRetries,
+			NonOverridableArguments:   job.NonOverridableArguments,
+			NotificationProperty:      job.NotificationProperty,
+			NumberOfWorkers:           aws.Int32(2),
+			Role:                      job.Role,
+			SecurityConfiguration:     job.SecurityConfiguration,
+			SourceControlDetails: &types.SourceControlDetails{
+				AuthStrategy: job.SourceControlDetails.AuthStrategy,
+				AuthToken:    job.SourceControlDetails.AuthToken,
+				Branch:       aws.String("prod"),
+				Folder:       job.SourceControlDetails.Folder,
+				Owner:        job.SourceControlDetails.Owner,
+				Provider:     job.SourceControlDetails.Provider,
+				Repository:   job.SourceControlDetails.Repository,
+			},
+			Timeout:    job.Timeout,
+			WorkerType: types.WorkerTypeG1x,
+		},
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func PushRepo(jobname string) error {
+	job, err := GetJob("qa-update-monetary")
+	if err != nil {
+		return err
+	}
+	cfg := job.Job.SourceControlDetails
+	if _, err = glueClient.UpdateJobFromSourceControl(context.Background(), &glue.UpdateJobFromSourceControlInput{
+		AuthStrategy:    cfg.AuthStrategy,
+		AuthToken:       cfg.AuthToken,
+		BranchName:      aws.String("qa"),
+		CommitId:        nil,
+		Folder:          cfg.Folder,
+		JobName:         aws.String(jobname),
+		Provider:        cfg.Provider,
+		RepositoryName:  job.Job.SourceControlDetails.Repository,
+		RepositoryOwner: cfg.Owner,
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func ListWorkflows() ([]string, error) {

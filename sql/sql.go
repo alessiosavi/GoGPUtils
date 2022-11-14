@@ -21,6 +21,7 @@ func GetRedshiftTranslator() map[string]string {
 	replacer["int"] = "INTEGER"
 	replacer["float"] = "FLOAT"
 	replacer["bool"] = "BOOLEAN"
+	replacer["time"] = "TIMESTAMPTZ"
 	return replacer
 }
 

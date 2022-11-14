@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/csv"
 	"errors"
-	"fmt"
 	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
-	"log"
 	"strconv"
+	"time"
 )
 
 // ReadCSV is delegated to read into a CSV the content of the bytes in input
@@ -68,7 +67,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 		// e[<type>] = True -> Error, skip check for the give <type>
 		// e[<type>] = False -> Not checked, continue trying to parse the field
 		var e = make(map[string]bool)
-		for lineN, row := range data {
+		for _, row := range data {
 			// INT was not checked for this header
 			if !e["int"] {
 				if _, err = strconv.ParseInt(row[i], 10, 64); err == nil {
@@ -76,7 +75,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 					continue
 				} else {
 					// Error, INT can be used as type for this headers
-					log.Println(fmt.Sprintf("Line %d break the int rule [%s] for header %s", lineN+2, row[i], header))
+					//log.Println(fmt.Sprintf("Line %d break the int rule [%s] for header %s", lineN+2, row[i], header))
 					e["int"] = true
 				}
 			}
@@ -85,7 +84,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 					dataType[header] = "float"
 					continue
 				} else {
-					log.Println(fmt.Sprintf("Line %d break the float rule [%s] for header %s", lineN+2, row[i], header))
+					//log.Println(fmt.Sprintf("Line %d break the float rule [%s] for header %s", lineN+2, row[i], header))
 					e["float"] = true
 				}
 			}
@@ -94,13 +93,14 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 					dataType[header] = "bool"
 					continue
 				} else {
+					////log.Println(fmt.Sprintf("Line %d break the bool rule [%s] for header %s", lineN+2, row[i], header))
 					e["bool"] = true
 				}
 			}
 			if row[i] == "" {
 				dataType[header] = "string"
-				log.Println("Found empty value in line", lineN+2, "of column", header, "| Setting text type")
-				break
+				//log.Println("Found empty value in line", lineN+2, "of column", header, "| Setting text type")
+				continue
 			}
 			if row[i][0] == '0' {
 				// A number that start with 0 is a valid number for golang, but from a data warehouse POV, it has to be saved as is, so it's better to use a string.
@@ -108,9 +108,45 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 				dataType[header] = "string"
 				break
 			}
+			if !e["time"] {
+				for _, layout := range []string{
+					"2006-01-02T15:04:05Z",
+					"2006-01-02",
+					"2006-01-02 15:04:05",
+					"2006-01-02T15:04:05.999999Z07:00",
+					"2006-01-02 15:04:05.999999Z07",
+					time.ANSIC,
+					time.UnixDate,
+					time.RubyDate,
+					time.RFC822,
+					time.RFC822Z,
+					time.RFC850,
+					time.RFC1123,
+					time.RFC1123Z,
+					time.RFC3339,
+					time.RFC3339Nano,
+					time.Kitchen,
+					time.Stamp,
+					time.StampMilli,
+					time.StampMicro,
+					time.StampNano} {
+
+					if _, err := time.Parse(layout, row[i]); err == nil {
+						dataType[header] = "time"
+						e["time"] = false
+						break
+					}
+					//log.Println(fmt.Sprintf("Line %d break the time rule [%s] for header %s", lineN+2, row[i], header))
+					e["time"] = true
+				}
+				if !e["time"] {
+					continue
+				}
+			}
 			// fallback data type
 			dataType[header] = "string"
 		}
+
 	}
 	return headers, data, dataType, nil
 }

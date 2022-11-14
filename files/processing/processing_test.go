@@ -65,25 +65,25 @@ func generateFakeDataLineTerminator(terminator LineTerminatorType) []byte {
 	return fakeDataCR
 }
 
-//func TestToUTF8(t *testing.T) {
-//	files, err := fileutils.ListFiles("/tmp/sap/data")
-//	if err != nil {
-//		panic(err)
-//	}
-//	for _, f := range files {
-//
-//		file, err := os.ReadFile(f)
+//	func TestToUTF8(t *testing.T) {
+//		files, err := fileutils.ListFiles("/tmp/sap/data")
 //		if err != nil {
 //			panic(err)
 //		}
-//		file, err = ToUTF8(file)
-//		if err != nil {
-//			return
-//		}
+//		for _, f := range files {
 //
-//		err = os.WriteFile(f, file, 0600)
-//		if err != nil {
-//			panic(err)
+//			file, err := os.ReadFile(f)
+//			if err != nil {
+//				panic(err)
+//			}
+//			file, err = ToUTF8(file)
+//			if err != nil {
+//				return
+//			}
+//
+//			err = os.WriteFile(f, file, 0600)
+//			if err != nil {
+//				panic(err)
+//			}
 //		}
 //	}
-//}

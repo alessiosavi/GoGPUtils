@@ -17,7 +17,7 @@ import (
 	"os"
 	"strings"
 	"sync"
-	time "time"
+	"time"
 )
 
 type Conf struct {
@@ -226,13 +226,16 @@ order by t.table_name;`
 	var dist = `ALTER TABLE %s ALTER DISTSTYLE AUTO;`
 	// Convert a table to a sort key AUTO table
 	var sort = `ALTER TABLE %s ALTER SORTKEY AUTO;`
+	var encode = `ALTER TABLE %s ALTER ENCODE AUTO;`
 	bar := progressbar.Default(int64(len(result)))
 	for _, table := range result {
-		bar.Describe(dist)
 		bar.Add(1)
+		bar.Describe(fmt.Sprintf(dist, table))
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(dist, table))
-		bar.Describe(sort)
+		bar.Describe(fmt.Sprintf(sort, table))
 		sqlutils.ExecuteStatement(connection, fmt.Sprintf(sort, table))
+		bar.Describe(fmt.Sprintf(encode, table))
+		sqlutils.ExecuteStatement(connection, fmt.Sprintf(encode, table))
 	}
 	return nil
 }

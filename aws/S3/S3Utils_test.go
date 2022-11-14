@@ -4,6 +4,7 @@ import (
 	"context"
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -278,4 +279,105 @@ func TestList(t *testing.T) {
 
 	})
 	os.WriteFile("/tmp/list.json", []byte(helper.MarshalIndent(details)), 0600)
+}
+
+func TestSyncAfterDate(t *testing.T) {
+	type args struct {
+		bucket    string
+		prefix    string
+		localPath string
+		date      time.Time
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			args: args{
+				bucket:    "prod-data-lake-bucket",
+				prefix:    "/input/WAC",
+				localPath: "/tmp/wac",
+				date:      time.Date(2022, 9, 30, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name: "OK",
+			args: args{
+				bucket:    "prod-data-lake-bucket",
+				prefix:    "input/SAP/upload/WAC/",
+				localPath: "/tmp/wac",
+				date:      time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := SyncAfterDate(tt.args.bucket, tt.args.prefix, tt.args.localPath, tt.args.date); (err != nil) != tt.wantErr {
+				t.Errorf("SyncBeforeDate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetBetweenDate(t *testing.T) {
+	type args struct {
+		bucket string
+		prefix string
+		start  time.Time
+		stop   time.Time
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			args: args{
+				bucket: "prod-data-lake-bucket",
+				prefix: "input/WAC",
+				start:  time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC),
+				stop:   time.Date(2022, 9, 10, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+		{
+			name: "OK",
+			args: args{
+				bucket: "prod-data-lake-bucket",
+				prefix: "input/SAP/upload/WAC/",
+				start:  time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC),
+				stop:   time.Date(2022, 9, 10, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBetweenDate(tt.args.bucket, tt.args.prefix, tt.args.start, tt.args.stop)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBetweenDate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for _, object := range got {
+				getObject, err := GetObject(tt.args.bucket, object)
+				if err != nil {
+					panic(err)
+				}
+				p := path.Join("/tmp/wac", path.Dir(object))
+				if !fileutils.IsDir(p) {
+					if err := os.MkdirAll(p, 0755); err != nil {
+						return
+					}
+				}
+				if err = os.WriteFile(path.Join(p, path.Base(object)), getObject, 0755); err != nil {
+					panic(err)
+				}
+			}
+		})
+	}
 }
