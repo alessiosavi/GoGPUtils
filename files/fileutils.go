@@ -480,7 +480,7 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	// Preliminary check
 	if nByte < 1 {
 
-		size := mathutils.MinInt64(size1, size2)
+		size := mathutils.Min[int64](size1, size2)
 		nByte = 1024
 		si := helper.ByteCountSI(size)
 		if strings.Contains(si, "kB") {

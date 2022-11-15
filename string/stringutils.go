@@ -421,7 +421,7 @@ func LevenshteinDistance(str1, str2 string) int {
 			}
 
 			// minimum of cell to the left+1, to the top+1, diagonally left and up +cost
-			d[i] = mathutils.MinInt(mathutils.MinInt(d[i-1]+1, p[i]+1), p[i-1]+cost)
+			d[i] = mathutils.Min[int](mathutils.Min[int](d[i-1]+1, p[i]+1), p[i-1]+cost)
 		}
 
 		// copy current distance counts to 'previous row' distance counts

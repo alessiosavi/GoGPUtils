@@ -1,6 +1,6 @@
 module github.com/alessiosavi/GoGPUtils
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alessiosavi/ahocorasick v0.0.3
@@ -29,6 +29,7 @@ require (
 	github.com/pkg/sftp v1.13.5
 	github.com/schollz/progressbar/v3 v3.12.1
 	golang.org/x/crypto v0.2.0
+	golang.org/x/exp v0.0.0-20221114191408-850992195362
 	golang.org/x/net v0.2.0
 	golang.org/x/text v0.4.0
 )

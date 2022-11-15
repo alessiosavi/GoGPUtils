@@ -14,151 +14,50 @@ var prime = []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
 
 var randomizer = helper.InitRandomizer()
 
-func TestInitInitArray(t *testing.T) {
-	array := InitIntArray(10, 1)
-	if SumIntArray(array) != 10 {
-		t.Fail()
-	}
-}
-
-func BenchmarkSumIntArray(t *testing.B) {
+func BenchmarkSumArray(t *testing.B) {
 	array := randomizer.RandomIntArray(0, math.MaxInt8, total)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		SumIntArray(array)
+		SumArray[int](array)
 	}
 }
 
-func BenchmarkSumInt32Array(t *testing.B) {
-	array := randomizer.RandomInt32Array(0, math.MaxInt32, total)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		SumInt32Array(array)
-	}
-}
-
-func BenchmarkSumInt64Array(t *testing.B) {
-	array := randomizer.RandomInt64Array(0, math.MaxInt64, total)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		SumInt64Array(array)
-	}
-}
-
-func BenchmarkSumFloat32Array(t *testing.B) {
-	array := randomizer.RandomFloat32Array(0, math.MaxInt64, total)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		SumFloat32Array(array)
-	}
-}
-
-func BenchmarkSumFloat64Array(t *testing.B) {
-	array := randomizer.RandomFloat64Array(0, math.MaxInt64, total)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		SumFloat64Array(array)
-	}
-}
-
-func BenchmarkMaxIntIndex(t *testing.B) {
+func BenchmarkMaxIndex(t *testing.B) {
 	array := randomizer.RandomIntArray(0, math.MaxInt8, total)
 	t.ResetTimer()
 	for n := 0; n < t.N; n++ {
-		MaxIntIndex(array)
+		MaxIndex[int](array)
 	}
 }
 
-func BenchmarkMaxInt32Index(t *testing.B) {
-	array := randomizer.RandomInt32Array(0, math.MaxInt32, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		MaxInt32Index(array)
-	}
-}
-
-func BenchmarkMaxInt64Index(t *testing.B) {
-	array := randomizer.RandomInt64Array(0, math.MaxInt64, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		MaxInt64Index(array)
-	}
-}
-
-func BenchmarkMaxFloat32Index(t *testing.B) {
-	array := randomizer.RandomFloat32Array(0, math.MaxFloat32, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		MaxFloat32Index(array)
-	}
-}
-
-func BenchmarkMaxFloat64Index(t *testing.B) {
-	array := randomizer.RandomFloat64Array(0, math.MaxFloat64, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		MaxFloat64Index(array)
-	}
-}
-
-func BenchmarkAverageInt(t *testing.B) {
+func BenchmarkAverage(t *testing.B) {
 	array := randomizer.RandomIntArray(0, math.MaxInt8, total)
 	t.ResetTimer()
 	for n := 0; n < t.N; n++ {
-		AverageInt(array)
-	}
-}
-
-func BenchmarkAverageInt32(t *testing.B) {
-	array := randomizer.RandomInt32Array(0, math.MaxInt32, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		AverageInt32(array)
-	}
-}
-
-func BenchmarkAverageInt64(t *testing.B) {
-	array := randomizer.RandomInt64Array(0, math.MaxInt64, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		AverageInt64(array)
-	}
-}
-
-func BenchmarkAverageFloat32(t *testing.B) {
-	array := randomizer.RandomFloat32Array(0, math.MaxFloat32, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		AverageFloat32(array)
-	}
-}
-func BenchmarkAverageFloat64(t *testing.B) {
-	array := randomizer.RandomFloat64Array(0, math.MaxFloat64, total)
-	t.ResetTimer()
-	for n := 0; n < t.N; n++ {
-		AverageFloat64(array)
+		Average[int](array)
 	}
 }
 
 func TestCreateEmptyMatrix(t *testing.T) {
-	/*m := */ InitMatrix(5, 10)
-	//DumpMatrix(m)
+	m := InitMatrix[int](5, 10)
+	DumpMatrix(m)
 }
 
-func TestInitRandomMatrix(t *testing.T) {
-	/*m := */ InitRandomMatrix(5, 10)
-	//	DumpMatrix(m)
-}
+//func TestInitRandomMatrix(t *testing.T) {
+//	/*m := */ InitRandomMatrix(5, 10)
+//	//	DumpMatrix(m)
+//}
 
 func TestInitStaticMatrix(t *testing.T) {
-	/*m :=*/ InitMatrixCustom(5, 10, 1)
+	/*m :=*/ InitMatrixCustom[int](5, 10, 1)
 	//DumpMatrix(m)
 }
-func BenchmarkInitRandomMatrix(t *testing.B) {
-	for i := 0; i < t.N; i++ {
-		InitRandomMatrix(5, 10)
-	}
-}
+
+//func BenchmarkInitRandomMatrix(t *testing.B) {
+//	for i := 0; i < t.N; i++ {
+//		InitRandomMatrix(5, 10)
+//	}
+//}
 
 func TestGenerateFibonacci(t *testing.T) {
 	if len(GenerateFibonacci(100)) != 11 {
@@ -192,12 +91,10 @@ func TestMultiplyMatrix(t *testing.T) {
 }
 
 func TestMultiplySumArray1000(t *testing.T) {
-	randomizer := helper.InitRandomizer()
 	data := randomizer.RandomIntArray(0, 100, 1000)
 	t.Log(MultiplySumArray(data, data))
 }
 func BenchmarkMultiplySumArray1000(t *testing.B) {
-	randomizer := helper.InitRandomizer()
 	data := randomizer.RandomIntArray(0, 100, 1000)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
@@ -205,23 +102,23 @@ func BenchmarkMultiplySumArray1000(t *testing.B) {
 	}
 }
 
-func BenchmarkMultiplyMatrixLegacy100x100(t *testing.B) {
-	m1 := InitRandomMatrix(100, 100)
-	m2 := InitRandomMatrix(100, 100)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		MultiplyMatrixLegacy(m1, m2)
-	}
-}
+//func BenchmarkMultiplyMatrixLegacy100x100(t *testing.B) {
+//	m1 := InitRandomMatrix(100, 100)
+//	m2 := InitRandomMatrix(100, 100)
+//	t.ResetTimer()
+//	for i := 0; i < t.N; i++ {
+//		MultiplyMatrixLegacy(m1, m2)
+//	}
+//}
 
-func BenchmarkMultiplyMatrix100x100(t *testing.B) {
-	m1 := InitRandomMatrix(100, 100)
-	m2 := InitRandomMatrix(100, 100)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		MultiplyMatrix(m1, m2)
-	}
-}
+//func BenchmarkMultiplyMatrix100x100(t *testing.B) {
+//	m1 := InitRandomMatrix(100, 100)
+//	m2 := InitRandomMatrix(100, 100)
+//	t.ResetTimer()
+//	for i := 0; i < t.N; i++ {
+//		MultiplyMatrix(m1, m2)
+//	}
+//}
 
 // generateTestMatrix1 is delegated to generate a matrix for test purpouse
 func generateTestMatrix1() [][]int {
@@ -327,57 +224,57 @@ func TestEuclideanDistance(t *testing.T) {
 	}
 }
 
-func TestModeInt(t *testing.T) {
+func TestMode(t *testing.T) {
 	noMode := []int{0, 1, 2, 3, 4, 5, 6}
 	oneMode := []int{0, 1, 2, 3, 4, 5, 6, 6}
 	twoMode := []int{0, 1, 2, 3, 4, 5, 5, 6, 6}
-	m1 := ModeInt(noMode)
+	m1 := Mode[int](noMode)
 	if len(m1) > 0 {
 		t.Error("Err", m1)
 	}
-	m2 := ModeInt(oneMode)
+	m2 := Mode[int](oneMode)
 	if len(m2) > 1 {
 		t.Error("Err", m2)
 	}
-	m3 := ModeInt(twoMode)
+	m3 := Mode[int](twoMode)
 	if len(m3) > 2 {
 		t.Error("Err", m3)
 	}
 }
 
-func TestMedianInt(t *testing.T) {
+func TestMedian(t *testing.T) {
 	median := []int{6, 5, 4, 3, 2, 1, 0}
-	m1 := MedianInt(median)
+	m1 := Median[int](median)
 	if m1 != 3 {
 		t.Error(m1)
 	}
 	median = append(median, 7)
-	m1 = MedianInt(median)
+	m1 = Median[int](median)
 	if m1 != 3.5 {
 		t.Error(m1)
 	}
 }
 
-func TestStandardDeviationInt(t *testing.T) {
+func TestStandardDeviation(t *testing.T) {
 	median := []int{9, 2, 5, 4, 12, 7, 8, 11, 9, 3, 7, 4, 12, 5, 4, 10, 9, 6, 9, 4}
-	m1 := StandardDeviationInt(median)
+	m1 := StandardDeviation[int](median)
 	if !(m1 > 2.9832 && m1 < 2.9833) {
 		t.Error(m1)
 	}
 }
 
-func TestVarianceInt(t *testing.T) {
+func TestVariance(t *testing.T) {
 	median := []int{600, 470, 170, 430, 300}
-	m1 := VarianceInt(median)
+	m1 := Variance[int](median)
 	if !(m1 > 147.322 && m1 < 147.323) {
 		t.Error(m1)
 	}
 }
 
-func TestCovarianceInt(t *testing.T) {
+func TestCovariance(t *testing.T) {
 	arr1 := []int{1692, 1978, 1884, 2151, 2519}
 	arr2 := []int{68, 102, 110, 112, 154}
-	cv := CovarianceInt(arr1, arr2)
+	cv := Covariance[int](arr1, arr2)
 	if cv != 9107.3 {
 		t.Error(cv)
 	}
@@ -386,7 +283,7 @@ func TestCovarianceInt(t *testing.T) {
 func TestCorrelationInt(t *testing.T) {
 	arr1 := []int{1692, 1978, 1884, 2151, 2519}
 	arr2 := []int{68, 102, 110, 112, 154}
-	cv := CorrelationInt(arr1, arr2)
+	cv := Correlation[int](arr1, arr2)
 	if !(cv > 0.949 && cv < 0.950) {
 		t.Error(cv)
 	}
@@ -395,7 +292,7 @@ func TestCorrelationInt(t *testing.T) {
 func TestCorrelationFloat64(t *testing.T) {
 	arr1 := []float64{1691.75, 1977.80, 1884.09, 2151.13, 2519.36}
 	arr2 := []float64{68.96, 100.11, 109.06, 112.18, 154.12}
-	cv := CorrelationFloat64(arr1, arr2)
+	cv := Correlation[float64](arr1, arr2)
 	if !(cv > 0.954 && cv < 0.955) {
 		t.Error(cv)
 	}
