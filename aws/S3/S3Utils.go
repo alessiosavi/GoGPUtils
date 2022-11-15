@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/md5"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -13,8 +14,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -138,7 +141,7 @@ func ListBucketObjects(bucket, prefix string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data []string = make([]string, len(objects))
+	var data = make([]string, len(objects))
 	for i := range objects {
 		data[i] = *objects[i].Key
 	}
@@ -248,4 +251,44 @@ func GetAfterDate(bucket, prefix string, date time.Time) ([]string, error) {
 		}
 	}
 	return res, nil
+}
+
+func GetBetweenDate(bucket, prefix string, start, stop time.Time) ([]string, error) {
+	details, err := ListBucketObjectsDetails(bucket, prefix)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+
+	for _, detail := range details {
+		if detail.LastModified.After(start) && detail.LastModified.Before(stop) {
+			res = append(res, *detail.Key)
+		}
+	}
+	return res, nil
+}
+
+func SyncAfterDate(bucket, prefix, localPath string, date time.Time) error {
+	details, err := ListBucketObjectsDetails(bucket, strings.TrimLeft(prefix, "/"))
+	if err != nil {
+		return err
+	}
+	for _, detail := range details {
+		if detail.LastModified.After(date) {
+			object, err := GetObject(bucket, *detail.Key)
+			if err != nil {
+				return err
+			}
+			basepath := path.Join(localPath, path.Dir(*detail.Key))
+			if !fileutils.IsDir(basepath) {
+				if err = os.MkdirAll(basepath, 0755); err != nil {
+					return err
+				}
+			}
+			if err = os.WriteFile(path.Join(basepath, path.Base(*detail.Key)), object, 0755); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

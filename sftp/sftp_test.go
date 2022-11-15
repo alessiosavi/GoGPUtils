@@ -1,15 +1,15 @@
 package sftputils
 
 import (
-	"os"
+	"io"
 	"testing"
 )
 
 func TestCopyFile(t *testing.T) {
 	sftpConf := SFTPConf{
-		Host:     "localhost",
-		User:     os.Getenv("ssh_user_test"),
-		Password: os.Getenv("ssh_user_pass"),
+		Host:     "test.rebex.net",
+		User:     "demo",
+		Password: "password",
 		Port:     22,
 		Timeout:  5,
 	}
@@ -18,7 +18,24 @@ func TestCopyFile(t *testing.T) {
 		panic(err)
 	}
 	defer conn.Client.Close()
-	if err = conn.Put([]byte("this is a test!"), "/tmp/test/file.txt"); err != nil {
+	list, err := conn.List(".")
+	if err != nil {
 		panic(err)
 	}
+	if len(list) == 0 {
+		t.Fail()
+	}
+
+	get, err := conn.Get("readme.txt")
+	if err != nil {
+		panic(err)
+	}
+	all, err := io.ReadAll(get)
+	if err != nil {
+		panic(err)
+	}
+	if len(all) == 0 {
+		t.Fail()
+	}
+
 }

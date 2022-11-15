@@ -1,5 +1,3 @@
-// Package sftputils can be used in order to copy file from SSH too.
-// You just need to set SSH port instead of SFTP
 package sftputils
 
 import (
@@ -9,13 +7,15 @@ import (
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	httputils "github.com/alessiosavi/GoGPUtils/http"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"net"
 	"path"
+	"strings"
 	"time"
+
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 var DEFAULT_KEY_EXCHANGE_ALGO = []string{"diffie-hellman-group-exchange-sha256"}
@@ -24,22 +24,21 @@ type SFTPConf struct {
 	Host     string `json:"host"`
 	User     string `json:"user"`
 	Password string `json:"pass"`
+	Bucket   string `json:"bucket"`
 	Port     int    `json:"port"`
 	Timeout  int    `json:"timeout"`
-}
-type SFTPClient struct {
-	Client *sftp.Client
+	PrivKey  string `json:"priv_key"`
 }
 
-func (c *SFTPConf) validate() error {
+func (c *SFTPConf) Validate() error {
 	if stringutils.IsBlank(c.Host) {
 		return errors.New("SFTP host not provided")
 	}
 	if stringutils.IsBlank(c.User) {
 		return errors.New("SFTP user not provided")
 	}
-	if stringutils.IsBlank(c.Password) {
-		return errors.New("SFTP password not provided")
+	if stringutils.IsBlank(c.Password) && stringutils.IsBlank(c.PrivKey) {
+		return errors.New("SFTP password and priv_key not provided")
 	}
 	if !httputils.ValidatePort(c.Port) {
 		return errors.New("SFTP port not provided")
@@ -47,9 +46,22 @@ func (c *SFTPConf) validate() error {
 	return nil
 }
 
+type SFTPClient struct {
+	Client *sftp.Client
+	Bucket string
+}
+
+// RenameFile Example function for rename the file before upload to S3
+// In this case we remove the first folder from the name
+// Example: first_folder/second_folder/file_name.txt --> second_folder/file_name.txt
+func RenameFile(fName string) string {
+	s := strings.Split(fName, "/")
+	return stringutils.JoinSeparator("/", s[1:]...)
+}
+
 // NewConn Create a new SFTP connection by given parameters
 func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
-	if err := c.validate(); err != nil {
+	if err := c.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -59,10 +71,21 @@ func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 			keyExchanges = append(keyExchanges, algo)
 		}
 	}
+	var auth []ssh.AuthMethod
+
+	if !stringutils.IsBlank(c.PrivKey) {
+		key, err := ssh.ParsePrivateKey([]byte(c.PrivKey))
+		if err != nil {
+			return nil, err
+		}
+		auth = append(auth, ssh.PublicKeys(key))
+	} else if !stringutils.IsBlank(c.Password) && !stringutils.IsBlank(c.User) {
+		auth = append(auth, ssh.Password(c.Password))
+	}
 
 	config := &ssh.ClientConfig{
 		User:            c.User,
-		Auth:            []ssh.AuthMethod{ssh.Password(c.Password)},
+		Auth:            auth,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Duration(c.Timeout) * time.Second,
 	}
@@ -87,7 +110,7 @@ func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
 		return nil, err
 	}
 	defer srcFile.Close()
-	var buf *bytes.Buffer
+	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, srcFile)
 	return buf, err
 }
@@ -134,14 +157,14 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if !exist {
-		return nil, fmt.Errorf("path %s does not exists", path)
+		return nil, fmt.Errorf("path %s does not exists!", path)
 	}
 	isDir, err := c.IsDir(path)
 	if err != nil {
 		return nil, err
 	}
 	if !isDir {
-		return nil, fmt.Errorf("path %s is not a dir", path)
+		return nil, fmt.Errorf("path %s is not a dir!", path)
 	}
 
 	walker := c.Client.Walk(path)
@@ -151,7 +174,9 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 			log.Printf("Error with file: %s | Err: %s\n", walker.Path(), err)
 			continue
 		}
-		files = append(files, walker.Path())
+		if walker.Path() != path {
+			files = append(files, walker.Path())
+		}
 	}
 	return files, nil
 }

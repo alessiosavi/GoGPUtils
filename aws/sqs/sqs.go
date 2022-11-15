@@ -15,7 +15,6 @@ var sqsClient *sqs.Client = nil
 var once sync.Once
 
 func init() {
-	guuid.EnableRandPool()
 	once.Do(func() {
 		cfg, err := awsutils.New()
 		if err != nil {
@@ -73,20 +72,6 @@ func WriteMessage(queueURL, message string) (*sqs.SendMessageOutput, error) {
 	return sqsClient.SendMessage(context.Background(), &sqs.SendMessageInput{
 		MessageBody: &message,
 		QueueUrl:    &queueURL,
-	})
-}
-
-func WriteMessageBatch(queueURL string, messages []string) (*sqs.SendMessageBatchOutput, error) {
-	var msgs = make([]sqsTypes.SendMessageBatchRequestEntry, len(messages))
-	for i := range messages {
-		msgs[i] = sqsTypes.SendMessageBatchRequestEntry{
-			Id:          aws.String(guuid.New().String()),
-			MessageBody: aws.String(messages[i]),
-		}
-	}
-	return sqsClient.SendMessageBatch(context.Background(), &sqs.SendMessageBatchInput{
-		Entries:  msgs,
-		QueueUrl: &queueURL,
 	})
 }
 
