@@ -596,7 +596,7 @@ func CosineSimilarity(a, b []float64) float64 {
 
 // EuclideanDistance is delegated to calculate the euclidean distance for the given array
 func EuclideanDistance(v1, v2 []float64) float64 {
-	if !SimilarityPreCheck(v1, v2) {
+	if !SimilarityPreCheck[float64](v1, v2) {
 		return -1
 	}
 	var euclidean float64
@@ -608,7 +608,7 @@ func EuclideanDistance(v1, v2 []float64) float64 {
 
 // ManhattanDistance is delegated to calculate the Manhattan norm for the given array
 func ManhattanDistance(v1, v2 []float64) float64 {
-	if !SimilarityPreCheck(v1, v2) {
+	if !SimilarityPreCheck[float64](v1, v2) {
 		return -1
 	}
 	var taxicab float64
