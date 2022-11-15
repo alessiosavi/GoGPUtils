@@ -8,7 +8,6 @@ import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -114,7 +113,7 @@ func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error)
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
 func ReadFileInArray(filePath string) []string {
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil
 	}
@@ -123,7 +122,7 @@ func ReadFileInArray(filePath string) []string {
 	return strings.Split(string(data), "\n")
 }
 
-//IsFile verify if the given filepath is a file
+// IsFile verify if the given filepath is a file
 func IsFile(path string) bool {
 	fi, err := os.Stat(path)
 	if os.IsNotExist(err) || err != nil {
@@ -353,7 +352,7 @@ func GetFileContentType(fileName string) (string, error) {
 			}
 		}
 	}
-	return contentType, nil
+	return contentType, f.Sync()
 }
 
 // GetFileSize is delegated to return the bytes size of the given file
@@ -377,12 +376,12 @@ func GetFileSize2(filepath string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return fi.Size(), nil
+	return fi.Size(), f.Sync()
 }
 
 // FilterFromFile is delegated to retrieve the lines that contain the target
 func FilterFromFile(filename, target string, ignorecase bool) []string {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -481,7 +480,7 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 	// Preliminary check
 	if nByte < 1 {
 
-		size := mathutils.MinInt64(size1, size2)
+		size := mathutils.Min[int64](size1, size2)
 		nByte = 1024
 		si := helper.ByteCountSI(size)
 		if strings.Contains(si, "kB") {

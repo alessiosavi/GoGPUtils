@@ -3,11 +3,13 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
-	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"log"
 	"regexp"
 	"strings"
+	"unicode"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	mathutils "github.com/alessiosavi/GoGPUtils/math"
 )
 
 var BOMS = [][]byte{
@@ -17,6 +19,54 @@ var BOMS = [][]byte{
 	{0x00, 0x00, 0xfe, 0xff}, // UTF-32 BE
 	{0xff, 0xfe, 0x00, 0x00}, // UTF-32 LE
 
+}
+
+func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
+	if replacer != nil {
+		word = replacer.Replace(strings.TrimSpace(word))
+	}
+	back := word
+	for i := 0; i < len(word); {
+		c := rune(word[i])
+		if unicode.IsUpper(c) {
+			start := i
+			stop := 0
+			for _, c1 := range word[i:] {
+				if unicode.IsUpper(c1) {
+					stop++
+				} else {
+					break
+				}
+			}
+			stop += start
+			if start != stop {
+				if stop != len(word) {
+					word = word[0:start] + strings.ToLower(word[start:stop]) + word[stop:]
+					i = i + (stop - start)
+				} else {
+					word = word[0:start] + strings.ToLower(word[start:stop])
+					i = len(word)
+				}
+
+			}
+		}
+
+		i++
+
+	}
+	log.Printf("In: %s | Out:%s\n", back, word)
+	return word
+}
+
+func Count(data []string, target string) int {
+	var c = 0
+
+	for i := range data {
+		if data[i] == target {
+			c++
+		}
+	}
+	return c
 }
 
 // ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
@@ -204,7 +254,7 @@ func CountLines(str string) int {
 	return counter
 }
 
-//ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
+// ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
 func ExtractString(data *string, first, last string) string {
 	// Find the first instance of 'start' in the give string data
 	startHeder := strings.Index(*data, first)
@@ -371,7 +421,7 @@ func LevenshteinDistance(str1, str2 string) int {
 			}
 
 			// minimum of cell to the left+1, to the top+1, diagonally left and up +cost
-			d[i] = mathutils.MinInt(mathutils.MinInt(d[i-1]+1, p[i]+1), p[i-1]+cost)
+			d[i] = mathutils.Min[int](mathutils.Min[int](d[i-1]+1, p[i]+1), p[i-1]+cost)
 		}
 
 		// copy current distance counts to 'previous row' distance counts

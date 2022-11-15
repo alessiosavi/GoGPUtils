@@ -1,8 +1,9 @@
 package arrayutils
 
 import (
+	"fmt"
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -90,24 +91,25 @@ func JoinStrings(strs []string, delimiter string) string {
 	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
-// JoinInts use a strings.Builder for concatenate the input string array.
+// JoinNumber use a strings.Builder for concatenate the input string array.
 // It concatenates the strings among the delimiter in input
-func JoinInts(ints []int, delimiter string) string {
-	if len(ints) == 0 {
+func JoinNumber[T types.Number](n []T, delimiter string) string {
+	if len(n) == 0 {
 		return ""
 	}
 	var sb strings.Builder
 
-	for i := range ints {
-		sb.WriteString(strconv.Itoa(ints[i]))
+	for i := range n {
+		sb.WriteString(fmt.Sprintf("%v", n[i]))
 		sb.WriteString(delimiter)
 	}
 	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
-// ReverseArrayInt is delegated to return the inverse rappresentation of the array
-func ReverseArrayInt(n1 []int) []int {
-	var result = make([]int, len(n1))
+// ReverseArray is delegated to return the inverse rappresentation of the array
+// FIXME: Use the same array instead of allocate a new array
+func ReverseArray[T types.Number](n1 []T) []T {
+	var result = make([]T, len(n1))
 	for i := len(n1) - 1; i >= 0; i-- {
 		v := n1[i]
 		j := len(n1) - 1 - i
@@ -127,16 +129,16 @@ func ReverseArrayString(n1 []string) []string {
 	return result
 }
 
-// RemoveIntByIndex is delegated to remove the element of index s
-func RemoveIntByIndex(slice []int, s int) []int {
+// RemoveByIndex is delegated to remove the element of index s
+func RemoveByIndex[T types.Number](slice []T, s int) []T {
 	if s < 0 || s >= len(slice) {
 		return slice
 	}
 	return append(slice[:s], slice[s+1:]...)
 }
 
-// RemoveIntByValue is delegated to remove the element that contains the given value
-func RemoveIntByValue(slice []int, value int) []int {
+// RemoveByValue is delegated to remove the element that contains the given value
+func RemoveByValue[T types.Number](slice []T, value T) []T {
 	for i := 0; i < len(slice); i++ {
 		if slice[i] == value {
 			slice = append(slice[:i], slice[i+1:]...)

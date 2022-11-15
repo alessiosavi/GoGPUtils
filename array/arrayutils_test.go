@@ -83,20 +83,20 @@ func TestJoinStrings(t *testing.T) {
 		t.Fail()
 	}
 }
-func TestJoinInts(t *testing.T) {
+func TestJoinNumber(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
-	joined := JoinInts(data, "")
+	joined := JoinNumber[int](data, "")
 	if joined != "0123456" {
 		t.Fail()
 	}
-	joined = JoinInts(data, " ")
+	joined = JoinNumber[int](data, " ")
 	if joined != "0 1 2 3 4 5 6" {
 		t.Fail()
 	}
 }
 func TestReverseArrayInt(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
-	reversed := ReverseArrayInt(data)
+	reversed := ReverseArray[int](data)
 	for i, j := len(reversed)-1, 0; i > 0; i, j = i-1, j+1 {
 		if reversed[i] != data[j] {
 			t.Fail()
@@ -115,7 +115,7 @@ func TestReverseArrayString(t *testing.T) {
 func TestRemoveIntByIndex(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
 	test := []int{1, 2, 3, 4, 5, 6}
-	deleted := RemoveIntByIndex(data, 0)
+	deleted := RemoveByIndex[int](data, 0)
 	if !reflect.DeepEqual(deleted, test) {
 		t.Fail()
 	}
@@ -124,7 +124,7 @@ func TestRemoveIntByIndex(t *testing.T) {
 func TestRemoveIntByIndex2(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
 	test := []int{0, 1, 2, 3, 4, 5}
-	deleted := RemoveIntByIndex(data, 6)
+	deleted := RemoveByIndex[int](data, 6)
 	if !reflect.DeepEqual(deleted, test) {
 		t.Fail()
 	}
@@ -132,7 +132,7 @@ func TestRemoveIntByIndex2(t *testing.T) {
 
 func TestRemoveIntByIndex3(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
-	deleted := RemoveIntByIndex(data, 7)
+	deleted := RemoveByIndex[int](data, 7)
 	if !reflect.DeepEqual(data, deleted) {
 		t.Fail()
 	}
@@ -140,7 +140,7 @@ func TestRemoveIntByIndex3(t *testing.T) {
 
 func TestRemoveIntByIndex4(t *testing.T) {
 	data := []int{0, 1, 2, 3, 4, 5, 6}
-	deleted := RemoveIntByIndex(data, -1)
+	deleted := RemoveByIndex[int](data, -1)
 	if !reflect.DeepEqual(data, deleted) {
 		t.Fail()
 	}

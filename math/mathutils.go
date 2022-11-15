@@ -2,6 +2,7 @@ package mathutils
 
 import (
 	"fmt"
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"log"
 	"math"
 	"sort"
@@ -9,46 +10,44 @@ import (
 	"strings"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
-	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
-// InitIntArray is delegated to initialize a new array of the given dimension, populated with the same input value
-func InitIntArray(dimension, value int) []int {
-	if dimension <= 0 {
+// NewArray is delegated to initialize a new array of the given dimension, populated with the same input value
+func NewArray[T types.Number](n int, value T) []T {
+	if n <= 0 {
 		return nil
 	}
-
-	array := make([]int, dimension)
-	for i := 0; i < dimension; i++ {
+	var array []T = make([]T, n)
+	for i := range array {
 		array[i] = value
 	}
 	return array
 }
 
-// SumIntArray return the sum of every element contained in the array
-func SumIntArray(integers []int) int {
-	sum := 0
-	for i := range integers {
-		sum += integers[i]
+// SumArray return the sum of every element contained in the array
+func SumArray[T types.Number](array []T) T {
+	var sum T = 0
+	for i := range array {
+		sum += array[i]
 	}
 	return sum
 }
 
-// SubtractIntArray subtract of every element contained in the array and return the result
-func SubtractIntArray(integers []int) int {
-	subtract := 0
+// SubtractArray subtract of every element contained in the array and return the result
+func SubtractArray[T types.Number](integers []T) T {
+	var subtract T = 0
 	for i := range integers {
 		subtract -= integers[i]
 	}
 	return subtract
 }
 
-// SumIntArrays is delegated to sum the two given array
-func SumIntArrays(a1, a2 []int) []int {
+// SumArrays is delegated to sum the two given array
+func SumArrays[T types.Number](a1, a2 []T) []T {
 	if a1 == nil || a2 == nil || len(a1) != len(a2) {
 		return nil
 	}
-	total := make([]int, len(a1))
+	total := make([]T, len(a1))
 	length := len(a1)
 	for i := 0; i < length; i++ {
 		total[i] = a1[i] + a2[i]
@@ -56,12 +55,12 @@ func SumIntArrays(a1, a2 []int) []int {
 	return total
 }
 
-// SubtractIntArrays is delegated to sum the two given array
-func SubtractIntArrays(a1, a2 []int) []int {
+// SubtractArrays is delegated to sum the two given array
+func SubtractArrays[T types.Number](a1, a2 []T) []T {
 	if a1 == nil || a2 == nil || len(a1) != len(a2) {
 		return nil
 	}
-	total := make([]int, len(a1))
+	total := make([]T, len(a1))
 	length := len(a1)
 	for i := 0; i < length; i++ {
 		total[i] = a1[i] - a2[i]
@@ -69,48 +68,8 @@ func SubtractIntArrays(a1, a2 []int) []int {
 	return total
 }
 
-// SumInt32Array return the of every element contained in the array
-func SumInt32Array(integers []int32) int32 {
-	var sum int32
-	sum = 0
-	for i := range integers {
-		sum += integers[i]
-	}
-	return sum
-}
-
-// SumInt64Array return the of every element contained in the array
-func SumInt64Array(integers []int64) int64 {
-	var sum int64
-	sum = 0
-	for i := range integers {
-		sum += integers[i]
-	}
-	return sum
-}
-
-// SumFloat32Array return the of every element contained in the array
-func SumFloat32Array(integers []float32) float32 {
-	var sum float32
-	sum = 0
-	for i := range integers {
-		sum += integers[i]
-	}
-	return sum
-}
-
-// SumFloat64Array return the of every element contained in the array
-func SumFloat64Array(integers []float64) float64 {
-	var sum float64
-	sum = 0
-	for i := range integers {
-		sum += integers[i]
-	}
-	return sum
-}
-
-// MaxIntIndex return the index that contains the max value for the given array
-func MaxIntIndex(array []int) int {
+// MaxIndex return the index that contains the max value for the given array
+func MaxIndex[T types.Number](array []T) int {
 	var index int
 	length := len(array)
 	for i := 1; i < length; i++ {
@@ -121,8 +80,8 @@ func MaxIntIndex(array []int) int {
 	return index
 }
 
-// MinIntIndex return the index that contains the min value for the given array
-func MinIntIndex(array []int) int {
+// MinIndex return the index that contains the min value for the given array
+func MinIndex[T types.Number](array []T) int {
 	index := 0
 	length := len(array)
 	for i := 1; i < length; i++ {
@@ -133,67 +92,19 @@ func MinIntIndex(array []int) int {
 	return index
 }
 
-// MaxInt32Index return the index that contains the max value for the given array
-func MaxInt32Index(array []int32) int {
-	index := 0
-	length := len(array)
-	for i := 1; i < length; i++ {
-		if array[i] > array[index] {
-			index = i
-		}
-	}
-	return index
-}
-
-// MaxInt64Index return the index that contains the max value for the given array
-func MaxInt64Index(array []int64) int {
-	index := 0
-	length := len(array)
-	for i := 1; i < length; i++ {
-		if array[i] > array[index] {
-			index = i
-		}
-	}
-	return index
-}
-
-// MaxFloat32Index return the index that contains the max value for the given array
-func MaxFloat32Index(array []float32) int {
-	index := 0
-	length := len(array)
-	for i := 1; i < length; i++ {
-		if array[i] > array[index] {
-			index = i
-		}
-	}
-	return index
-}
-
-// MaxFloat64Index return the index that contains the max value for the given array
-func MaxFloat64Index(array []float64) int {
-	index := 0
-	length := len(array)
-	for i := 1; i < length; i++ {
-		if array[i] > array[index] {
-			index = i
-		}
-	}
-	return index
-}
-
-// ModeInt is delegated to calculate the mode of the given array
-func ModeInt(array []int) []int {
+// Mode is delegated to calculate the mode of the given array
+func Mode[T types.Number](array []T) []T {
 	// Save the number of occurrence for every number of the array
-	var mode = make(map[int]int)
+	var mode = make(map[T]int, len(array))
 	for i := range array {
 		mode[array[i]]++
 	}
 	var max int
-	var maxs []int
+	var maxs []T
 
 	// Avoid taking care about value that does not appear at least 2 time
 	max = 2
-	for i := 1; i < len(mode); i++ {
+	for i := T(1); i < T(len(mode)); i++ {
 		if mode[i] >= max {
 			max = mode[i]
 		}
@@ -206,12 +117,14 @@ func ModeInt(array []int) []int {
 	return maxs
 }
 
-// MedianInt is delegated to calculate the median for the given INT array
-func MedianInt(arr []int) float64 {
-	var array = make([]int, len(arr))
+// Median is delegated to calculate the median for the given array
+func Median[T types.Number](arr []T) float64 {
+	var array = make([]T, len(arr))
 	// Avoid modifying the input array
 	copy(array, arr)
-	sort.Ints(array)
+	sort.Slice(array, func(i, j int) bool {
+		return array[i] < array[j]
+	})
 	if len(array)%2 != 0 {
 		index := (len(array)) / 2
 		return float64(array[index])
@@ -221,9 +134,9 @@ func MedianInt(arr []int) float64 {
 	return float64(n1+n2) / 2.0
 }
 
-// AverageInt is delegated to calculate the average of an int array
-func AverageInt(array []int) float64 {
-	var total int
+// Average is delegated to calculate the average of an int array
+func Average[T types.Number](array []T) float64 {
+	var total T
 	// Same as len(array) == 0
 	if array == nil {
 		return 0
@@ -237,10 +150,10 @@ func AverageInt(array []int) float64 {
 	return float64(total) / float64(len(array))
 }
 
-// StandardDeviationInt is delegated to calculate the STD for the given array
-func StandardDeviationInt(array []int) float64 {
+// StandardDeviation is delegated to calculate the STD for the given array
+func StandardDeviation[T types.Number](array []T) float64 {
 	// 1. Calculate average
-	mean := AverageInt(array)
+	mean := Average(array)
 	// 2. Subtract every term for the average and square the result. Sum every terms
 	var sum float64
 	for i := range array {
@@ -253,26 +166,11 @@ func StandardDeviationInt(array []int) float64 {
 	return math.Sqrt(sum)
 }
 
-// StandardDeviationFloat64 is delegated to calculate the STD for the given array
-func StandardDeviationFloat64(array []float64) float64 {
-	// 1. Calculate average
-	mean := AverageFloat64(array)
-	// 2. Subtract every term for the average and square the result. Sum every terms
-	var sum float64
-	for i := range array {
-		sum += math.Pow(array[i]-mean, 2)
-	}
-	// 3. Multiplying by 1/N (divide for N)
-	sum /= float64(len(array))
-	// 4.  Take the square root
-	return math.Sqrt(sum)
-}
-
-func VarianceInt(array []int) float64 {
+func Variance[T types.Number](array []T) float64 {
 	// 1. Work out the Mean (the simple average of the numbers)
 	// 2. Then for each number: subtract the Mean and square the result (the squared difference).
 	// 3. Then work out the average of those squared differences. (Why Square?)
-	mean := AverageInt(array)
+	mean := Average(array)
 	var sum float64
 
 	for i := range array {
@@ -282,14 +180,14 @@ func VarianceInt(array []int) float64 {
 	return math.Sqrt(sum)
 }
 
-// CovarianceInt is delegated to calculate the Covariance between the given arrays
-func CovarianceInt(arr1, arr2 []int) float64 {
+// Covariance is delegated to calculate the Covariance between the given arrays
+func Covariance[T types.Number](arr1, arr2 []T) float64 {
 	if len(arr1) != len(arr2) || len(arr1) == 0 {
 		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
 	}
 	// 1. Calculate the mean
-	avg1 := AverageInt(arr1)
-	avg2 := AverageInt(arr2)
+	avg1 := Average(arr1)
+	avg2 := Average(arr2)
 
 	var sum float64
 	for i := range arr1 {
@@ -298,31 +196,15 @@ func CovarianceInt(arr1, arr2 []int) float64 {
 	return sum / float64(len(arr1)-1)
 }
 
-// CovarianceFloat64 is delegated to calculate the Covariance between the given arrays
-func CovarianceFloat64(arr1, arr2 []float64) float64 {
-	if len(arr1) != len(arr2) || len(arr1) == 0 {
-		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
-	}
-	// 1. Calculate the mean
-	avg1 := AverageFloat64(arr1)
-	avg2 := AverageFloat64(arr2)
-
-	var sum float64
-	for i := range arr1 {
-		sum += (arr1[i] - avg1) * (arr2[i] - avg2)
-	}
-	return sum / float64(len(arr1)-1)
-}
-
-// CorrelationInt is delegated to calculate the correlation for the two given arrays
-func CorrelationInt(arr1, arr2 []int) float64 {
+// Correlation is delegated to calculate the correlation for the two given arrays
+func Correlation[T types.Number](arr1, arr2 []T) float64 {
 	if len(arr1) != len(arr2) || len(arr1) == 0 {
 		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
 	}
 
 	// 1. Calculate the mean
-	avg1 := AverageInt(arr1)
-	avg2 := AverageInt(arr2)
+	avg1 := Average(arr1)
+	avg2 := Average(arr2)
 
 	var sum float64
 	var sum1, sum2 = make([]float64, len(arr1)), make([]float64, len(arr2))
@@ -342,107 +224,20 @@ func CorrelationInt(arr1, arr2 []int) float64 {
 	return sum / math.Sqrt(pow1*pow2)
 }
 
-// CorrelationFloat64 is delegated to calculate the correlation for the two given arrays
-func CorrelationFloat64(arr1, arr2 []float64) float64 {
-	if len(arr1) != len(arr2) || len(arr1) == 0 {
-		log.Fatal("CovarianceInt | Input array have a different shape: Array1 [", arr1, "], Array2: [", arr2, "]")
-	}
-
-	// 1. Calculate the mean
-	avg1 := AverageFloat64(arr1)
-	avg2 := AverageFloat64(arr2)
-
-	var sum float64
-	for i := range arr1 {
-		// TODO: Save calculation instead of recalculate at the step below
-		sum += (arr1[i] - avg1) * (arr2[i] - avg2)
-	}
-	var pow1, pow2 float64
-
-	for i := range arr1 {
-		pow1 += math.Pow(arr1[i]-avg1, 2)
-	}
-	for i := range arr1 {
-		pow2 += math.Pow(arr2[i]-avg2, 2)
-	}
-	return sum / math.Sqrt(pow1*pow2)
-}
-
-// AverageInt32 is delegated to calculate the average of an int array
-func AverageInt32(array []int32) float64 {
-	var total int32
-	// Same as len(array) == 0
-	if array == nil {
-		return 0
-	} else if len(array) == 1 {
-		return float64(array[0])
-	}
-
-	for i := range array {
-		total += array[i]
-	}
-	return float64(total / int32(len(array)))
-}
-
-// AverageInt64 is delegated to calculate the average of an int array
-func AverageInt64(array []int64) float64 {
-	var total int64
-	// Same as len(array) == 0
-	if array == nil {
-		return 0
-	} else if len(array) == 1 {
-		return float64(array[0])
-	}
-
-	for i := range array {
-		total += array[i]
-	}
-	return float64(total / int64(len(array)))
-}
-
-// AverageFloat32 is delegated to calculate the average of a float32 array
-func AverageFloat32(array []float32) float64 {
-	var total float32
-	if array == nil {
-		return 0
-	} else if len(array) == 1 {
-		return float64(array[0])
-	}
-	for i := range array {
-		total += array[i]
-	}
-	return float64(total / float32(len(array)))
-}
-
-// AverageFloat64 is delegated to calculate the average of a float64 array
-func AverageFloat64(array []float64) float64 {
-	var total float64
-	if array == nil {
-		return 0
-	} else if len(array) == 1 {
-		return array[0]
-	}
-
-	for i := range array {
-		total += array[i]
-	}
-	return total / float64(len(array))
-}
-
 // InitMatrix is delegated to initialize a new empty matrix
-func InitMatrix(r, c int) [][]int {
+func InitMatrix[T types.Number](r, c int) [][]T {
 	if r <= 1 || c <= 1 {
 		return nil
 	}
-	matrix := make([][]int, r)
+	matrix := make([][]T, r)
 	for rowsIndex := range matrix {
-		matrix[rowsIndex] = make([]int, c)
+		matrix[rowsIndex] = make([]T, c)
 	}
 	return matrix
 }
 
 // DumpMatrix is delegated to print the given matrix
-func DumpMatrix(m [][]int) string {
+func DumpMatrix[T types.Number](m [][]T) string {
 	var sb strings.Builder
 	if m == nil {
 		return ""
@@ -454,53 +249,54 @@ func DumpMatrix(m [][]int) string {
 	return sb.String()
 }
 
+// FIXME
 // InitRandomMatrix is delegated to initialize a random matrix with the given dimension
-func InitRandomMatrix(r, c int) [][]int {
-	m := InitMatrix(r, c)
-	randomizer := helper.InitRandomizer()
-	for i := range m {
-		m[i] = randomizer.RandomIntArray(0, 100, c)
-	}
-	return m
-}
+//func InitRandomMatrix[T types.Number](r, c int) [][]T {
+//	m := InitMatrix[T](r, c)
+//	randomizer := helper.InitRandomizer()
+//	for i := range m {
+//		m[i] = randomizer.RandomIntArray(0, 100, c)
+//	}
+//	return m
+//}
 
 // InitMatrixCustom is delegated to initialize a matrix with the given dimension using the same value for each field
-func InitMatrixCustom(r, c, value int) [][]int {
-	m := InitMatrix(r, c)
+func InitMatrixCustom[T types.Number](r, c int, value T) [][]T {
+	m := InitMatrix[T](r, c)
 	for i := range m {
-		m[i] = InitIntArray(c, value)
+		m[i] = NewArray[T](c, value)
 	}
 	return m
 }
 
 // SumMatrix is delegated to sum the given matrix
-func SumMatrix(m1, m2 [][]int) [][]int {
+func SumMatrix[T types.Number](m1, m2 [][]T) [][]T {
 	if m1 == nil || m2 == nil || len(m1) != len(m2) {
 		return nil
 	}
-	sum := make([][]int, len(m1))
+	sum := make([][]T, len(m1))
 	length := len(m1)
 	for i := 0; i < length; i++ {
-		sum[i] = SumIntArrays(m1[i], m2[i])
+		sum[i] = SumArrays[T](m1[i], m2[i])
 	}
 	return sum
 }
 
 // SubtractMatrix is delegated to sum the given matrix
-func SubtractMatrix(m1, m2 [][]int) [][]int {
+func SubtractMatrix[T types.Number](m1, m2 [][]T) [][]T {
 	if m1 == nil || m2 == nil || len(m1) != len(m2) {
 		return nil
 	}
-	total := make([][]int, len(m1))
+	total := make([][]T, len(m1))
 	length := len(m1)
 	for i := 0; i < length; i++ {
-		total[i] = SubtractIntArrays(m1[i], m2[i])
+		total[i] = SubtractArrays[T](m1[i], m2[i])
 	}
 	return total
 }
 
 // MultiplyMatrix is delegated to execute the multiplication between the given matrix without extra allocation
-func MultiplyMatrix(m1, m2 [][]int) [][]int {
+func MultiplyMatrix[T types.Number](m1, m2 [][]T) [][]T {
 	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
 		return nil
@@ -517,7 +313,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 	n := len(m1)
 	y := len(m1[0])
 	m := len(m2[0])
-	result := InitMatrix(n, m)
+	result := InitMatrix[T](n, m)
 
 	for k := 0; k < y; k++ {
 		for i := 0; i < n; i++ {
@@ -531,7 +327,7 @@ func MultiplyMatrix(m1, m2 [][]int) [][]int {
 }
 
 // MultiplyMatrixLegacy is delegated to execute the multiplication between the given matrix
-func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
+func MultiplyMatrixLegacy[T types.Number](m1, m2 [][]T) [][]T {
 	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
 		log.Println("Matrix empty")
 		return nil
@@ -545,11 +341,11 @@ func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
 		return nil
 	}
 
-	total := InitMatrix(len(m1), len(m2[0]))
+	total := InitMatrix[T](len(m1), len(m2[0]))
 	for i := range m1 {
 		arrayM1 := m1[i]
 		for k := 0; k < len(m2); k++ {
-			arrayM2 := make([]int, len(arrayM1))
+			arrayM2 := make([]T, len(arrayM1))
 			for j := range m2 {
 				arrayM2[j] = m2[j][k]
 			}
@@ -561,25 +357,24 @@ func MultiplyMatrixLegacy(m1, m2 [][]int) [][]int {
 }
 
 // MultiplySumArray is delegated to multiply the given array and sum every number of the result array
-func MultiplySumArray(a, b []int) int {
+func MultiplySumArray[T types.Number](a, b []T) T {
 	if len(a) != len(b) {
-		log.Println("Different length ...")
-		return -1
+		panic("Different length ...")
 	}
-	total := make([]int, len(a))
+	total := make([]T, len(a))
 	for i := range a {
 		total[i] = a[i] * b[i]
 	}
-	return SumIntArray(total)
+	return SumArray[T](total)
 }
 
-// SumArrays is delegated to sum 2 array of different length.
-func SumArrays(n1, n2 []int) []int {
+// SumArraysPadded is delegated to sum 2 array of different length.
+func SumArraysPadded[T types.Number](n1, n2 []T) []T {
 	var (
-		result []int
+		result []T
 		odd    int
 		length int
-		sum    int
+		sum    T
 	)
 	if len(n1) > len(n2) {
 		length = len(n1)
@@ -590,7 +385,7 @@ func SumArrays(n1, n2 []int) []int {
 	n2 = PadArray(n2, length)
 
 	for i := length - 1; i >= 0; i-- {
-		sum = n1[i] + n2[i] + odd
+		sum = n1[i] + n2[i] + T(odd)
 		if sum > 9 {
 			odd = 1
 			sum -= 10
@@ -600,13 +395,13 @@ func SumArrays(n1, n2 []int) []int {
 		result = append(result, sum)
 	}
 	if odd != 0 {
-		result = append(result, odd)
+		result = append(result, T(odd))
 	}
-	reversed := arrayutils.ReverseArrayInt(result)
+	reversed := arrayutils.ReverseArray[T](result)
 	return reversed
 }
 
-// CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the input number
+// CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the inpuT types.Number
 func CalculateMaxPrimeFactor(n int64) int64 {
 	var maxPrime int64 = -1
 	var i int64
@@ -682,7 +477,7 @@ func ExtractEvenValuedNumber(array []int64) []int64 {
 	return result
 }
 
-// FindDivisor is delegated to find every divisor for the input number
+// FindDivisor is delegated to find every divisor for the inpuT types.Number
 func FindDivisor(n int) []int {
 	var count int
 	var divisor []int
@@ -704,11 +499,11 @@ func FindDivisor(n int) []int {
 }
 
 // PadArray is delegated to return a new padded array with length n
-func PadArray(array []int, n int) []int {
-	var result []int
+func PadArray[T types.Number](array []T, n int) []T {
+	var result []T
 	var length = len(array)
 	if n != length {
-		result = make([]int, n-length)
+		result = make([]T, n-length)
 		for i := 0; i < n-length; i++ {
 			result[i] = 0
 		}
@@ -721,7 +516,7 @@ func PadArray(array []int, n int) []int {
 }
 
 // FindIndexValue is delegated to retrieve the index of the given value into the input array.
-func FindIndexValue(array []int, value int) []int {
+func FindIndexValue[T types.Number](array []T, value T) []int {
 	var indexs []int
 	for i := range array {
 		if array[i] == value {
@@ -734,27 +529,28 @@ func FindIndexValue(array []int, value int) []int {
 
 // SortMaxIndex is delegated to return an array that contains the position of the order value (from max to min) of the given array
 // {1, 9, 2, 10, 3} -> [3 1 4 2 0] || {7, 6, 5, 4, 3, 2, 1} -> [0 1 2 3 4 5 6] || {1, 2, 3, 4, 5, 6, 7} -> [6 5 4 3 2 1 0]
-func SortMaxIndex(array []int) []int {
+func SortMaxIndex[T types.Number](array []T) []int {
 	var (
 		result, additional []int
-		index, value       int
-		arrayCopy          = make([]int, len(array))
+		index              int
+		value              T
+		arrayCopy          = make([]T, len(array))
 	)
 	copy(arrayCopy, array)
 	for len(array) > 0 {
 		// Retrieve the max index
-		index = MaxIntIndex(array)
+		index = MaxIndex[T](array)
 		value = array[index]
 		// Find the value(s)
-		additional = FindIndexValue(arrayCopy, value)
+		additional = FindIndexValue[T](arrayCopy, value)
 		result = append(result, additional...)
-		array = arrayutils.RemoveIntByValue(array, value)
+		array = arrayutils.RemoveByValue[T](array, value)
 	}
 	return result
 }
 
 // SimilarityPreCheck is delegated to verify that the given array have the correct size
-func SimilarityPreCheck(a, b []float64) bool {
+func SimilarityPreCheck[T types.Number](a, b []float64) bool {
 	if len(a) == 0 || len(b) == 0 {
 		log.Println("CosineSimilarity | Nil input data")
 		return false
@@ -770,7 +566,7 @@ func SimilarityPreCheck(a, b []float64) bool {
 
 // CosineSimilarity is delegated to calculate the Cosine Similarity for the given array
 func CosineSimilarity(a, b []float64) float64 {
-	if !SimilarityPreCheck(a, b) {
+	if !SimilarityPreCheck[float64](a, b) {
 		return -1
 	}
 
@@ -822,52 +618,28 @@ func ManhattanDistance(v1, v2 []float64) float64 {
 	return taxicab
 }
 
-// MaxInt is delegated to return the max int from the two given int
-func MaxInt(a, b int) int {
+// Max is delegated to return the max from the two given numbers
+func Max[T types.Number](a, b T) T {
 	if a > b {
 		return a
 	}
 	return b
 }
 
-// MinInt is delegated to return the min int from the two given int
-func MinInt(a, b int) int {
+// Min is delegated to return the min from the two given numbers
+func Min[T types.Number](a, b T) T {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-// MinInt64 is delegated to return the min int from the two given int
-func MinInt64(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-	return b
+// Maxs is delegated to return the max value with a variable number of input int
+func Maxs[T types.Number](a ...T) T {
+	return a[MaxIndex(a)]
 }
 
-// MaxFloat64 is delegated to return the max int from the two given int
-func MaxFloat64(a, b float64) float64 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// MinFloat64 is delegated to return the min int from the two given int
-func MinFloat64(a, b float64) float64 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-// MaxIntMultiple is delegated to return the max value with a variable number of input int
-func MaxIntMultiple(a ...int) int {
-	return a[MaxIntIndex(a)]
-}
-
-// MinIntMultiple is delegated to return the min value with a variable number of input int
-func MinIntMultiple(a ...int) int {
-	return a[MinIntIndex(a)]
+// Mins is delegated to return the min value with a variable number of input int
+func Mins[T types.Number](a ...T) T {
+	return a[MinIndex(a)]
 }

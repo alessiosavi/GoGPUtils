@@ -121,7 +121,7 @@ func DeleteWorkflow(workflowName string, deep bool) (*glue.DeleteWorkflowOutput,
 	return deleteWorkflow, errs
 }
 
-func ListCrawlers(crawlerName string) ([]string, error) {
+func ListCrawlers() ([]string, error) {
 	crawlers, err := glueClient.ListCrawlers(context.Background(), &glue.ListCrawlersInput{NextToken: nil})
 	if err != nil {
 		return nil, err

@@ -161,8 +161,11 @@ func (n *Node) height() int {
 	return rheight + 1
 }
 
-/* Function to print level
-order traversal a tree*/
+/*
+	Function to print level
+
+order traversal a tree
+*/
 func (n *Node) print() string {
 
 	h := n.height()
@@ -174,7 +177,7 @@ func (n *Node) print() string {
 		for j := h; j > key; j-- {
 			for _, k := range printMap[j] {
 				if arrayutils.InInt(printMap[key], k) {
-					printMap[key] = arrayutils.RemoveIntByValue(printMap[key], k)
+					printMap[key] = arrayutils.RemoveByValue[int](printMap[key], k)
 				}
 			}
 		}

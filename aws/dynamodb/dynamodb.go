@@ -18,12 +18,6 @@ var once sync.Once
 
 type UpdateType string
 
-const (
-	UpdateTypeSet    UpdateType = "SET"
-	UpdateTypeRemove UpdateType = "REMOVE"
-	UpdateTypeAdd    UpdateType = "ADD"
-)
-
 type Update struct {
 	Type  UpdateType `json:"type,omitempty"`
 	Key   string     `json:"key,omitempty"`

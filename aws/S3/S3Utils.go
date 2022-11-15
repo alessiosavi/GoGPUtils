@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"golang.org/x/net/html/charset"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -42,7 +41,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(s3CsvConf.Body)
+	data, err := io.ReadAll(s3CsvConf.Body)
 	return data, err
 }
 
@@ -65,7 +64,7 @@ func PutObject(bucket, filename string, data []byte) error {
 	_, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:          aws.String(bucket),
 		Key:             aws.String(filename),
-		Body:            ioutil.NopCloser(bytes.NewReader(data)),
+		Body:            io.NopCloser(bytes.NewReader(data)),
 		ContentEncoding: encoding,
 		ContentMD5:      aws.String(string(sum)),
 		ContentType:     aws.String(contentType),
@@ -97,7 +96,7 @@ func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType,
 	return err
 }
 
-//ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
+// ListBucketObjectsDetails is delegated to list all the objects (details) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	objects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
@@ -106,10 +105,9 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	var buckets = make([]types.Object, len(objects.Contents))
-	for i, bucketData := range objects.Contents {
-		buckets[i] = bucketData
-	}
+
+	var buckets []types.Object
+	buckets = append(buckets, objects.Contents...)
 
 	continuationToken := objects.NextContinuationToken
 	truncated := objects.IsTruncated
@@ -123,9 +121,8 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 			return nil, err
 		}
 		continuationToken = newObjects.NextContinuationToken
-		for _, bucketData := range newObjects.Contents {
-			buckets = append(buckets, bucketData)
-		}
+		buckets = append(buckets, newObjects.Contents...)
+
 		truncated = newObjects.IsTruncated
 	}
 
@@ -135,7 +132,7 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 	return buckets, nil
 }
 
-//ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
+// ListBucketObjects is delegated to list all the objects (name only) in the given bucket. Prefix is optional. The result is return ordered by the last modified
 func ListBucketObjects(bucket, prefix string) ([]string, error) {
 	objects, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {
@@ -212,7 +209,6 @@ func IsDifferent(bucket_base, bucket_target, key_base, key_target string) bool {
 	wg.Wait()
 
 	if err1 != nil || err2 != nil {
-		log.Println("Error calling AWS")
 		if err1 != nil {
 			log.Println("INPUT: ", bucket_base, key_base)
 			log.Println(err1)
