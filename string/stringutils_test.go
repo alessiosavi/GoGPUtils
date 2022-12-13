@@ -416,7 +416,7 @@ func BenchmarkSplit(b *testing.B) {
 	data := string(content)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Split(data)
+		Split(strings.NewReader(data))
 	}
 }
 func BenchmarkSplitBuiltin(b *testing.B) {
@@ -617,6 +617,34 @@ func TestUnique(t *testing.T) {
 			})
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Unique() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIndexes(t *testing.T) {
+	type args struct {
+		s   string
+		chs string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "OK",
+			args: args{
+				s:   "ABAABA",
+				chs: "A",
+			},
+			want: []int{0, 2, 3, 5},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Indexes(tt.args.s, tt.args.chs); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Indexes() = %v, want %v", got, tt.want)
 			}
 		})
 	}

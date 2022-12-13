@@ -29,17 +29,14 @@ func InvokeLambda(name string, payload []byte, invocationType types.InvocationTy
 		Payload:        payload})
 }
 
-func ListLambdas() ([]string, error) {
+func ListLambdas() ([]types.FunctionConfiguration, error) {
 	f, err := lambdaClient.ListFunctions(context.Background(), &lambda.ListFunctionsInput{})
 
 	if err != nil {
 		return nil, err
 	}
-
-	var functions = make([]string, len(f.Functions))
-	for i, functionName := range f.Functions {
-		functions[i] = *functionName.FunctionName
-	}
+	var functions = make([]types.FunctionConfiguration, len(f.Functions))
+	functions = append(functions, f.Functions...)
 
 	continuationToken := f.NextMarker
 	for continuationToken != nil {
@@ -48,11 +45,21 @@ func ListLambdas() ([]string, error) {
 			return nil, err
 		}
 		continuationToken = f.NextMarker
-		for _, functionName := range f.Functions {
-			functions = append(functions, *functionName.FunctionName)
-		}
+		functions = append(functions, f.Functions...)
 	}
 	return functions, nil
+}
+
+func ListLambdaNames() ([]string, error) {
+	lambdas, err := ListLambdas()
+	if err != nil {
+		return nil, err
+	}
+	var lambdaNames = make([]string, len(lambdas))
+	for i := range lambdas {
+		lambdaNames[i] = *lambdas[i].FunctionName
+	}
+	return lambdaNames, nil
 }
 
 func DeleteLambda(lambdaName string) (*lambda.DeleteFunctionOutput, error) {
@@ -113,4 +120,10 @@ func DeployLambdaFromZIP(functionName, zipPath string) error {
 	}
 	//log.Println(helper.MarshalIndent(code))
 	return nil
+}
+
+func ListTags(lambdaARN string) (*lambda.ListTagsOutput, error) {
+	return lambdaClient.ListTags(context.Background(), &lambda.ListTagsInput{
+		Resource: aws.String(lambdaARN),
+	})
 }
