@@ -3,7 +3,6 @@ package S3utils
 import (
 	"context"
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
-	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -176,11 +175,6 @@ func TestObjectExists(t *testing.T) {
 }
 
 func TestHead(t *testing.T) {
-	cfg, err := awsutils.New()
-	if err != nil {
-		return
-	}
-	S3Client := s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	if head, err := S3Client.HeadObject(context.Background(), &s3.HeadObjectInput{Bucket: aws.String("prod-lambda-asset"), Key: aws.String("describe-jobs.zip")}); err != nil {
 		return
 	} else {
@@ -196,7 +190,7 @@ func TestIsDifferent2(t *testing.T) {
 }
 
 func TestSyncBucket(t *testing.T) {
-	bucket, err := SyncBucket("cegid-prod-output-from-data-lake", "", "cegid-prod-output-from-data-lake-history")
+	bucket, err := SyncBucket("prod-demand-planning-forecast-temp", "", "qa-demand-planning-forecast-temp")
 	if err != nil {
 		panic(err)
 	}
@@ -297,9 +291,9 @@ func TestSyncAfterDate(t *testing.T) {
 			name: "OK",
 			args: args{
 				bucket:    "prod-data-lake-bucket",
-				prefix:    "/input/WAC",
-				localPath: "/tmp/wac",
-				date:      time.Date(2022, 9, 30, 0, 0, 0, 0, time.UTC),
+				prefix:    "input/CENTRIC/upload/Style/",
+				localPath: "/tmp/CENTRIC/Style",
+				date:      time.Date(2022, 12, 01, 0, 0, 0, 0, time.UTC),
 			},
 			wantErr: false,
 		},
@@ -307,9 +301,9 @@ func TestSyncAfterDate(t *testing.T) {
 			name: "OK",
 			args: args{
 				bucket:    "prod-data-lake-bucket",
-				prefix:    "input/SAP/upload/WAC/",
-				localPath: "/tmp/wac",
-				date:      time.Date(2022, 8, 1, 0, 0, 0, 0, time.UTC),
+				prefix:    "input/CENTRIC/upload/StyleSize/",
+				localPath: "/tmp/CENTRIC/StyleSize",
+				date:      time.Date(2022, 12, 01, 0, 0, 0, 0, time.UTC),
 			},
 			wantErr: false,
 		},

@@ -169,21 +169,39 @@ func ObjectExists(bucket, key string) bool {
 
 func SyncBucket(bucket, prefix string, bucketsTarget ...string) ([]string, error) {
 	var fileNotSynced []string
-	var err error
+
 	objects, err := ListBucketObjects(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
+	// Cache the name of the files for the given bucket, by this way we avoid unnecessary copy/head operation
+	// NOTE: The file will not be copied if it has the same name but with different content
+	var cache = make(map[string]map[string]struct{})
+
+	// Iterate the buckets and save the file name in a map
+	for _, b := range bucketsTarget {
+		bucketObjects, err := ListBucketObjects(b, "")
+		if err != nil {
+			return nil, err
+		}
+		cache[b] = make(map[string]struct{})
+		for i := range bucketObjects {
+			cache[b][bucketObjects[i]] = struct{}{}
+		}
+	}
+
 	for _, object := range objects {
 		for _, bucketTarget := range bucketsTarget {
-			if IsDifferent(bucket, bucketTarget, object, object) {
+			//if IsDifferent(bucket, bucketTarget, object, object) {
+			if _, ok := cache[bucketTarget][object]; !ok { // File not exists
 				log.Printf("Copying %s\n", path.Join(bucket, object))
 				if err = CopyObject(bucket, bucketTarget, object, object); err != nil {
 					fileNotSynced = append(fileNotSynced, object)
 				}
-			} else {
-				log.Printf("File %s skipped cause it already exists\n", path.Join(bucket, object))
 			}
+			//} else {
+			//	log.Printf("File %s skipped cause it already exists\n", path.Join(bucket, object))
+			//}
 		}
 	}
 
@@ -285,8 +303,12 @@ func SyncAfterDate(bucket, prefix, localPath string, date time.Time) error {
 					return err
 				}
 			}
-			if err = os.WriteFile(path.Join(basepath, path.Base(*detail.Key)), object, 0755); err != nil {
+			f := path.Join(basepath, path.Base(*detail.Key))
+			if err = os.WriteFile(f, object, 0755); err != nil {
 				return err
+			}
+			if err = os.Chtimes(f, *detail.LastModified, *detail.LastModified); err != nil {
+				log.Println("Unable to set time for file,", f, "ERR:", err.Error())
 			}
 		}
 	}

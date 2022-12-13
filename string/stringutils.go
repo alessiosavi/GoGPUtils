@@ -3,6 +3,7 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"log"
 	"regexp"
 	"strings"
@@ -19,6 +20,16 @@ var BOMS = [][]byte{
 	{0x00, 0x00, 0xfe, 0xff}, // UTF-32 BE
 	{0xff, 0xfe, 0x00, 0x00}, // UTF-32 LE
 
+}
+
+func Indexes(s string, chs string) []int {
+	var ret []int
+	for i := 0; i <= len(s)-len(chs); i++ {
+		if s[i:i+len(chs)] == chs {
+			ret = append(ret, i)
+		}
+	}
+	return ret
 }
 
 func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
@@ -235,9 +246,9 @@ func RemoveFromString(data string, i int) string {
 }
 
 // Split is delegated to split the string by the new line
-func Split(data string) []string {
+func Split(data io.Reader) []string {
 	var linesList []string
-	scanner := bufio.NewScanner(strings.NewReader(data))
+	scanner := bufio.NewScanner(data)
 	for scanner.Scan() {
 		linesList = append(linesList, scanner.Text())
 	}
