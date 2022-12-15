@@ -1,6 +1,7 @@
 package stringutils
 
 import (
+	"golang.org/x/exp/slices"
 	"os"
 	"reflect"
 	"sort"
@@ -582,7 +583,7 @@ func TestContainsMultiple1(t *testing.T) {
 	}
 }
 
-func TestUnique(t *testing.T) {
+func TestUnique2(t *testing.T) {
 	type args struct {
 		data []string
 	}
@@ -608,7 +609,7 @@ func TestUnique(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Unique(tt.args.data)
+			got := slices.Compact(tt.args.data)
 			sort.Slice(got, func(i, j int) bool {
 				return got[i] < got[j]
 			})

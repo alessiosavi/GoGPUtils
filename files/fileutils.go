@@ -24,7 +24,7 @@ import (
 // Tail is delegated to read the latest lines of the file.
 // NOTE: buffer have to be lesser than the minimum string length
 func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error) {
-	// list of strings readed
+	// list of strings read
 	var stringsArray = make([]string, N_STRING)
 	// Contains the data
 	var buff = make([]byte, -BUFF_BYTE)

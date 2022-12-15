@@ -17,7 +17,7 @@ func NewArray[T types.Number](n int, value T) []T {
 	if n <= 0 {
 		return nil
 	}
-	var array []T = make([]T, n)
+	var array = make([]T, n)
 	for i := range array {
 		array[i] = value
 	}
@@ -401,7 +401,7 @@ func SumArraysPadded[T types.Number](n1, n2 []T) []T {
 	return reversed
 }
 
-// CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the inpuT types.Number
+// CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the given input
 func CalculateMaxPrimeFactor(n int64) int64 {
 	var maxPrime int64 = -1
 	var i int64
@@ -439,8 +439,8 @@ func IsPrime(n int) bool {
 }
 
 // GenerateFibonacci is delegated to generate the Fibonacci sequence
-func GenerateFibonacci(max int64) []int64 {
-	var array []int64
+func GenerateFibonacci[T types.Number](max T) []T {
+	var array []T
 	// Hardcoded for enhance for performance
 	array = append(array, 1, 1, 2)
 	i := 3
@@ -453,18 +453,18 @@ func GenerateFibonacci(max int64) []int64 {
 	return array
 }
 
-// GenerateFibonacciN is delegated to generate N Fibonacci number
-func GenerateFibonacciN(max int) []float64 {
-	var array []float64
-	// Hardcoded for enhance for performance
-	array = append(array, 1, 1, 2)
-	i := 3
-	for len(array) < max && array[len(array)-1] <= math.MaxFloat64 {
-		array = append(array, array[i-1]+array[i-2])
-		i++
-	}
-	return array
-}
+//// GenerateFibonacciN is delegated to generate N Fibonacci number
+//func GenerateFibonacciN[T types.Number](max T) []T {
+//	var array []T
+//	// Hardcoded for enhance for performance
+//	array = append(array, 1, 1, 2)
+//	i := 3
+//	for T(len(array)) < max && array[len(array)-1] <= T(math.MaxFloat64) {
+//		array = append(array, array[i-1]+array[i-2])
+//		i++
+//	}
+//	return array
+//}
 
 // ExtractEvenValuedNumber Is delegated to extract only the even number from the input array
 func ExtractEvenValuedNumber(array []int64) []int64 {
@@ -517,14 +517,14 @@ func PadArray[T types.Number](array []T, n int) []T {
 
 // FindIndexValue is delegated to retrieve the index of the given value into the input array.
 func FindIndexValue[T types.Number](array []T, value T) []int {
-	var indexs []int
+	var indexes []int
 	for i := range array {
 		if array[i] == value {
-			indexs = append(indexs, i)
+			indexes = append(indexes, i)
 		}
 	}
-	//log.Println("Found value [", value, "] at index [", indexs, "]")
-	return indexs
+	//log.Println("Found value [", value, "] at index [", indexes, "]")
+	return indexes
 }
 
 // SortMaxIndex is delegated to return an array that contains the position of the order value (from max to min) of the given array
@@ -550,14 +550,12 @@ func SortMaxIndex[T types.Number](array []T) []int {
 }
 
 // SimilarityPreCheck is delegated to verify that the given array have the correct size
-func SimilarityPreCheck[T types.Number](a, b []float64) bool {
+func SimilarityPreCheck[T types.Number](a, b []T) bool {
 	if len(a) == 0 || len(b) == 0 {
-		log.Println("CosineSimilarity | Nil input data")
 		return false
 	}
 
 	if len(a) != len(b) {
-		log.Printf("CosineSimilarity | Input vectors have different size")
 		return false
 	}
 

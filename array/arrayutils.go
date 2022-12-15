@@ -3,7 +3,6 @@ package arrayutils
 import (
 	"fmt"
 	"github.com/alessiosavi/GoGPUtils/datastructure/types"
-	"sort"
 	"strings"
 )
 
@@ -199,20 +198,6 @@ func InStrings(slice []string, target string) bool {
 		}
 	}
 	return false
-}
-
-func UniqueString(slice []string) []string {
-	var m = make(map[string]struct{})
-	for _, x := range slice {
-		m[x] = struct{}{}
-	}
-	slice = []string{}
-	for x := range m {
-		slice = append(slice, x)
-	}
-
-	sort.Strings(slice)
-	return slice
 }
 
 func ToByte(slice []string, separator string) []byte {

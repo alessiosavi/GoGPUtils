@@ -16,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.18.24
 	github.com/aws/aws-sdk-go-v2/service/identitystore v1.15.8
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.26.1
-	github.com/aws/aws-sdk-go-v2/service/rds v1.34.0
+	github.com/aws/aws-sdk-go-v2/service/rds v1.35.0
 	github.com/aws/aws-sdk-go-v2/service/redshift v1.26.17
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.5
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.16.9
