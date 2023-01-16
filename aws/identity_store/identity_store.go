@@ -47,7 +47,6 @@ func ListUsers(identityStore string) ([]types.User, error) {
 	})
 	return users, nil
 }
-
 func DescribeUser(userId, identityStore string) (*identitystore.DescribeUserOutput, error) {
 	return identityClient.DescribeUser(context.Background(), &identitystore.DescribeUserInput{
 		IdentityStoreId: aws.String(identityStore),

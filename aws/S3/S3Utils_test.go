@@ -275,6 +275,38 @@ func TestList(t *testing.T) {
 	os.WriteFile("/tmp/list.json", []byte(helper.MarshalIndent(details)), 0600)
 }
 
+func TestSyncAfterDate2(t *testing.T) {
+	type args struct {
+		bucket    string
+		prefix    string
+		localPath string
+		date      time.Time
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			args: args{
+				bucket:    "prod-data-lake-bucket",
+				prefix:    "input/CEGID/ftp-base/history/",
+				localPath: "/tmp/CEGID/",
+				date:      time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := SyncAfterDate(tt.args.bucket, tt.args.prefix, tt.args.localPath, tt.args.date); (err != nil) != tt.wantErr {
+				t.Errorf("SyncBeforeDate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestSyncAfterDate(t *testing.T) {
 	type args struct {
 		bucket    string
@@ -291,8 +323,8 @@ func TestSyncAfterDate(t *testing.T) {
 			name: "OK",
 			args: args{
 				bucket:    "prod-data-lake-bucket",
-				prefix:    "input/CENTRIC/upload/Style/",
-				localPath: "/tmp/CENTRIC/Style",
+				prefix:    "input/WAC/",
+				localPath: "/tmp/WAC/CEGID",
 				date:      time.Date(2022, 12, 01, 0, 0, 0, 0, time.UTC),
 			},
 			wantErr: false,
@@ -301,8 +333,8 @@ func TestSyncAfterDate(t *testing.T) {
 			name: "OK",
 			args: args{
 				bucket:    "prod-data-lake-bucket",
-				prefix:    "input/CENTRIC/upload/StyleSize/",
-				localPath: "/tmp/CENTRIC/StyleSize",
+				prefix:    "input/SAP/upload/WAC/",
+				localPath: "/tmp/WAC/SAP",
 				date:      time.Date(2022, 12, 01, 0, 0, 0, 0, time.UTC),
 			},
 			wantErr: false,

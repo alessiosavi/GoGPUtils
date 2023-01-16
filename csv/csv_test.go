@@ -1,8 +1,6 @@
 package csvutils
 
 import (
-	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -48,24 +46,4 @@ data4,data5,data6`),
 			}
 		})
 	}
-}
-
-func TestUTF(t *testing.T) {
-	file, err := os.ReadFile("/tmp/Shipment_20220216.csv")
-	if err != nil {
-		panic(err)
-	}
-	file, err = processingutils.ToUTF8(file)
-	if err != nil {
-		return
-	}
-	headers, csvData, err := ReadCSV(file, ';')
-	if err != nil {
-		panic(err)
-	}
-	csvf, err := WriteCSV(headers, csvData, ';')
-	if err != nil {
-		panic(err)
-	}
-	os.WriteFile("/tmp/Shipment_20220216_test.csv", csvf, 0755)
 }
