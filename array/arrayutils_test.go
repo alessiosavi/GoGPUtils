@@ -198,3 +198,57 @@ func TestRemoveStrings1(t *testing.T) {
 		t.Log(deleted)
 	}
 }
+
+func TestSplitEqual(t *testing.T) {
+	type args[T any] struct {
+		data []T
+		n    int
+	}
+	type testCase[T any] struct {
+		name  string
+		args  args[T]
+		want  [][]T
+		want1 []T
+	}
+	tests := []testCase[int]{
+		{
+			name: "OK",
+			args: args[int]{
+				data: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
+				n:    5,
+			},
+			want:  [][]int{{0, 1, 2, 3, 4}, {5, 6, 7, 8, 9}},
+			want1: []int{10, 11, 12, 13, 14},
+		},
+
+		{
+			name: "OK",
+			args: args[int]{
+				data: []int{0, 1, 2, 3, 4},
+				n:    2,
+			},
+			want:  [][]int{{0, 1}, {2, 3}},
+			want1: []int{4},
+		},
+		{
+			name: "ok",
+			args: args[int]{
+				data: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
+				n:    6,
+			},
+			want:  [][]int{{0, 1, 2, 3, 4, 5}, {6, 7, 8, 9, 10, 11}},
+			want1: []int{12, 13, 14},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := SplitEqual(tt.args.data, tt.args.n)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SplitEqual() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("SplitEqual() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

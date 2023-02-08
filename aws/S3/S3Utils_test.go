@@ -3,15 +3,18 @@ package S3utils
 import (
 	"context"
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	csvutils "github.com/alessiosavi/GoGPUtils/csv"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/schollz/progressbar/v3"
 	"log"
 	"os"
 	"path"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 )
@@ -405,5 +408,91 @@ func TestGetBetweenDate(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestImageMorello(t *testing.T) {
+	file, err := os.ReadFile("/tmp/data.csv")
+	if err != nil {
+		panic(err)
+	}
+	_, csv, err := csvutils.ReadCSV(file, ',')
+	if err != nil {
+		panic(err)
+	}
+	var imagesTarget []string
+
+	for i := range csv {
+		imagesTarget = append(imagesTarget, csv[i][0])
+	}
+	log.Println(imagesTarget)
+
+	objects, err := ListBucketObjects("thom-browne-images", "TB_Master_Images")
+	if err != nil {
+		panic(err)
+	}
+
+	bar := progressbar.Default(int64(len(imagesTarget)))
+	maxGoroutines := 10
+	guard := make(chan struct{}, maxGoroutines)
+	for i := range objects {
+		if arrayutils.ContainStrings(imagesTarget, objects[i]) {
+			bar.Describe(objects[i])
+			guard <- struct{}{} // would block if guard channel is already filled
+			go func() {
+				object, err := GetObject("thom-browne-images", objects[i])
+				if err != nil {
+					panic(err)
+				}
+				if err = os.MkdirAll(path.Join("/tmp/images", path.Dir(objects[i])), 0755); err != nil {
+					panic(err)
+				}
+				if err = os.WriteFile(path.Join("/tmp/images", objects[i]), object, 0755); err != nil {
+					panic(err)
+				}
+				bar.Add(1)
+				<-guard
+			}()
+		}
+	}
+	bar.Close()
+}
+
+func TestLoadMorello(t *testing.T) {
+	ordered, err := fileutils.ListFilesOrdered("/tmp/images")
+	if err != nil {
+		panic(err)
+	}
+	maxGoroutines := 50
+	guard := make(chan struct{}, maxGoroutines)
+	bar := progressbar.Default(int64(len(ordered)))
+	defer bar.Close()
+	for i := range ordered {
+		guard <- struct{}{} // would block if guard channel is already filled
+		go func(i int) {
+			bar.Describe(ordered[i])
+			file, err := os.ReadFile(ordered[i])
+			if err != nil {
+				panic(err)
+			}
+			bar.Describe(ordered[i])
+			if err = PutObject("aws-website-tbimg-pdds3", path.Join("images/", strings.ReplaceAll(path.Base(ordered[i]), " ", "")), file); err != nil {
+				panic(err)
+			}
+			bar.Add(1)
+			<-guard
+		}(i)
+	}
+}
+
+func TestVito(t *testing.T) {
+	objects, err := ListBucketObjects("prod-data-lake-bucket", "input/CEGID/")
+	if err != nil {
+		panic(err)
+	}
+	for _, o := range objects {
+		if strings.Contains(o, "CL1_SALES_CN-01232023") {
+			log.Println(o)
+		}
 	}
 }
