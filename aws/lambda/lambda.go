@@ -2,10 +2,13 @@ package lambdautils
 
 import (
 	"context"
+	"encoding/json"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"log"
 	"os"
 	"sync"
 )
@@ -66,6 +69,30 @@ func DeleteLambda(lambdaName string) (*lambda.DeleteFunctionOutput, error) {
 	return lambdaClient.DeleteFunction(context.Background(), &lambda.DeleteFunctionInput{FunctionName: aws.String(lambdaName)})
 }
 
+func ActivateLambdas() {
+	lambdas, err := ListLambdas()
+	if err != nil {
+		panic(err)
+	}
+	for _, l := range lambdas {
+		if l.State == types.StateInactive && l.StateReasonCode == types.StateReasonCodeIdle {
+			marshal, err := json.Marshal(l)
+			if err != nil {
+				panic(err)
+			}
+			var c lambda.UpdateFunctionConfigurationInput
+			if err = json.Unmarshal(marshal, &c); err != nil {
+				panic(err)
+			}
+			configuration, err := lambdaClient.UpdateFunctionConfiguration(context.Background(), &c)
+			if err != nil {
+				panic(err)
+			}
+			log.Println(helper.MarshalIndent(configuration))
+			log.Printf("%s - %s\n", *l.FunctionName, l.State)
+		}
+	}
+}
 func DescribeLambda(lambdaName string) (*lambda.GetFunctionOutput, error) {
 	function, err := lambdaClient.GetFunction(context.Background(), &lambda.GetFunctionInput{FunctionName: aws.String(lambdaName)})
 	if err != nil {

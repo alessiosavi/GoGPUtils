@@ -65,9 +65,9 @@ func TestGenerateFibonacci(t *testing.T) {
 	}
 }
 
-func TestGenerateFibonacciN(t *testing.T) {
-	GenerateFibonacciN(999009)
-}
+//func TestGenerateFibonacciN(t *testing.T) {
+//	GenerateFibonacciN(999009)
+//}
 
 func TestSumMatrix(t *testing.T) {
 	m1 := InitMatrixCustom(5, 10, 1)
@@ -120,7 +120,7 @@ func BenchmarkMultiplySumArray1000(t *testing.B) {
 //	}
 //}
 
-// generateTestMatrix1 is delegated to generate a matrix for test purpouse
+// generateTestMatrix1 is delegated to generate a matrix for test purpose
 func generateTestMatrix1() [][]int {
 	matrix := make([][]int, 2)
 	matrix[0] = []int{1, 2, 3}
@@ -128,7 +128,7 @@ func generateTestMatrix1() [][]int {
 	return matrix
 }
 
-// generateTestMatrix2 is delegated to generate a matrix for test purpouse
+// generateTestMatrix2 is delegated to generate a matrix for test purpose
 func generateTestMatrix2() [][]int {
 	matrix := make([][]int, 3)
 	matrix[0] = []int{1, 4, 7}

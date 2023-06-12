@@ -563,20 +563,6 @@ func GetFirstRune(data string) rune {
 	return 0
 }
 
-func Unique(data []string) []string {
-	var filter = make(map[string]struct{})
-	for _, s := range data {
-		filter[s] = struct{}{}
-	}
-	var unique = make([]string, len(filter))
-	var i = 0
-	for k := range filter {
-		unique[i] = k
-		i++
-	}
-	return unique
-}
-
 func ArrayToMap(slice []string) map[string]struct{} {
 	result := make(map[string]struct{}, len(slice))
 	for _, s := range slice {

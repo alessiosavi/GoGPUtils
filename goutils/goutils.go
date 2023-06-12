@@ -50,16 +50,16 @@ func CreateBenchmarkSignature(codeFile string) (string, error) {
 		return "", err
 	}
 	testFile := strings.Replace(codeFile, ".go", "_test.go", 1)
-	// Extract the benchmark that are alredy present
-	benchAlredyPresent, err := ExtractFunctionFromFile(testFile, "Benchmark")
+	// Extract the benchmark that are already present
+	benchAlreadyPresent, err := ExtractFunctionFromFile(testFile, "Benchmark")
 	if err != nil {
 		return "", err
 	}
 	// Remove the initial benchmark prefix
-	for i := range benchAlredyPresent {
-		benchAlredyPresent[i] = strings.TrimPrefix(benchAlredyPresent[i], "Benchmark")
+	for i := range benchAlreadyPresent {
+		benchAlreadyPresent[i] = strings.TrimPrefix(benchAlreadyPresent[i], "Benchmark")
 	}
-	functions = arrayutils.RemoveStrings(functions, benchAlredyPresent)
+	functions = arrayutils.RemoveStrings(functions, benchAlreadyPresent)
 	var testfileContent strings.Builder
 
 	if len(functions) > 0 {
@@ -67,7 +67,7 @@ func CreateBenchmarkSignature(codeFile string) (string, error) {
 			testfileContent.WriteString("func Benchmark" + functions[i] + "(b *testing.B){for i := 0; i < b.N; i++ {}}\n")
 		}
 	} else {
-		log.Println("Test Alredy generated")
+		log.Println("Test Already generated")
 	}
 	return testfileContent.String(), nil
 }
@@ -80,23 +80,23 @@ func CreateTestSignature(codeFile string) (string, error) {
 		return "", err
 	}
 	testFile := strings.Replace(codeFile, ".go", "_test.go", 1)
-	// Extract the benchmark that are alredy present
-	testAlredyPresent, err := ExtractFunctionFromFile(testFile, "")
+	// Extract the benchmark that are already present
+	testAlreadyPresent, err := ExtractFunctionFromFile(testFile, "")
 	if err != nil {
 		return "", err
 	}
 	// Remove the initial benchmark prefix
-	for i := range testAlredyPresent {
-		testAlredyPresent[i] = strings.TrimPrefix(testAlredyPresent[i], "Test")
+	for i := range testAlreadyPresent {
+		testAlreadyPresent[i] = strings.TrimPrefix(testAlreadyPresent[i], "Test")
 	}
-	functions = arrayutils.RemoveStrings(functions, testAlredyPresent)
+	functions = arrayutils.RemoveStrings(functions, testAlreadyPresent)
 	var testfileContent strings.Builder
 	if len(functions) > 0 {
 		for i := range functions {
 			testfileContent.WriteString("func Test" + functions[i] + "(t *testing.T){}\n")
 		}
 	} else {
-		log.Println("Test Alredy generated")
+		log.Println("Test Already generated")
 	}
 	return testfileContent.String(), nil
 }

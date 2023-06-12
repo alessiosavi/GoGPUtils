@@ -50,6 +50,13 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 	return data, err
 }
 
+func Move(bucket, filename, targetName string) error {
+	if err := CopyObject(bucket, bucket, filename, targetName); err != nil {
+		return err
+	}
+	return DeleteObject(bucket, filename)
+}
+
 func PutObject(bucket, filename string, data []byte) error {
 	h := md5.New()
 	var sum []byte = nil

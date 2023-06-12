@@ -47,7 +47,3 @@ data4,data5,data6`),
 		})
 	}
 }
-
-func TestUTF(t *testing.T) {
-
-}
