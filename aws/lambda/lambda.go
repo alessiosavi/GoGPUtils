@@ -35,7 +35,7 @@ func ListLambdas() ([]types.FunctionConfiguration, error) {
 	if err != nil {
 		return nil, err
 	}
-	var functions = make([]types.FunctionConfiguration, len(f.Functions))
+	var functions []types.FunctionConfiguration
 	functions = append(functions, f.Functions...)
 
 	continuationToken := f.NextMarker

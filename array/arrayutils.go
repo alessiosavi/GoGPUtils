@@ -160,8 +160,8 @@ func InInt(slice []int, target int) bool {
 
 // InRune is delegated to verify if the given value is present in the target slice
 func InRune(slice []rune, target rune) bool {
-	for _, b := range slice {
-		if b == target {
+	for i := range slice {
+		if slice[i] == target {
 			return true
 		}
 	}
@@ -201,6 +201,16 @@ func InStrings(slice []string, target string) bool {
 	return false
 }
 
+// ContainStrings is delegated to verify if the given string arrays contains the target
+func ContainStrings(slice []string, target string) bool {
+	for _, element := range slice {
+		if strings.Contains(target, element) {
+			return true
+		}
+	}
+	return false
+}
+
 func UniqueString(slice []string) []string {
 	var m = make(map[string]struct{})
 	for _, x := range slice {
@@ -217,9 +227,29 @@ func UniqueString(slice []string) []string {
 
 func ToByte(slice []string, separator string) []byte {
 	var sb strings.Builder
-	for _, x := range slice {
-		sb.WriteString(x)
+	for i := range slice {
+		sb.WriteString(slice[i])
 		sb.WriteString(separator)
 	}
 	return []byte(strings.TrimSuffix(sb.String(), separator))
+}
+
+// SplitEqual is delegated to split the given data into slice of equal length
+func SplitEqual[T any](data []T, n int) ([][]T, []T) {
+	var ret = make([][]T, 0, len(data)/n+1)
+	var i int
+	for i = 0; i < len(data)-n; i += n {
+		ret = append(ret, data[i:i+n])
+	}
+	return ret, data[i:]
+}
+
+func Filter[T any](slice []T, f func(T) bool) []T {
+	var n = make([]T, 0, len(slice))
+	for _, e := range slice {
+		if f(e) {
+			n = append(n, e)
+		}
+	}
+	return n
 }

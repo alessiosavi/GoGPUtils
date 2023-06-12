@@ -3,13 +3,19 @@ package dynamodbutils
 import (
 	"context"
 	"fmt"
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/pkg/errors"
+	"github.com/schollz/progressbar/v3"
+	"log"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -25,6 +31,8 @@ type Update struct {
 	Value string     `json:"value,omitempty"`
 }
 
+var RETRY_ATTEMPT int64 = 1
+
 func init() {
 	once.Do(func() {
 		cfg, err := awsutils.New()
@@ -32,6 +40,14 @@ func init() {
 			panic(err)
 		}
 		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		retryTmp := os.Getenv("DYNAMO_RETRY")
+		if !stringutils.IsBlank(retryTmp) {
+			RETRY_ATTEMPT, err = strconv.ParseInt(retryTmp, 10, 64)
+			if err != nil || RETRY_ATTEMPT > 10 {
+				log.Println("WARNING! Error setting DYNAMO_RETRY: ", err, RETRY_ATTEMPT)
+				RETRY_ATTEMPT = 1
+			}
+		}
 	})
 }
 
@@ -52,7 +68,6 @@ func waitForTable(ctx context.Context, db *dynamodb.Client, tableName string) er
 	return err
 }
 func CreateTable(definition *dynamodb.CreateTableInput) error {
-
 	if _, err := dynamoClient.CreateTable(context.Background(), definition); err != nil {
 		return err
 	}
@@ -88,11 +103,10 @@ func WriteBatchItem(tableName string, items []interface{}) error {
 	})
 	if err != nil {
 		for i := 0; err != nil; i++ {
-			if i > 5 {
+			if i > int(RETRY_ATTEMPT) {
 				return err
 			}
-			time.Sleep(time.Second * time.Duration(i))
-
+			time.Sleep(time.Second * time.Duration(i+1))
 			if result != nil && len(result.UnprocessedItems) != 0 {
 				requestItems = result.UnprocessedItems
 			}
@@ -104,13 +118,81 @@ func WriteBatchItem(tableName string, items []interface{}) error {
 	}
 	return err
 }
-
 func DeleteTable(tableName string) error {
 	_, err := dynamoClient.DeleteTable(context.Background(), &dynamodb.DeleteTableInput{
 		TableName: aws.String(tableName),
 	})
 
 	return err
+}
+
+func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types.AttributeValue, bar *progressbar.ProgressBar) {
+	defer close(ch)
+	scan, err := dynamoClient.Scan(context.Background(), &dynamodb.ScanInput{
+		TableName:            aws.String(tableName),
+		ProjectionExpression: aws.String(projectExpression),
+		Limit:                aws.Int32(1000),
+	})
+	if err != nil {
+		panic(err)
+	}
+	ch <- scan.Items
+
+	for len(scan.LastEvaluatedKey) != 0 {
+		scan, err = dynamoClient.Scan(context.Background(), &dynamodb.ScanInput{
+			TableName:            aws.String(tableName),
+			ProjectionExpression: aws.String(projectExpression),
+			ExclusiveStartKey:    scan.LastEvaluatedKey,
+			Limit:                aws.Int32(1000),
+		})
+		if err != nil {
+			panic(err)
+		}
+		bar.ChangeMax(bar.GetMax() + len(scan.Items))
+		ch <- scan.Items
+	}
+	return
+}
+
+func DeleteAllItems(tableName, projectExpression string) (*string, error) {
+	bar := progressbar.Default(1)
+	buffer := make(chan []map[string]types.AttributeValue, 2)
+	done := make(chan bool, 2)
+	go ScanAsync(tableName, projectExpression, buffer, bar)
+	go DeleteItems(tableName, buffer, bar, done)
+	go DeleteItems(tableName, buffer, bar, done)
+	<-done
+	<-done
+	return nil, nil
+}
+
+func DeleteItems(tableName string, datas <-chan []map[string]types.AttributeValue, bar *progressbar.ProgressBar, done chan bool) {
+	for data := range datas {
+		data0, dataN := arrayutils.SplitEqual(data, 25)
+		var writeReqs []types.WriteRequest = nil
+		for i := range data0 {
+			writeReqs = make([]types.WriteRequest, 0, len(data0[i]))
+			for k := range data0[i] {
+				writeReqs = append(writeReqs, types.WriteRequest{DeleteRequest: &types.DeleteRequest{Key: data0[i][k]}})
+			}
+			requestItems := map[string][]types.WriteRequest{tableName: writeReqs}
+			if _, err := dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{RequestItems: requestItems}); err != nil {
+				panic(err)
+			}
+			bar.Add(25)
+		}
+
+		writeReqs = make([]types.WriteRequest, 0, len(dataN))
+		for i := range dataN {
+			writeReqs = append(writeReqs, types.WriteRequest{DeleteRequest: &types.DeleteRequest{Key: dataN[i]}})
+		}
+		requestItems := map[string][]types.WriteRequest{tableName: writeReqs}
+		if _, err := dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{RequestItems: requestItems}); err != nil {
+			panic(err)
+		}
+		bar.Add(len(dataN))
+	}
+	done <- true
 }
 
 //func UpdateItem(tableName string, key map[string]types.AttributeValue, set map[string]string) error {

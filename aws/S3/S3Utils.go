@@ -6,10 +6,12 @@ import (
 	"crypto/md5"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/schollz/progressbar/v3"
 	"golang.org/x/net/html/charset"
 	"io"
 	"log"
@@ -81,6 +83,40 @@ func DeleteObject(bucket, key string) error {
 		Key:    aws.String(key),
 	})
 	return err
+}
+
+// DeleteObjects is delegated to remove the given data (value -> []string) from the given bucket (key -> string)
+func DeleteObjects(data map[string][]string) error {
+	// TODO: Mange more than 1000 keys and use Thread
+	for k := range data {
+		var toDelete [][]string = make([][]string, 0)
+		maxIteration := len(data[k]) / 1000
+		for i := 0; i < maxIteration; i++ {
+			toDelete = append(toDelete, data[k][1000*i:1000*(i+1)])
+		}
+		toDelete = append(toDelete, data[k][maxIteration*1000:])
+
+		for i := range toDelete {
+			var del []types.ObjectIdentifier = make([]types.ObjectIdentifier, len(toDelete[i]), len(toDelete[i]))
+			for j, v := range toDelete[i] {
+				del[j] = types.ObjectIdentifier{Key: aws.String(v)}
+			}
+			objects, err := S3Client.DeleteObjects(context.Background(), &s3.DeleteObjectsInput{
+				Bucket: aws.String(k),
+				Delete: &types.Delete{Objects: del},
+			})
+			if err != nil {
+				panic(err)
+			}
+			if len(objects.Errors) > 0 {
+				log.Println("Error for the following data:", helper.MarshalIndent(objects.Errors))
+			}
+			if len(objects.Deleted) > 0 {
+				log.Println("Deleted:", helper.MarshalIndent(objects.Deleted))
+			}
+		}
+	}
+	return nil
 }
 
 func PutObjectStream(bucket, filename string, stream io.ReadCloser, contentType, encoding, md5 *string) error {
@@ -291,26 +327,43 @@ func SyncAfterDate(bucket, prefix, localPath string, date time.Time) error {
 	if err != nil {
 		return err
 	}
+
+	var detailsAfter []types.Object
 	for _, detail := range details {
 		if detail.LastModified.After(date) {
-			object, err := GetObject(bucket, *detail.Key)
-			if err != nil {
-				return err
-			}
-			basepath := path.Join(localPath, path.Dir(*detail.Key))
-			if !fileutils.IsDir(basepath) {
-				if err = os.MkdirAll(basepath, 0755); err != nil {
-					return err
-				}
-			}
-			f := path.Join(basepath, path.Base(*detail.Key))
-			if err = os.WriteFile(f, object, 0755); err != nil {
-				return err
-			}
-			if err = os.Chtimes(f, *detail.LastModified, *detail.LastModified); err != nil {
-				log.Println("Unable to set time for file,", f, "ERR:", err.Error())
-			}
+			detailsAfter = append(detailsAfter, detail)
 		}
 	}
+	details = nil
+	bar := progressbar.Default(int64(len(detailsAfter)))
+	defer bar.Close()
+	for _, detail := range detailsAfter {
+		bar.Describe(*detail.Key)
+		object, err := GetObject(bucket, *detail.Key)
+		if err != nil {
+			return err
+		}
+		basepath := path.Join(localPath, path.Dir(*detail.Key))
+		if !fileutils.IsDir(basepath) {
+			if err = os.MkdirAll(basepath, 0755); err != nil {
+				return err
+			}
+		}
+		f := path.Join(basepath, path.Base(*detail.Key))
+		if err = os.WriteFile(f, object, 0755); err != nil {
+			return err
+		}
+		if err = os.Chtimes(f, *detail.LastModified, *detail.LastModified); err != nil {
+			log.Println("Unable to set time for file,", f, "ERR:", err.Error())
+		}
+		bar.Add(1)
+	}
 	return nil
+}
+
+// ParseS3Path is delegated to return bucket name and filename of a given s3 path
+func ParseS3Path(p string) (string, string) {
+	p = strings.TrimLeft(p, "s3://")
+	split := strings.Split(p, "/")
+	return split[0], path.Clean(strings.Join(split[1:], "/"))
 }

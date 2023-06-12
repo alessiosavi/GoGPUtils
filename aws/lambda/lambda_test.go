@@ -52,9 +52,9 @@ func TestDeployAllLambda(t *testing.T) {
 	for _, object := range objects {
 		lambdaName := strings.TrimSuffix(object, ".zip")
 		for _, lambda := range lambdas {
-			if lambda == env+"-"+lambdaName || lambda == lambdaName+"-"+env {
+			if *lambda.FunctionName == env+"-"+lambdaName || *lambda.FunctionName == lambdaName+"-"+env {
 				log.Println("Uploading lambda", lambda)
-				if err = DeployLambdaFromS3(lambda, env+"-lambda-asset", object); err != nil {
+				if err = DeployLambdaFromS3(*lambda.FunctionName, env+"-lambda-asset", object); err != nil {
 					panic(err)
 				}
 			}
@@ -82,9 +82,9 @@ func TestDescribeLambda(t *testing.T) {
 	}
 
 	var envs = make(map[string]string)
-	for _, lambda := range lambdas {
-		if strings.Contains(lambda, "prod") {
-			d, err := DescribeLambda(lambda)
+	for _, l := range lambdas {
+		if strings.Contains(*l.FunctionName, "qa") {
+			d, err := DescribeLambda(*l.FunctionName)
 			if err != nil {
 				panic(err)
 			}

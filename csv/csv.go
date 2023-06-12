@@ -12,8 +12,8 @@ import (
 // ReadCSV is delegated to read into a CSV the content of the bytes in input
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
-func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
-	buf, err := processingutils.ToUTF8(buf)
+func ReadCSV(data []byte, separator rune) ([]string, [][]string, error) {
+	buf, err := processingutils.ToUTF8(data)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -27,7 +27,6 @@ func ReadCSV(buf []byte, separator rune) ([]string, [][]string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	//csvData = DecodeNonUTF8CSV(csvData)
 
 	if len(csvData) < 2 {
 		return nil, nil, errors.New("input data does not contains at least 2 rows (headers + data)")
@@ -50,6 +49,18 @@ func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, err
 		return nil, err
 	}
 	return bytes.TrimSuffix(buff.Bytes(), []byte("\n")), nil
+}
+
+// GetCol is delegated to filter a given column from the csvData
+func GetCol(csvData [][]string, index int) []string {
+	if len(csvData) == 0 || len(csvData[0]) < index {
+		return nil
+	}
+	var ret = make([]string, len(csvData), len(csvData))
+	for i := range csvData {
+		ret[i] = csvData[i][index]
+	}
+	return ret
 }
 
 // GetCSVDataType is delegated to retrieve the data type for every field of the CSV
