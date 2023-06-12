@@ -461,3 +461,34 @@ func GetTable(databaseName, tableName string) (*glue.GetTableOutput, error) {
 func DeleteTable(databaseName, tableName string) (*glue.DeleteTableOutput, error) {
 	return glueClient.DeleteTable(context.Background(), &glue.DeleteTableInput{DatabaseName: aws.String(databaseName), Name: aws.String(tableName)})
 }
+
+func ListWorkflowExecution(wfName string) ([]types.WorkflowRun, error) {
+	runs, err := glueClient.GetWorkflowRuns(context.Background(), &glue.GetWorkflowRunsInput{
+		Name:         aws.String(wfName),
+		IncludeGraph: aws.Bool(false),
+		MaxResults:   aws.Int32(1000),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var res []types.WorkflowRun
+	res = append(res, runs.Runs...)
+	continuationToken := runs.NextToken
+
+	for continuationToken != nil {
+		runs, err = glueClient.GetWorkflowRuns(context.Background(), &glue.GetWorkflowRunsInput{
+			Name:         aws.String(wfName),
+			IncludeGraph: aws.Bool(false),
+			MaxResults:   aws.Int32(1000),
+			NextToken:    continuationToken,
+		})
+		if err != nil {
+			return res, err
+		}
+		continuationToken = runs.NextToken
+		res = append(res, runs.Runs...)
+	}
+
+	return res, err
+}

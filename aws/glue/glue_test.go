@@ -3,6 +3,7 @@ package glueutils
 import (
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"log"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -50,4 +51,20 @@ func TestListJobs(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestListWorkflowExecution(t *testing.T) {
+	execution, err := ListWorkflowExecution("prod-thom-browne-classic-etl")
+	if err != nil {
+		panic(err)
+	}
+	sort.Slice(execution, func(i, j int) bool {
+		return execution[i].StartedOn.After(*execution[j].StartedOn)
+	})
+
+	var res []string = make([]string, len(execution))
+	for i := range execution {
+		res[i] = *execution[i].WorkflowRunId
+	}
+	t.Log(helper.MarshalIndent(res))
 }

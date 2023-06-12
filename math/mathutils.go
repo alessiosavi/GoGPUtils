@@ -237,7 +237,7 @@ func InitMatrix[T types.Number](r, c int) [][]T {
 }
 
 // DumpMatrix is delegated to print the given matrix
-func DumpMatrix[T types.Number](m [][]T) string {
+func DumpMatrix[T any](m [][]T) string {
 	var sb strings.Builder
 	if m == nil {
 		return ""

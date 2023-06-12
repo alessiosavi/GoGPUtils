@@ -126,11 +126,7 @@ func DeleteTable(tableName string) error {
 	return err
 }
 
-type Projector interface {
-	GetID() string
-}
-
-func scanAsync(tableName, projectExpression string, ch chan<- []map[string]types.AttributeValue, bar *progressbar.ProgressBar) {
+func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types.AttributeValue, bar *progressbar.ProgressBar) {
 	defer close(ch)
 	scan, err := dynamoClient.Scan(context.Background(), &dynamodb.ScanInput{
 		TableName:            aws.String(tableName),
@@ -162,15 +158,15 @@ func DeleteAllItems(tableName, projectExpression string) (*string, error) {
 	bar := progressbar.Default(1)
 	buffer := make(chan []map[string]types.AttributeValue, 2)
 	done := make(chan bool, 2)
-	go scanAsync(tableName, projectExpression, buffer, bar)
-	go deleteItems(tableName, buffer, bar, done)
-	go deleteItems(tableName, buffer, bar, done)
+	go ScanAsync(tableName, projectExpression, buffer, bar)
+	go DeleteItems(tableName, buffer, bar, done)
+	go DeleteItems(tableName, buffer, bar, done)
 	<-done
 	<-done
 	return nil, nil
 }
 
-func deleteItems(tableName string, datas <-chan []map[string]types.AttributeValue, bar *progressbar.ProgressBar, done chan bool) {
+func DeleteItems(tableName string, datas <-chan []map[string]types.AttributeValue, bar *progressbar.ProgressBar, done chan bool) {
 	for data := range datas {
 		data0, dataN := arrayutils.SplitEqual(data, 25)
 		var writeReqs []types.WriteRequest = nil
