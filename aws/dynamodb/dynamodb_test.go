@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -116,6 +117,38 @@ func TestDeleteTable(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := DeleteTable(tt.args.tableName); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteTable() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestDeleteAllItems(t *testing.T) {
+	type args struct {
+		tableName         string
+		projectExpression string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{
+			name: "ok", args: args{tableName: "qa-sf-items-cache-v2", projectExpression: "sku"},
+			want:    nil,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DeleteAllItems(tt.args.tableName, tt.args.projectExpression)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DeleteAllItems() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DeleteAllItems() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

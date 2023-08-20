@@ -26,9 +26,9 @@ func GetRedshiftTranslator() map[string]string {
 }
 
 // GetOracleTranslator is delegated to create a translator for csvutils.GetCSVDataType in order to create table
-func GetOracleTranslator(charLenght int) map[string]string {
+func GetOracleTranslator(charLength int) map[string]string {
 	var replacer = make(map[string]string)
-	replacer["string"] = fmt.Sprintf("VARCHAR2(%d)", charLenght)
+	replacer["string"] = fmt.Sprintf("VARCHAR2(%d)", charLength)
 	replacer["int"] = "INTEGER"
 	replacer["float"] = "FLOAT"
 	replacer["bool"] = "VARCHAR(5)" // TRUE,FALSE -> 5 Character

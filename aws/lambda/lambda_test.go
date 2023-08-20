@@ -43,7 +43,7 @@ func TestDeployAllLambda(t *testing.T) {
 	}
 	log.Println(helper.MarshalIndent(objects))
 
-	lambdas, err := ListLambdas()
+	lambdas, err := ListLambdaNames()
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +76,7 @@ func TestDeployAllLambda(t *testing.T) {
 //}
 
 func TestDescribeLambda(t *testing.T) {
-	lambdas, err := ListLambdas()
+	lambdas, err := ListLambdaNames()
 	if err != nil {
 		panic(err)
 	}
@@ -98,4 +98,19 @@ func TestDescribeLambda(t *testing.T) {
 	}
 
 	t.Log(helper.MarshalIndent(envs))
+}
+
+func TestActivateLambdas(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ActivateLambdas()
+			//log.Println(helper.MarshalIndent(lambda.GetFunctionOutput{}))
+			//log.Println(helper.MarshalIndent(lambda.UpdateFunctionConfigurationInput{}))
+		})
+	}
 }

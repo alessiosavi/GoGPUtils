@@ -157,14 +157,14 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	} else if !exist {
-		return nil, fmt.Errorf("path %s does not exists!", path)
+		return nil, fmt.Errorf("path %s does not exists", path)
 	}
 	isDir, err := c.IsDir(path)
 	if err != nil {
 		return nil, err
 	}
 	if !isDir {
-		return nil, fmt.Errorf("path %s is not a dir!", path)
+		return nil, fmt.Errorf("path %s is not a dir", path)
 	}
 
 	walker := c.Client.Walk(path)
