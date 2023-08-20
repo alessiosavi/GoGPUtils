@@ -1,9 +1,11 @@
 package dynamodbutils
 
 import (
+	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"log"
 	"reflect"
 	"testing"
 	"time"
@@ -152,4 +154,14 @@ func TestDeleteAllItems(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetDocument(t *testing.T) {
+	var res map[string]string = make(map[string]string)
+	_, err := GetDocument("qa-sf-items-cache-v2",
+		map[string]types.AttributeValue{"sku": &types.AttributeValueMemberS{Value: "MFD168A-00198415:8.5"}}, res)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(helper.MarshalIndent(res))
 }

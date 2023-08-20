@@ -68,3 +68,10 @@ func TestListWorkflowExecution(t *testing.T) {
 	}
 	t.Log(helper.MarshalIndent(res))
 }
+
+func TestRemoveBookmark(t *testing.T) {
+	err := ResetAllJobBookmark()
+	if err != nil {
+		panic(err)
+	}
+}

@@ -203,7 +203,7 @@ func GetCOPYErrors(connection *sql.DB) []Result {
 // SetAutoOptimization is delegated to scan all the tables in a redshift cluster and set the automatic diststyle and sortkey
 func SetAutoOptimization(connection *sql.DB) error {
 	query := `
-select t.table_name
+select distinct t.table_name
 from information_schema.tables t
 where t.table_schema = 'public' and table_type = 'BASE TABLE'
 order by t.table_name;`
@@ -243,7 +243,7 @@ order by t.table_name;`
 // PhysicalDelete is delegated to perform the physical delete of the items marked as deleted
 func PhysicalDelete(connection *sql.DB) error {
 	query := `
-	SELECT tablename
+	SELECT distinct tablename
 	FROM pg_table_def
 	WHERE schemaname = 'public'
 	and "column" = 'flag_delete';`
@@ -269,6 +269,40 @@ func PhysicalDelete(connection *sql.DB) error {
 		if err = sqlutils.ExecuteStatement(connection, fmt.Sprintf(remove, table)); err != nil {
 			log.Println(err)
 			log.Println()
+		}
+	}
+	return nil
+}
+
+func VACUUM(connection *sql.DB) error {
+	query := `
+	SELECT distinct tablename
+	FROM pg_table_def
+	WHERE schemaname = 'public';`
+	rows, err := connection.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var result []string
+	for rows.Next() {
+		var s string
+		if err = rows.Scan(&s); err != nil {
+			return err
+		}
+		result = append(result, s)
+	}
+	bar := progressbar.Default(int64(len(result)))
+	for _, table := range result {
+		bar.Describe(table)
+		bar.Add(1)
+		q := fmt.Sprintf("VACUUM FULL %s TO 100 PERCENT BOOST;", table)
+		if _, err := connection.Exec(q); err != nil {
+			log.Println(err)
+		}
+		q = fmt.Sprintf("VACUUM REINDEX %s;", table)
+		if _, err := connection.Exec(q); err != nil {
+			log.Println(err)
 		}
 	}
 	return nil

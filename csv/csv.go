@@ -12,7 +12,7 @@ import (
 // ReadCSV is delegated to read into a CSV the content of the bytes in input
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
-func ReadCSV(data []byte, separator rune) ([]string, [][]string, error) {
+func ReadCSV(data []byte, separator rune, hasHeaders bool) ([]string, [][]string, error) {
 	buf, err := processingutils.ToUTF8(data)
 	if err != nil {
 		return nil, nil, err
@@ -28,13 +28,16 @@ func ReadCSV(data []byte, separator rune) ([]string, [][]string, error) {
 		return nil, nil, err
 	}
 
-	if len(csvData) < 2 {
-		return nil, nil, errors.New("input data does not contains at least 2 rows (headers + data)")
+	var headers []string
+	if hasHeaders {
+		if len(csvData) < 2 {
+			return nil, nil, errors.New("input data does not contain at least 2 rows (headers + data)")
+		}
+		// Remove the headers from the row data
+		headers = csvData[0]
+		// Remove the first element due to headers shift
+		csvData = csvData[1:]
 	}
-	// Remove the headers from the row data
-	headers := csvData[0]
-	// Remove the first element due to headers shift
-	csvData = csvData[1:]
 	return headers, csvData, nil
 }
 func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, error) {
@@ -66,7 +69,7 @@ func GetCol(csvData [][]string, index int) []string {
 // GetCSVDataType is delegated to retrieve the data type for every field of the CSV
 // Return: headers, csv data, data type, error
 func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[string]string, error) {
-	headers, data, err := ReadCSV(raw, separator)
+	headers, data, err := ReadCSV(raw, separator, true)
 	if err != nil {
 		return nil, nil, nil, err
 	}

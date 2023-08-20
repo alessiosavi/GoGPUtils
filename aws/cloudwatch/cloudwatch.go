@@ -60,3 +60,27 @@ func ExportLog(bucket, logGroupName, destinationPrefix string, start, stop time.
 		TaskName:          aws.String("github.com/alessiosavi/GoGPUtils"),
 	})
 }
+
+func DescribeExportTask(taskId string) ([]types.ExportTask, error) {
+	tasks, err := cloudwatchClient.DescribeExportTasks(context.Background(), &cloudwatchlogs.DescribeExportTasksInput{
+		StatusCode: "",
+		TaskId:     aws.String(taskId),
+	})
+	var res []types.ExportTask = make([]types.ExportTask, len(tasks.ExportTasks))
+	if err != nil {
+		return res, err
+	}
+	for i := range tasks.ExportTasks {
+		res[i] = tasks.ExportTasks[i]
+	}
+	continuationToken := tasks.NextToken
+	for continuationToken != nil {
+		tasks, err = cloudwatchClient.DescribeExportTasks(context.Background(), &cloudwatchlogs.DescribeExportTasksInput{
+			NextToken:  continuationToken,
+			StatusCode: "",
+			TaskId:     aws.String(taskId),
+		})
+		res = append(res, tasks.ExportTasks...)
+	}
+	return res, nil
+}

@@ -33,7 +33,7 @@ data4,data5,data6`),
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := ReadCSV(tt.args.buf, tt.args.separator)
+			got, got1, err := ReadCSV(tt.args.buf, tt.args.separator, true)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadCSV() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -126,6 +126,27 @@ func DeleteTable(tableName string) error {
 	return err
 }
 
+func GetDocument(tableName string, documentQuery map[string]types.AttributeValue, res interface{}) (*dynamodb.GetItemOutput, error) {
+	doc, err := dynamoClient.GetItem(context.Background(), &dynamodb.GetItemInput{
+		Key:       documentQuery,
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		return nil, err
+	}
+	//var item map[string]string = make(map[string]string)
+	//for attrName, attrValue := range doc.Item {
+	//	if av, ok := attrValue.(*types.AttributeValueMemberS); ok {
+	//		item[attrName] = av.Value
+	//	}
+	//}
+	//log.Println(item)
+	if err = attributevalue.UnmarshalMap(doc.Item, &res); err != nil {
+		return nil, err
+	}
+	return doc, err
+}
+
 func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types.AttributeValue, bar *progressbar.ProgressBar) {
 	defer close(ch)
 	scan, err := dynamoClient.Scan(context.Background(), &dynamodb.ScanInput{
@@ -156,13 +177,17 @@ func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types
 
 func DeleteAllItems(tableName, projectExpression string) (*string, error) {
 	bar := progressbar.Default(1)
-	buffer := make(chan []map[string]types.AttributeValue, 2)
-	done := make(chan bool, 2)
+	n := 10
+	buffer := make(chan []map[string]types.AttributeValue, n)
+	done := make(chan bool, n)
 	go ScanAsync(tableName, projectExpression, buffer, bar)
-	go DeleteItems(tableName, buffer, bar, done)
-	go DeleteItems(tableName, buffer, bar, done)
-	<-done
-	<-done
+	for i := 0; i < n; i++ {
+		go DeleteItems(tableName, buffer, bar, done)
+	}
+	for i := 0; i < n; i++ {
+		<-done
+	}
+
 	return nil, nil
 }
 

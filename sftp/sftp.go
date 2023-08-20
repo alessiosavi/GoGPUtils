@@ -30,7 +30,7 @@ type SFTPConf struct {
 	PrivKey  string `json:"priv_key"`
 }
 
-func (c *SFTPConf) Validate() error {
+func (c SFTPConf) Validate() error {
 	if stringutils.IsBlank(c.Host) {
 		return errors.New("SFTP host not provided")
 	}
@@ -60,7 +60,7 @@ func RenameFile(fName string) string {
 }
 
 // NewConn Create a new SFTP connection by given parameters
-func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
+func (c SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (c *SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 	return &SFTPClient{Client: client}, nil
 }
 
-func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
+func (c SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
 	srcFile, err := c.Client.Open(remoteFile)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (c *SFTPClient) Get(remoteFile string) (*bytes.Buffer, error) {
 	_, err = io.Copy(buf, srcFile)
 	return buf, err
 }
-func (c *SFTPClient) Put(data []byte, fpath string) error {
+func (c SFTPClient) Put(data []byte, fpath string) error {
 	dirname := path.Dir(fpath)
 	exist, err := c.Exist(dirname)
 	if err != nil {
@@ -134,11 +134,11 @@ func (c *SFTPClient) Put(data []byte, fpath string) error {
 	return err
 }
 
-func (c *SFTPClient) CreateDirectory(path string) error {
+func (c SFTPClient) CreateDirectory(path string) error {
 	return c.Client.MkdirAll(path)
 }
 
-func (c *SFTPClient) DeleteFile(path string) error {
+func (c SFTPClient) DeleteFile(path string) error {
 	if exists, err := c.Exist(path); err != nil {
 		return err
 	} else if exists {
@@ -148,11 +148,11 @@ func (c *SFTPClient) DeleteFile(path string) error {
 	}
 }
 
-func (c *SFTPClient) DeleteDirectory(path string) error {
+func (c SFTPClient) DeleteDirectory(path string) error {
 	return c.Client.RemoveDirectory(path)
 }
 
-func (c *SFTPClient) List(path string) ([]string, error) {
+func (c SFTPClient) List(path string) ([]string, error) {
 	exist, err := c.Exist(path)
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func (c *SFTPClient) List(path string) ([]string, error) {
 	return files, nil
 }
 
-func (c *SFTPClient) Exist(path string) (bool, error) {
+func (c SFTPClient) Exist(path string) (bool, error) {
 	_, err := c.Client.Lstat(path)
 	if err != nil && err.Error() == "file does not exist" {
 		return false, nil
@@ -189,14 +189,14 @@ func (c *SFTPClient) Exist(path string) (bool, error) {
 	return err == nil, err
 }
 
-func (c *SFTPClient) IsDir(path string) (bool, error) {
+func (c SFTPClient) IsDir(path string) (bool, error) {
 	lstat, err := c.Client.Lstat(path)
 	if err != nil {
 		return false, err
 	}
 	return lstat.IsDir(), nil
 }
-func (c *SFTPClient) IsFile(path string) (bool, error) {
+func (c SFTPClient) IsFile(path string) (bool, error) {
 	lstat, err := c.Client.Lstat(path)
 	if err != nil {
 		return false, err
@@ -204,6 +204,6 @@ func (c *SFTPClient) IsFile(path string) (bool, error) {
 	return !lstat.IsDir(), nil
 }
 
-func (c *SFTPClient) Close() error {
+func (c SFTPClient) Close() error {
 	return c.Client.Close()
 }

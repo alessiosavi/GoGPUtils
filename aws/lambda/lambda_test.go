@@ -43,7 +43,7 @@ func TestDeployAllLambda(t *testing.T) {
 	}
 	log.Println(helper.MarshalIndent(objects))
 
-	lambdas, err := ListLambdaNames()
+	lambdas, err := ListLambdas()
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,10 @@ func TestDeployAllLambda(t *testing.T) {
 		lambdaName := strings.TrimSuffix(object, ".zip")
 		for _, lambda := range lambdas {
 			if *lambda.FunctionName == env+"-"+lambdaName || *lambda.FunctionName == lambdaName+"-"+env {
-				log.Println("Uploading lambda", lambda)
+				if strings.Contains(*lambda.FunctionName, "-salesforce-") || strings.Contains(*lambda.FunctionName, "-sf-") {
+					continue
+				}
+				log.Println("Uploading lambda", *lambda.FunctionName)
 				if err = DeployLambdaFromS3(*lambda.FunctionName, env+"-lambda-asset", object); err != nil {
 					panic(err)
 				}
@@ -76,7 +79,7 @@ func TestDeployAllLambda(t *testing.T) {
 //}
 
 func TestDescribeLambda(t *testing.T) {
-	lambdas, err := ListLambdaNames()
+	lambdas, err := ListLambdas()
 	if err != nil {
 		panic(err)
 	}
@@ -101,16 +104,5 @@ func TestDescribeLambda(t *testing.T) {
 }
 
 func TestActivateLambdas(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ActivateLambdas()
-			//log.Println(helper.MarshalIndent(lambda.GetFunctionOutput{}))
-			//log.Println(helper.MarshalIndent(lambda.UpdateFunctionConfigurationInput{}))
-		})
-	}
+	ActivateLambdas()
 }

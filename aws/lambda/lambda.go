@@ -74,8 +74,15 @@ func ActivateLambdas() {
 	if err != nil {
 		panic(err)
 	}
+
 	for _, l := range lambdas {
-		if l.State == types.StateInactive && l.StateReasonCode == types.StateReasonCodeIdle {
+		cfg, err := lambdaClient.GetFunctionConfiguration(context.Background(), &lambda.GetFunctionConfigurationInput{
+			FunctionName: l.FunctionName,
+		})
+		if err != nil {
+			panic(err)
+		}
+		if cfg.State == types.StateInactive || cfg.StateReasonCode == types.StateReasonCodeIdle {
 			marshal, err := json.Marshal(l)
 			if err != nil {
 				panic(err)
