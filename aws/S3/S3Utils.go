@@ -296,19 +296,19 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 
-func GetAfterDate(bucket, prefix string, date time.Time) ([]string, error) {
+func GetAfterDate(bucket, prefix string, date time.Time) ([]types.Object, error) {
 	details, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
-	var res []string
+	var res []types.Object
 
 	sort.Slice(details, func(i, j int) bool {
 		return details[i].LastModified.Before(*details[j].LastModified)
 	})
 	for _, detail := range details {
 		if detail.LastModified.After(date) {
-			res = append(res, *detail.Key)
+			res = append(res, detail)
 		}
 	}
 	return res, nil

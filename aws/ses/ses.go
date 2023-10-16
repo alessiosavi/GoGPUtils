@@ -18,6 +18,10 @@ type MailConf struct {
 	CC       []string `json:"cc,omitempty"`
 }
 
+func GetClient() *sesv2.Client {
+	return sesClient
+}
+
 func init() {
 	once.Do(func() {
 		cfg, err := awsutils.New()
