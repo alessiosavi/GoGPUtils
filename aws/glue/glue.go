@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/alessiosavi/GoGPUtils/helper"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/glue"
 	"github.com/aws/aws-sdk-go-v2/service/glue/types"
+	"log"
 	"sync"
 )
 
@@ -20,7 +22,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		glueClient = glue.New(glue.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		glueClient = glue.New(glue.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -491,4 +493,26 @@ func ListWorkflowExecution(wfName string) ([]types.WorkflowRun, error) {
 	}
 
 	return res, err
+}
+
+func ResetAllJobBookmark() error {
+	jobs, err := ListJobs()
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		log.Println("Removing " + job)
+		bookmark, err := ResetJobBookmark(job)
+		if err != nil {
+			return err
+		}
+		log.Println(helper.MarshalIndent(bookmark))
+	}
+	return nil
+}
+func ResetJobBookmark(jobName string) (*glue.ResetJobBookmarkOutput, error) {
+	return glueClient.ResetJobBookmark(context.Background(), &glue.ResetJobBookmarkInput{
+		JobName: aws.String(jobName),
+		//RunId:   nil,
+	})
 }

@@ -19,3 +19,4 @@ testdata/files/dante.txt
 .idea/
 
 testdata/*
+aws/**/*_test.go

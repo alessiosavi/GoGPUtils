@@ -1,6 +1,7 @@
 package mathutils
 
 import (
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"math"
 	"reflect"
 	"testing"
@@ -295,5 +296,32 @@ func TestCorrelationFloat64(t *testing.T) {
 	cv := Correlation[float64](arr1, arr2)
 	if !(cv > 0.954 && cv < 0.955) {
 		t.Error(cv)
+	}
+}
+
+func TestSumArrays1(t *testing.T) {
+	type args[T types.Number] struct {
+		a1 []T
+		a2 []T
+	}
+	type testCase[T types.Number] struct {
+		name string
+		args args[T]
+		want []T
+	}
+	tests := []testCase[int]{
+		// TODO: Add test cases.
+		{
+			name: "OK",
+			args: args[int]{a1: []int{1, 2}, a2: []int{2, 1}},
+			want: []int{3, 3},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SumArrays(tt.args.a1, tt.args.a2); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SumArrays() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

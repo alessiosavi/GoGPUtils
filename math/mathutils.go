@@ -592,7 +592,7 @@ func CosineSimilarity(a, b []float64) float64 {
 	return result
 }
 
-// EuclideanDistance is delegated to calculate the euclidean distance for the given array
+// EuclideanDistance is delegated to calculate the Euclidean distance for the given array
 func EuclideanDistance(v1, v2 []float64) float64 {
 	if !SimilarityPreCheck[float64](v1, v2) {
 		return -1

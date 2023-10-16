@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
-	"github.com/alessiosavi/GoGPUtils/helper"
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"log"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -22,7 +23,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		lambdaClient = lambda.New(lambda.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		lambdaClient = lambda.New(lambda.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 func InvokeLambda(name string, payload []byte, invocationType types.InvocationType) (*lambda.InvokeOutput, error) {
@@ -69,27 +70,77 @@ func DeleteLambda(lambdaName string) (*lambda.DeleteFunctionOutput, error) {
 	return lambdaClient.DeleteFunction(context.Background(), &lambda.DeleteFunctionInput{FunctionName: aws.String(lambdaName)})
 }
 
-func ActivateLambdas() {
+type ActivateLambdasProps struct {
+	Prefix   []string
+	Suffix   []string
+	Contains []string
+	Ignore   []string
+}
+
+func ActivateLambdas(conf ActivateLambdasProps) {
 	lambdas, err := ListLambdas()
 	if err != nil {
 		panic(err)
 	}
+
 	for _, l := range lambdas {
-		if l.State == types.StateInactive && l.StateReasonCode == types.StateReasonCodeIdle {
-			marshal, err := json.Marshal(l)
+		var b bool
+
+		for _, v := range conf.Ignore {
+			if strings.Contains(*l.FunctionName, v) {
+				log.Println("Skipping function", *l.FunctionName)
+				b = true
+				break
+			}
+		}
+
+		if b {
+			continue
+		}
+		for i := range conf.Prefix {
+			if !stringutils.IsBlank(conf.Prefix[i]) && strings.HasPrefix(*l.FunctionName, conf.Prefix[i]) {
+				b = true
+				break
+			}
+		}
+		if !b {
+			for i := range conf.Suffix {
+				if !stringutils.IsBlank(conf.Suffix[i]) && strings.HasSuffix(*l.FunctionName, conf.Suffix[i]) {
+					b = true
+					break
+				}
+			}
+		}
+		if !b {
+			for i := range conf.Contains {
+				if !stringutils.IsBlank(conf.Contains[i]) && strings.Contains(*l.FunctionName, conf.Contains[i]) {
+					b = true
+					break
+				}
+			}
+		}
+
+		if b {
+			cfg, err := lambdaClient.GetFunctionConfiguration(context.Background(), &lambda.GetFunctionConfigurationInput{
+				FunctionName: l.FunctionName,
+			})
 			if err != nil {
 				panic(err)
 			}
-			var c lambda.UpdateFunctionConfigurationInput
-			if err = json.Unmarshal(marshal, &c); err != nil {
-				panic(err)
+			if cfg.State == types.StateInactive || cfg.StateReasonCode == types.StateReasonCodeIdle {
+				marshal, err := json.Marshal(l)
+				if err != nil {
+					panic(err)
+				}
+				var c lambda.UpdateFunctionConfigurationInput
+				if err = json.Unmarshal(marshal, &c); err != nil {
+					panic(err)
+				}
+				if _, err = lambdaClient.UpdateFunctionConfiguration(context.Background(), &c); err != nil {
+					panic(err)
+				}
+				log.Printf("%s - %s\n", *l.FunctionName, l.State)
 			}
-			configuration, err := lambdaClient.UpdateFunctionConfiguration(context.Background(), &c)
-			if err != nil {
-				panic(err)
-			}
-			log.Println(helper.MarshalIndent(configuration))
-			log.Printf("%s - %s\n", *l.FunctionName, l.State)
 		}
 	}
 }

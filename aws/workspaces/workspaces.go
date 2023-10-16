@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/workspaces"
 	"sync"
 )
@@ -17,7 +18,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		workspaceClient = workspaces.New(workspaces.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		workspaceClient = workspaces.New(workspaces.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

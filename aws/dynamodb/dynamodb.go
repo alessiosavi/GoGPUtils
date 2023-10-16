@@ -39,15 +39,15 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 		retryTmp := os.Getenv("DYNAMO_RETRY")
 		if !stringutils.IsBlank(retryTmp) {
 			RETRY_ATTEMPT, err = strconv.ParseInt(retryTmp, 10, 64)
-			if err != nil || RETRY_ATTEMPT > 10 {
+			if err != nil {
 				log.Println("WARNING! Error setting DYNAMO_RETRY: ", err, RETRY_ATTEMPT)
-				RETRY_ATTEMPT = 1
+				RETRY_ATTEMPT = 5
 			}
 		}
+		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: int(RETRY_ATTEMPT), RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -126,6 +126,27 @@ func DeleteTable(tableName string) error {
 	return err
 }
 
+func GetDocument(tableName string, documentQuery map[string]types.AttributeValue, res interface{}) (*dynamodb.GetItemOutput, error) {
+	doc, err := dynamoClient.GetItem(context.Background(), &dynamodb.GetItemInput{
+		Key:       documentQuery,
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		return nil, err
+	}
+	//var item map[string]string = make(map[string]string)
+	//for attrName, attrValue := range doc.Item {
+	//	if av, ok := attrValue.(*types.AttributeValueMemberS); ok {
+	//		item[attrName] = av.Value
+	//	}
+	//}
+	//log.Println(item)
+	if err = attributevalue.UnmarshalMap(doc.Item, &res); err != nil {
+		return nil, err
+	}
+	return doc, err
+}
+
 func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types.AttributeValue, bar *progressbar.ProgressBar) {
 	defer close(ch)
 	scan, err := dynamoClient.Scan(context.Background(), &dynamodb.ScanInput{
@@ -151,18 +172,21 @@ func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types
 		bar.ChangeMax(bar.GetMax() + len(scan.Items))
 		ch <- scan.Items
 	}
-	return
 }
 
 func DeleteAllItems(tableName, projectExpression string) (*string, error) {
 	bar := progressbar.Default(1)
-	buffer := make(chan []map[string]types.AttributeValue, 2)
-	done := make(chan bool, 2)
+	n := 10
+	buffer := make(chan []map[string]types.AttributeValue, n)
+	done := make(chan bool, n)
 	go ScanAsync(tableName, projectExpression, buffer, bar)
-	go DeleteItems(tableName, buffer, bar, done)
-	go DeleteItems(tableName, buffer, bar, done)
-	<-done
-	<-done
+	for i := 0; i < n; i++ {
+		go DeleteItems(tableName, buffer, bar, done)
+	}
+	for i := 0; i < n; i++ {
+		<-done
+	}
+
 	return nil, nil
 }
 

@@ -3,6 +3,7 @@ package sesutils
 import (
 	"context"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	mailTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	"sync"
@@ -18,13 +19,17 @@ type MailConf struct {
 	CC       []string `json:"cc,omitempty"`
 }
 
+func GetClient() *sesv2.Client {
+	return sesClient
+}
+
 func init() {
 	once.Do(func() {
 		cfg, err := awsutils.New()
 		if err != nil {
 			panic(err)
 		}
-		sesClient = sesv2.New(sesv2.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		sesClient = sesv2.New(sesv2.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 func SendMail(data []byte) error {

@@ -3,6 +3,7 @@ package ecrutils
 import (
 	"context"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"sync"
 )
@@ -16,7 +17,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		ecrClient = ecr.New(ecr.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		ecrClient = ecr.New(ecr.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 func ListECR() ([]string, error) {

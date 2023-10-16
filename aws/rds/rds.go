@@ -19,7 +19,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		rdsClient = rds.New(rds.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		rdsClient = rds.New(rds.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
