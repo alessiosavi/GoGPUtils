@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 // RandomGenerator is delegated to generate random without call seed every time

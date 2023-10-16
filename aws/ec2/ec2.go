@@ -5,6 +5,7 @@ import (
 	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"log"
@@ -32,7 +33,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		ec2Client = ec2.New(ec2.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		ec2Client = ec2.New(ec2.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

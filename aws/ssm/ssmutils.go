@@ -17,7 +17,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		ssmClient = ssm.New(ssm.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		ssmClient = ssm.New(ssm.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

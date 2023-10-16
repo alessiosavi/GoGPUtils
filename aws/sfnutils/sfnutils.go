@@ -17,7 +17,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		sfnClient = sfn.New(sfn.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		sfnClient = sfn.New(sfn.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

@@ -26,7 +26,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		iamClient = iam.New(iam.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		iamClient = iam.New(iam.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

@@ -19,7 +19,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		cloudwatchClient = cloudwatchlogs.New(cloudwatchlogs.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		cloudwatchClient = cloudwatchlogs.New(cloudwatchlogs.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -66,19 +66,16 @@ func DescribeExportTask(taskId string) ([]types.ExportTask, error) {
 		StatusCode: "",
 		TaskId:     aws.String(taskId),
 	})
-	var res []types.ExportTask = make([]types.ExportTask, len(tasks.ExportTasks))
 	if err != nil {
-		return res, err
+		return nil, err
 	}
-	for i := range tasks.ExportTasks {
-		res[i] = tasks.ExportTasks[i]
-	}
+	var res = make([]types.ExportTask, len(tasks.ExportTasks))
+	copy(res, tasks.ExportTasks)
 	continuationToken := tasks.NextToken
 	for continuationToken != nil {
 		tasks, err = cloudwatchClient.DescribeExportTasks(context.Background(), &cloudwatchlogs.DescribeExportTasksInput{
-			NextToken:  continuationToken,
-			StatusCode: "",
-			TaskId:     aws.String(taskId),
+			NextToken: continuationToken,
+			TaskId:    aws.String(taskId),
 		})
 		res = append(res, tasks.ExportTasks...)
 	}

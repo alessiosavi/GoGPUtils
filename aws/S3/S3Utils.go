@@ -33,7 +33,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -96,7 +96,7 @@ func DeleteObject(bucket, key string) error {
 func DeleteObjects(data map[string][]string) error {
 	// TODO: Mange more than 1000 keys and use Thread
 	for k := range data {
-		var toDelete [][]string = make([][]string, 0)
+		var toDelete = make([][]string, 0)
 		maxIteration := len(data[k]) / 1000
 		for i := 0; i < maxIteration; i++ {
 			toDelete = append(toDelete, data[k][1000*i:1000*(i+1)])
@@ -104,7 +104,7 @@ func DeleteObjects(data map[string][]string) error {
 		toDelete = append(toDelete, data[k][maxIteration*1000:])
 
 		for i := range toDelete {
-			var del []types.ObjectIdentifier = make([]types.ObjectIdentifier, len(toDelete[i]), len(toDelete[i]))
+			var del = make([]types.ObjectIdentifier, len(toDelete[i]))
 			for j, v := range toDelete[i] {
 				del[j] = types.ObjectIdentifier{Key: aws.String(v)}
 			}
@@ -296,19 +296,19 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 
-func GetAfterDate(bucket, prefix string, date time.Time) ([]string, error) {
+func GetAfterDate(bucket, prefix string, date time.Time) ([]types.Object, error) {
 	details, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {
 		return nil, err
 	}
-	var res []string
+	var res []types.Object
 
 	sort.Slice(details, func(i, j int) bool {
 		return details[i].LastModified.Before(*details[j].LastModified)
 	})
 	for _, detail := range details {
 		if detail.LastModified.After(date) {
-			res = append(res, *detail.Key)
+			res = append(res, detail)
 		}
 	}
 	return res, nil

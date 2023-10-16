@@ -19,7 +19,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		secretClient = secretsmanager.New(secretsmanager.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		secretClient = secretsmanager.New(secretsmanager.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 func GetSecret(secretName string) (string, error) {
