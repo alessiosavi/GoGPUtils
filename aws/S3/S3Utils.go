@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -38,7 +39,7 @@ func init() {
 }
 
 func GetObject(bucket, fileName string) ([]byte, error) {
-	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
+	object, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fileName)})
 
@@ -46,8 +47,16 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := io.ReadAll(s3CsvConf.Body)
-	return data, err
+	bar := progressbar.DefaultBytes(
+		*object.ContentLength,
+		fmt.Sprintf("downloading %s", fileName),
+	)
+
+	buf := new(bytes.Buffer)
+	if _, err = io.Copy(io.MultiWriter(buf, bar), object.Body); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 func Move(bucket, filename, targetName string) error {
@@ -157,7 +166,7 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 
 	continuationToken := objects.NextContinuationToken
 	truncated := objects.IsTruncated
-	for truncated {
+	for *truncated {
 		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
