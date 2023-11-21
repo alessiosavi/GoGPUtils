@@ -92,7 +92,7 @@ func (c SFTPConf) NewConn(keyExchanges ...string) (*SFTPClient, error) {
 
 	config.Config.KeyExchanges = append(config.Config.KeyExchanges, keyExchanges...)
 	addr := net.JoinHostPort(c.Host, fmt.Sprintf("%d", c.Port))
-	log.Println("Connecting to: " + addr)
+	log.Printf("Connecting to: %s@%s\n", c.User, addr)
 	conn, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
 		return nil, err

@@ -22,7 +22,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		glueClient = glue.New(glue.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		glueClient = glue.New(glue.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 

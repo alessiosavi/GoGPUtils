@@ -39,15 +39,15 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 		retryTmp := os.Getenv("DYNAMO_RETRY")
 		if !stringutils.IsBlank(retryTmp) {
 			RETRY_ATTEMPT, err = strconv.ParseInt(retryTmp, 10, 64)
-			if err != nil || RETRY_ATTEMPT > 10 {
+			if err != nil {
 				log.Println("WARNING! Error setting DYNAMO_RETRY: ", err, RETRY_ATTEMPT)
-				RETRY_ATTEMPT = 1
+				RETRY_ATTEMPT = 5
 			}
 		}
+		dynamoClient = dynamodb.New(dynamodb.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: int(RETRY_ATTEMPT), RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -172,7 +172,6 @@ func ScanAsync(tableName, projectExpression string, ch chan<- []map[string]types
 		bar.ChangeMax(bar.GetMax() + len(scan.Items))
 		ch <- scan.Items
 	}
-	return
 }
 
 func DeleteAllItems(tableName, projectExpression string) (*string, error) {

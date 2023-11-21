@@ -1,6 +1,7 @@
 package helper
 
 import (
+	crand "crypto/rand"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -11,7 +12,7 @@ import (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 // RandomGenerator is delegated to generate random without call seed every time
@@ -121,11 +122,10 @@ func (rander RandomGenerator) RandomString(n int) string {
 }
 
 // RandomByte is delegated to generate a byte array with the given input length
-func RandomByte(length int) []byte {
+func RandomByte(length int) ([]byte, error) {
 	data := make([]byte, length)
-	rand.Read(data)
-	return data
-
+	_, err := crand.Read(data)
+	return data, err
 }
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value

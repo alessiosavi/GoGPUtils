@@ -387,14 +387,14 @@ func LevenshteinDistanceLegacy(str1, str2 string) int {
 			if str1[i-1] == str2[j-1] {
 				d[i][j] = d[i-1][j-1]
 			} else {
-				min := d[i-1][j]
-				if d[i][j-1] < min {
-					min = d[i][j-1]
+				_min := d[i-1][j]
+				if d[i][j-1] < _min {
+					_min = d[i][j-1]
 				}
-				if d[i-1][j-1] < min {
-					min = d[i-1][j-1]
+				if d[i-1][j-1] < _min {
+					_min = d[i-1][j-1]
 				}
-				d[i][j] = min + 1
+				d[i][j] = _min + 1
 			}
 		}
 	}

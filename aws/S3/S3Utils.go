@@ -34,7 +34,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
@@ -105,7 +105,7 @@ func DeleteObject(bucket, key string) error {
 func DeleteObjects(data map[string][]string) error {
 	// TODO: Mange more than 1000 keys and use Thread
 	for k := range data {
-		var toDelete [][]string = make([][]string, 0)
+		var toDelete = make([][]string, 0)
 		maxIteration := len(data[k]) / 1000
 		for i := 0; i < maxIteration; i++ {
 			toDelete = append(toDelete, data[k][1000*i:1000*(i+1)])
@@ -113,7 +113,7 @@ func DeleteObjects(data map[string][]string) error {
 		toDelete = append(toDelete, data[k][maxIteration*1000:])
 
 		for i := range toDelete {
-			var del []types.ObjectIdentifier = make([]types.ObjectIdentifier, len(toDelete[i]), len(toDelete[i]))
+			var del = make([]types.ObjectIdentifier, len(toDelete[i]))
 			for j, v := range toDelete[i] {
 				del[j] = types.ObjectIdentifier{Key: aws.String(v)}
 			}

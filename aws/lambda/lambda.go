@@ -23,7 +23,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		lambdaClient = lambda.New(lambda.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		lambdaClient = lambda.New(lambda.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 func InvokeLambda(name string, payload []byte, invocationType types.InvocationType) (*lambda.InvokeOutput, error) {
@@ -74,6 +74,7 @@ type ActivateLambdasProps struct {
 	Prefix   []string
 	Suffix   []string
 	Contains []string
+	Ignore   []string
 }
 
 func ActivateLambdas(conf ActivateLambdasProps) {
@@ -84,6 +85,18 @@ func ActivateLambdas(conf ActivateLambdasProps) {
 
 	for _, l := range lambdas {
 		var b bool
+
+		for _, v := range conf.Ignore {
+			if strings.Contains(*l.FunctionName, v) {
+				log.Println("Skipping function", *l.FunctionName)
+				b = true
+				break
+			}
+		}
+
+		if b {
+			continue
+		}
 		for i := range conf.Prefix {
 			if !stringutils.IsBlank(conf.Prefix[i]) && strings.HasPrefix(*l.FunctionName, conf.Prefix[i]) {
 				b = true

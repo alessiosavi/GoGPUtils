@@ -59,7 +59,7 @@ func GetCol(csvData [][]string, index int) []string {
 	if len(csvData) == 0 || len(csvData[0]) < index {
 		return nil
 	}
-	var ret = make([]string, len(csvData), len(csvData))
+	var ret = make([]string, len(csvData))
 	for i := range csvData {
 		ret[i] = csvData[i][index]
 	}
