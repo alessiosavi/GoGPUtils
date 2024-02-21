@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	"fmt"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	fileutils "github.com/alessiosavi/GoGPUtils/files"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -34,7 +33,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
+		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
 	})
 }
 
@@ -47,16 +46,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	bar := progressbar.DefaultBytes(
-		*object.ContentLength,
-		fmt.Sprintf("downloading %s", fileName),
-	)
-
-	buf := new(bytes.Buffer)
-	if _, err = io.Copy(io.MultiWriter(buf, bar), object.Body); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return io.ReadAll(object.Body)
 }
 
 func Move(bucket, filename, targetName string) error {
@@ -113,7 +103,7 @@ func DeleteObjects(data map[string][]string) error {
 		toDelete = append(toDelete, data[k][maxIteration*1000:])
 
 		for i := range toDelete {
-			var del = make([]types.ObjectIdentifier, len(toDelete[i]))
+			var del = make([]types.ObjectIdentifier, len(toDelete[i]), len(toDelete[i]))
 			for j, v := range toDelete[i] {
 				del[j] = types.ObjectIdentifier{Key: aws.String(v)}
 			}
@@ -305,6 +295,7 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 
+// FIXME: Use a list of string as prefix
 func GetAfterDate(bucket, prefix string, date time.Time) ([]types.Object, error) {
 	details, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {

@@ -144,7 +144,7 @@ func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage in
 	})
 
 	// Serve the http webserver
-	if err = s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Println("Error during ListenAndServe: ", err)
 		return err
 	}

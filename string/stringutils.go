@@ -36,7 +36,7 @@ func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
 	if replacer != nil {
 		word = replacer.Replace(strings.TrimSpace(word))
 	}
-	back := word
+	//back := word
 	for i := 0; i < len(word); {
 		c := rune(word[i])
 		if unicode.IsUpper(c) {
@@ -65,7 +65,7 @@ func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
 		i++
 
 	}
-	log.Printf("In: %s | Out:%s\n", back, word)
+	//log.Printf("In: %s | Out:%s\n", back, word)
 	return word
 }
 
@@ -569,4 +569,21 @@ func ArrayToMap(slice []string) map[string]struct{} {
 		result[s] = struct{}{}
 	}
 	return result
+}
+
+func TrimStrings(vs []string) []string {
+	arrayutils.Apply(&vs, func(i int, s string) string {
+		return strings.Trim(s, " \n\r\t")
+	}, true)
+	return vs
+}
+
+func Pad(w, v string, n int) string {
+	var sb strings.Builder
+	w = strings.Trim(w, " \n\r")
+	for i := 0; i < n-len(w); i++ {
+		sb.WriteString(v)
+	}
+	sb.WriteString(w)
+	return sb.String()
 }

@@ -641,3 +641,12 @@ func Maxs[T types.Number](a ...T) T {
 func Mins[T types.Number](a ...T) T {
 	return a[MinIndex(a)]
 }
+
+// Transponse1D This method does not perform the real transpose
+func Transponse1D[T any](v []T) [][1]T {
+	var ret = make([][1]T, len(v))
+	for i := range v {
+		ret[i][0] = v[i]
+	}
+	return ret
+}

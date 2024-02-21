@@ -1,11 +1,14 @@
 package helper
 
 import (
-	crand "crypto/rand"
 	"encoding/json"
 	"fmt"
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"math"
 	"math/rand"
+
+	crand "crypto/rand"
+
 	"strings"
 	"time"
 	"unsafe"
@@ -122,10 +125,11 @@ func (rander RandomGenerator) RandomString(n int) string {
 }
 
 // RandomByte is delegated to generate a byte array with the given input length
-func RandomByte(length int) ([]byte, error) {
+func RandomByte(length int) []byte {
 	data := make([]byte, length)
-	_, err := crand.Read(data)
-	return data, err
+	crand.Read(data)
+	return data
+
 }
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
@@ -153,20 +157,11 @@ func RandomFloat32(min, max float32) float32 {
 	return min + rand.Float32()*(max-min)
 }
 
-// GenerateSequentialIntArray is delegated to generate an array of sequential number
-func GenerateSequentialIntArray(length int) []int {
-	array := make([]int, length)
+// GenerateSequentialArray is delegated to generate an array of sequential number
+func GenerateSequentialArray[T types.Number](length int) []T {
+	array := make([]T, length)
 	for i := 0; i < length; i++ {
-		array[i] = i
-	}
-	return array
-}
-
-// GenerateSequentialFloat32Array is delegated to generate an array of sequential number
-func GenerateSequentialFloat32Array(length int) []float32 {
-	array := make([]float32, length)
-	for i := 0; i < length; i++ {
-		array[i] = float32(i)
+		array[i] = T(i)
 	}
 	return array
 }

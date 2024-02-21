@@ -35,7 +35,7 @@ func Server(port string) {
 		return
 	}
 	defer l.Close()
-	rand.New(rand.NewSource(time.Now().UnixNano()))
+	rand.NewSource(time.Now().Unix())
 	semaphore := make(chan struct{}, 10000)
 	for {
 		c, err := l.Accept()

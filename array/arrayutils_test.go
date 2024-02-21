@@ -1,6 +1,9 @@
 package arrayutils
 
 import (
+	"fmt"
+	"github.com/alessiosavi/GoGPUtils/helper"
+	"golang.org/x/exp/slices"
 	"reflect"
 	"strconv"
 	"testing"
@@ -250,5 +253,100 @@ func TestSplitEqual(t *testing.T) {
 				t.Errorf("SplitEqual() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
+	}
+}
+
+func BenchmarkApplyInplace(b *testing.B) {
+	data := helper.GenerateSequentialArray[byte](50000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Apply(&data, func(i int, v byte) byte {
+			if v%2 == 0 {
+				return v + 1
+			} else {
+				return v - 1
+			}
+		}, true)
+	}
+}
+
+func BenchmarkApply(b *testing.B) {
+	data := helper.GenerateSequentialArray[byte](50000)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Apply(&data, func(i int, v byte) byte {
+			if v%2 == 0 {
+				return v + 1
+			} else {
+				return v - 1
+			}
+		}, false)
+	}
+}
+
+func TestApply(t *testing.T) {
+	type args[T any] struct {
+		v       *[]T
+		fn      func(int, T) T
+		inplace bool
+	}
+	type testCase[T any] struct {
+		name string
+		args args[T]
+		want []T
+	}
+	tests := []testCase[int]{
+		{
+			name: "1",
+			args: args[int]{
+				v: &[]int{1, 2, 3, 4, 5},
+				fn: func(i int, v int) int {
+					if i%2 == 0 {
+						v++
+					}
+					return v
+				},
+				inplace: false,
+			},
+			want: []int{2, 2, 4, 4, 6},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Apply(tt.args.v, tt.args.fn, tt.args.inplace); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Apply() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPadSlice(t *testing.T) {
+	type args[T any] struct {
+		data   []T
+		n      int
+		expect []T
+	}
+	type testCase[T any] struct {
+		name string
+		args args[T]
+	}
+	tests := []testCase[string]{
+		{
+			name: "ok1",
+			args: args[string]{
+				data:   []string{"1", "2", "3"},
+				n:      5,
+				expect: []string{"1", "2", "3", "0", "0"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			PadSlice(&tt.args.data, tt.args.n, "0")
+		})
+		if !slices.Equal(tt.args.data, tt.args.expect) {
+			fmt.Println(tt.args)
+		}
+
 	}
 }

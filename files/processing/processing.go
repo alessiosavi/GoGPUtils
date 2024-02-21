@@ -2,6 +2,7 @@ package processingutils
 
 import (
 	"bytes"
+	"errors"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/transform"
@@ -21,6 +22,8 @@ const (
 	RS   LineTerminatorType = "\036" // 1e -- 30
 	ND   LineTerminatorType = `unable to detect line terminator`
 )
+
+var LINE_TERMINATORS = []LineTerminatorType{LF, CR, CRLF, LFCR, RS}
 
 func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 	// Read 1mb of file
@@ -56,14 +59,23 @@ func DetectLineTerminator(reader io.Reader) (LineTerminatorType, error) {
 }
 
 // ReplaceLineTerminator is delegated to find the line terminator of the given byte array and replace them without the one provided in input
-func ReplaceLineTerminator(data, newLineTerminator []byte) ([]byte, error) {
-	terminator, err := DetectLineTerminator(bytes.NewBuffer(data))
+func ReplaceLineTerminator(data io.Reader, newLineTerminator []byte) (io.Reader, error) {
+	bs := new(bytes.Buffer)
+	terminator, err := DetectLineTerminator(data)
 	if err != nil {
 		return nil, err
 	}
-	newData := bytes.ReplaceAll(data, []byte(terminator), newLineTerminator)
-	newData = bytes.TrimSpace(newData)
-	return bytes.Trim(newData, string(newLineTerminator)), nil
+	var buf = make([]byte, 512)
+	t := []byte(terminator)
+	for err == nil {
+		_, err = data.Read(buf)
+		buf = bytes.ReplaceAll(buf, t, newLineTerminator)
+		bs.Write(bytes.TrimSpace(buf))
+	}
+	if !errors.Is(err, io.EOF) {
+		panic(err)
+	}
+	return bs, nil
 }
 
 // ReplaceLineTerminatorBytesReader is delegated to find the line terminator of the given byte array and replace them without the one provided in input

@@ -1,58 +1,12 @@
 package searchutils
 
 import (
-	"sync"
-
 	"github.com/alessiosavi/ahocorasick"
+	"golang.org/x/exp/constraints"
 )
 
-// LinearSearchParallelInt is delegated to parallelize the execution of search method
-func LinearSearchParallelInt(data []int, target, thread int) int {
-	var (
-		length      = len(data)
-		dataXThread = length / thread
-		oddment     = length % thread
-		found       int
-		wg          sync.WaitGroup
-		result      []int
-	)
-
-	if oddment != 0 {
-		oddment += thread * dataXThread
-		found = LinearSearchInt(data[thread*dataXThread:oddment], target)
-
-		if found != -1 {
-			return found + thread*dataXThread
-		} // else
-
-		return -1
-	}
-
-	wg = sync.WaitGroup{}
-	result = make([]int, thread)
-	// var result []int
-	wg.Add(thread)
-	for i := 0; i < thread; i++ {
-		go LinearSearchParallelIntHelper(&wg, data[i*dataXThread:(i+1)*dataXThread], target, i, result)
-	}
-	wg.Wait()
-	//log.Println(result)
-	for i := range result {
-		if result[i] != -1 {
-			return result[i] + i*dataXThread
-		}
-	}
-	return -1
-}
-
-// LinearSearchParallelIntHelper is delegated to search the number and append to the given result array
-func LinearSearchParallelIntHelper(wg *sync.WaitGroup, data []int, target, i int, result []int) {
-	defer wg.Done()
-	result[i] = LinearSearchInt(data, target)
-}
-
-// LinearSearchInt is a simple for delegated to find the target value
-func LinearSearchInt(data []int, target int) int {
+// LinearSearch is a simple for delegated to find the target value
+func LinearSearch[T constraints.Ordered](data []T, target T) int {
 	var i int
 	for i = range data {
 		if target == data[i] {
