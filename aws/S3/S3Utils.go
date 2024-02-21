@@ -33,7 +33,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region})
+		S3Client = s3.New(s3.Options{Credentials: cfg.Credentials, Region: cfg.Region, RetryMaxAttempts: 5, RetryMode: aws.RetryModeAdaptive})
 	})
 }
 
