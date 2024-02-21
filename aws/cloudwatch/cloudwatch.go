@@ -70,13 +70,19 @@ func DescribeExportTask(taskId string) ([]types.ExportTask, error) {
 		return nil, err
 	}
 	var res = make([]types.ExportTask, len(tasks.ExportTasks))
-	copy(res, tasks.ExportTasks)
+	for i := range tasks.ExportTasks {
+		res[i] = tasks.ExportTasks[i]
+	}
 	continuationToken := tasks.NextToken
 	for continuationToken != nil {
 		tasks, err = cloudwatchClient.DescribeExportTasks(context.Background(), &cloudwatchlogs.DescribeExportTasksInput{
-			NextToken: continuationToken,
-			TaskId:    aws.String(taskId),
+			NextToken:  continuationToken,
+			StatusCode: "",
+			TaskId:     aws.String(taskId),
 		})
+		if err != nil {
+			return res, err
+		}
 		res = append(res, tasks.ExportTasks...)
 	}
 	return res, nil

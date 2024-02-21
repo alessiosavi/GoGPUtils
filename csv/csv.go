@@ -5,14 +5,65 @@ import (
 	"encoding/csv"
 	"errors"
 	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
+	"github.com/schollz/progressbar/v3"
 	"strconv"
 	"time"
 )
 
+// FIXME: Migrate the module to map[headers][]row
+type Headers []string
+type CSVData [][]string
+
+type ExplodeCSV func(int, []string) [][]string
+type ApplyCSV func(int, []string) []string
+type ApplyHeader func(int, *string) string
+
+func (c *Headers) Apply(fn ApplyHeader, inplace bool) Headers {
+	var res Headers
+	if inplace {
+		res = *c
+	} else {
+		res = make(Headers, len(*c))
+		copy(res, *c)
+	}
+	for i := range res {
+		res[i] = fn(i, &res[i])
+	}
+	return res
+}
+
+func (c *CSVData) Explode(fn ExplodeCSV) CSVData {
+	var res = make(CSVData, 0, len(*c))
+	bar := progressbar.Default(int64(len(res)))
+	for i := range *c {
+		bar.Add(1)
+		res = append(res, fn(i, (*c)[i])...)
+	}
+	*c = res
+	bar.Close()
+	return *c
+}
+func (c *CSVData) Apply(fn ApplyCSV, inplace bool) CSVData {
+	var res CSVData
+	if inplace {
+		res = *c
+	} else {
+		res = make(CSVData, len(*c))
+		copy(res, *c)
+	}
+	bar := progressbar.Default(int64(len(res)))
+	for i := range res {
+		bar.Add(1)
+		res[i] = fn(i, res[i])
+	}
+	bar.Close()
+	return res
+}
+
 // ReadCSV is delegated to read into a CSV the content of the bytes in input
 // []string -> Headers of the CSV
 // [][]string -> Content of the CSV
-func ReadCSV(data []byte, separator rune, hasHeaders bool) ([]string, [][]string, error) {
+func ReadCSV(data []byte, separator rune, hasHeaders bool) (Headers, CSVData, error) {
 	buf, err := processingutils.ToUTF8(data)
 	if err != nil {
 		return nil, nil, err
@@ -28,7 +79,7 @@ func ReadCSV(data []byte, separator rune, hasHeaders bool) ([]string, [][]string
 		return nil, nil, err
 	}
 
-	var headers []string
+	var headers Headers
 	if hasHeaders {
 		if len(csvData) < 2 {
 			return nil, nil, errors.New("input data does not contain at least 2 rows (headers + data)")
@@ -40,7 +91,7 @@ func ReadCSV(data []byte, separator rune, hasHeaders bool) ([]string, [][]string
 	}
 	return headers, csvData, nil
 }
-func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, error) {
+func WriteCSV(headers Headers, records CSVData, separator rune) ([]byte, error) {
 	var buff bytes.Buffer
 	writer := csv.NewWriter(&buff)
 	defer writer.Flush()
@@ -55,7 +106,7 @@ func WriteCSV(headers []string, records [][]string, separator rune) ([]byte, err
 }
 
 // GetCol is delegated to filter a given column from the csvData
-func GetCol(csvData [][]string, index int) []string {
+func GetCol(csvData CSVData, index int) []string {
 	if len(csvData) == 0 || len(csvData[0]) < index {
 		return nil
 	}
@@ -68,7 +119,7 @@ func GetCol(csvData [][]string, index int) []string {
 
 // GetCSVDataType is delegated to retrieve the data type for every field of the CSV
 // Return: headers, csv data, data type, error
-func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[string]string, error) {
+func GetCSVDataType(raw []byte, separator rune) (Headers, CSVData, map[string]string, error) {
 	headers, data, err := ReadCSV(raw, separator, true)
 	if err != nil {
 		return nil, nil, nil, err
@@ -165,7 +216,7 @@ func GetCSVDataType(raw []byte, separator rune) ([]string, [][]string, map[strin
 	return headers, data, dataType, nil
 }
 
-func DecodeNonUTF8CSV(data [][]string) [][]string {
+func DecodeNonUTF8CSV(data CSVData) CSVData {
 	for i := range data {
 		for j := range data[i] {
 			data[i][j] = processingutils.DecodeNonUTF8String(data[i][j])

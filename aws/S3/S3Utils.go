@@ -38,7 +38,7 @@ func init() {
 }
 
 func GetObject(bucket, fileName string) ([]byte, error) {
-	s3CsvConf, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
+	object, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fileName)})
 
@@ -46,8 +46,7 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := io.ReadAll(s3CsvConf.Body)
-	return data, err
+	return io.ReadAll(object.Body)
 }
 
 func Move(bucket, filename, targetName string) error {
@@ -104,7 +103,7 @@ func DeleteObjects(data map[string][]string) error {
 		toDelete = append(toDelete, data[k][maxIteration*1000:])
 
 		for i := range toDelete {
-			var del = make([]types.ObjectIdentifier, len(toDelete[i]))
+			var del = make([]types.ObjectIdentifier, len(toDelete[i]), len(toDelete[i]))
 			for j, v := range toDelete[i] {
 				del[j] = types.ObjectIdentifier{Key: aws.String(v)}
 			}
@@ -157,7 +156,7 @@ func ListBucketObjectsDetails(bucket, prefix string) ([]types.Object, error) {
 
 	continuationToken := objects.NextContinuationToken
 	truncated := objects.IsTruncated
-	for truncated {
+	for *truncated {
 		newObjects, err := S3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
@@ -296,6 +295,7 @@ func IsDifferentLegacy(bucket_base, bucket_target, key_base, key_target string) 
 	return *head_base.ETag != *head_target.ETag || head_base.ContentLength != head_target.ContentLength
 }
 
+// FIXME: Use a list of string as prefix
 func GetAfterDate(bucket, prefix string, date time.Time) ([]types.Object, error) {
 	details, err := ListBucketObjectsDetails(bucket, prefix)
 	if err != nil {

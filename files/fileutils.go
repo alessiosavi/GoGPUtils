@@ -154,12 +154,7 @@ func CreateDir(path string) error {
 
 // GetFileModification return the last modification time of the file in input in a UNIX time format
 func GetFileModification(filepath string) int64 {
-	f, err := os.Open(filepath)
-	if err != nil {
-		return -1
-	}
-	defer f.Close()
-	statinfo, err := f.Stat()
+	statinfo, err := os.Stat(filepath)
 	if err != nil {
 		return -2
 	}

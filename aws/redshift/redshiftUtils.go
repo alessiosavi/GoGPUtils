@@ -60,6 +60,7 @@ func init() {
 	})
 }
 func ManualSnapshot() {
+
 	//clusters, err := redshiftClient.DescribeClusters(context.Background(), &redshift.DescribeClustersInput{
 	//	ClusterIdentifier: nil,
 	//	Marker:            nil,
@@ -71,6 +72,7 @@ func ManualSnapshot() {
 	//	return
 	//}
 	//log.Println(helper.MarshalIndent(clusters))
+
 	t := time.Now().Format(time.RFC3339)
 	snapshot, err := redshiftClient.CreateClusterSnapshot(context.Background(), &redshift.CreateClusterSnapshotInput{
 		ClusterIdentifier:  aws.String("qa-data-warehouse"),

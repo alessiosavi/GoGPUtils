@@ -650,3 +650,81 @@ func TestIndexes(t *testing.T) {
 		})
 	}
 }
+
+func Test_pad(t *testing.T) {
+
+	expected := "000000012500"
+	n := len(expected)
+	type args struct {
+		w string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "1",
+			args: args{
+				w: "12500",
+			},
+		},
+		{
+			name: "1",
+			args: args{
+				w: "012500",
+			},
+		},
+		{
+			name: "1",
+			args: args{
+				w: " 0012500",
+			},
+		},
+		{
+			name: "1",
+			args: args{
+				w: "000000012500",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Pad(tt.args.w, "0", n); got != expected {
+				t.Errorf("pad() = %v, want %v", got, expected)
+			}
+		})
+	}
+}
+
+func TestTrimStrings(t *testing.T) {
+	type args struct {
+		vs []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "1",
+			args: args{
+				vs: []string{"2023-01-01 "},
+			},
+			want: []string{"2023-01-01"},
+		},
+		{
+			name: "2",
+			args: args{
+				vs: []string{"2023-01-01   "},
+			},
+			want: []string{"2023-01-01"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := TrimStrings(tt.args.vs); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TrimStrings() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

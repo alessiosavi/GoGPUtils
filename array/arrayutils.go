@@ -7,6 +7,17 @@ import (
 	"strings"
 )
 
+func PadSlice[T any](data *[]T, n int, v T) {
+	if len(*data) >= n {
+		*data = (*data)[:n]
+		return
+	}
+	res := make([]T, n-len(*data))
+	for i := 0; i < cap(res); i++ {
+		res[i] = v
+	}
+	*data = append(*data, res...)
+}
 func RemoveElementsFromMatrixByIndex(data [][]string, j []int) [][]string {
 	var (
 		newArray [][]string
@@ -252,4 +263,18 @@ func Filter[T any](slice []T, f func(T) bool) []T {
 		}
 	}
 	return n
+}
+
+func Apply[T any](v *[]T, fn func(int, T) T, inplace bool) []T {
+	var res []T
+	if inplace {
+		res = *v
+	} else {
+		res = make([]T, len(*v))
+		copy(res, *v)
+	}
+	for i := range res {
+		res[i] = fn(i, res[i])
+	}
+	return res
 }

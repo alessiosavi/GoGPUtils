@@ -36,7 +36,7 @@ func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
 	if replacer != nil {
 		word = replacer.Replace(strings.TrimSpace(word))
 	}
-	back := word
+	//back := word
 	for i := 0; i < len(word); {
 		c := rune(word[i])
 		if unicode.IsUpper(c) {
@@ -65,7 +65,7 @@ func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
 		i++
 
 	}
-	log.Printf("In: %s | Out:%s\n", back, word)
+	//log.Printf("In: %s | Out:%s\n", back, word)
 	return word
 }
 
@@ -387,14 +387,14 @@ func LevenshteinDistanceLegacy(str1, str2 string) int {
 			if str1[i-1] == str2[j-1] {
 				d[i][j] = d[i-1][j-1]
 			} else {
-				min := d[i-1][j]
-				if d[i][j-1] < min {
-					min = d[i][j-1]
+				_min := d[i-1][j]
+				if d[i][j-1] < _min {
+					_min = d[i][j-1]
 				}
-				if d[i-1][j-1] < min {
-					min = d[i-1][j-1]
+				if d[i-1][j-1] < _min {
+					_min = d[i-1][j-1]
 				}
-				d[i][j] = min + 1
+				d[i][j] = _min + 1
 			}
 		}
 	}
@@ -569,4 +569,21 @@ func ArrayToMap(slice []string) map[string]struct{} {
 		result[s] = struct{}{}
 	}
 	return result
+}
+
+func TrimStrings(vs []string) []string {
+	arrayutils.Apply(&vs, func(i int, s string) string {
+		return strings.Trim(s, " \n\r\t")
+	}, true)
+	return vs
+}
+
+func Pad(w, v string, n int) string {
+	var sb strings.Builder
+	w = strings.Trim(w, " \n\r")
+	for i := 0; i < n-len(w); i++ {
+		sb.WriteString(v)
+	}
+	sb.WriteString(w)
+	return sb.String()
 }

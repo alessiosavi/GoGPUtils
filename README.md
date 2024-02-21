@@ -10,7 +10,7 @@ project.
 ## Benchmark
 
 ```text
-$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v aws | grep -v sftp`
+$ go test -bench=. -benchmem -benchtime=5s `go list ./... | grep -v "aws\|sftp\|http"`
 goos: linux
 goarch: amd64
 pkg: github.com/alessiosavi/GoGPUtils/byte

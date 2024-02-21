@@ -99,18 +99,18 @@ func Mode[T types.Number](array []T) []T {
 	for i := range array {
 		mode[array[i]]++
 	}
-	var max int
+	var _max int
 	var maxs []T
 
 	// Avoid taking care about value that does not appear at least 2 time
-	max = 2
+	_max = 2
 	for i := T(1); i < T(len(mode)); i++ {
-		if mode[i] >= max {
-			max = mode[i]
+		if mode[i] >= _max {
+			_max = mode[i]
 		}
 	}
 	for i := range mode {
-		if mode[i] == max {
+		if mode[i] == _max {
 			maxs = append(maxs, i)
 		}
 	}
@@ -481,8 +481,8 @@ func ExtractEvenValuedNumber(array []int64) []int64 {
 func FindDivisor(n int) []int {
 	var count int
 	var divisor []int
-	max := int(math.Sqrt(float64(n)))
-	for i := 1; i <= max; i++ {
+	_max := int(math.Sqrt(float64(n)))
+	for i := 1; i <= _max; i++ {
 		if n%i == 0 {
 			div := n / i
 			divisor = append(divisor, div)
@@ -640,4 +640,13 @@ func Maxs[T types.Number](a ...T) T {
 // Mins is delegated to return the min value with a variable number of input int
 func Mins[T types.Number](a ...T) T {
 	return a[MinIndex(a)]
+}
+
+// Transponse1D This method does not perform the real transpose
+func Transponse1D[T any](v []T) [][1]T {
+	var ret = make([][1]T, len(v))
+	for i := range v {
+		ret[i][0] = v[i]
+	}
+	return ret
 }
