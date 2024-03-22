@@ -180,10 +180,6 @@ func TestGetFileContentTypeBIN(t *testing.T) {
 	}
 }
 
-func TestListFile(t *testing.T) {
-	t.Log(ListFiles(codeFolder))
-}
-
 func BenchmarkListFile(t *testing.B) {
 	for n := 0; n < t.N; n++ {
 		ListFiles(codeFolder)
@@ -265,6 +261,34 @@ func TestCompareBinaryFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := CompareBinaryFile(tt.args.file1, tt.args.file2, tt.args.nByte); got != tt.want {
 				t.Errorf("CompareBinaryFile() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExist(t *testing.T) {
+	type args struct {
+		filePath string
+		files    []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "1",
+			args: args{
+				filePath: ".",
+				files:    []string{"fileutils.go", "fileutils_test.go", "processing"},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Exist(tt.args.filePath, tt.args.files); got != tt.want {
+				t.Errorf("Exist() = %v, want %v", got, tt.want)
 			}
 		})
 	}

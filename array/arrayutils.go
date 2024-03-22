@@ -3,77 +3,30 @@ package arrayutils
 import (
 	"fmt"
 	"github.com/alessiosavi/GoGPUtils/datastructure/types"
-	"sort"
+	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
 	"strings"
 )
 
-func PadSlice[T any](data *[]T, n int, v T) {
-	if len(*data) >= n {
-		*data = (*data)[:n]
-		return
+// Pad is delegated to pad/trim the given `data` to `n`, using the value `v`
+func Pad[T any](data *[]T, n int, v T) []T {
+	if len(*data) > n {
+		return Trim(data, n)
 	}
 	res := make([]T, n-len(*data))
 	for i := 0; i < cap(res); i++ {
 		res[i] = v
 	}
 	*data = append(*data, res...)
-}
-func RemoveElementsFromMatrixByIndex(data [][]string, j []int) [][]string {
-	var (
-		newArray [][]string
-		toAdd    = true
-	)
-
-	if len(j) == 0 {
-		return data
-	}
-	for i := 0; i < len(data); i++ {
-		for _, k := range j {
-			if i == k {
-				toAdd = false
-				break
-			}
-		}
-
-		if toAdd {
-			newArray = append(newArray, data[i])
-		}
-		toAdd = true
-	}
-
-	return newArray
+	return *data
 }
 
-// RemoveElementsFromStringByIndex delete the element of the indexes contained in j of the data in input
-func RemoveElementsFromStringByIndex(data []string, j []int) []string {
-	var (
-		newArray []string
-		toAdd    = true
-	)
-
-	if len(j) == 0 {
-		return data
+// Trim is delegated to trim the given `data` to `n`
+func Trim[T any](data *[]T, n int) []T {
+	if len(*data) > n {
+		*data = (*data)[:n]
 	}
-	// sort.Ints(j)
-	for i := 0; i < len(data); i++ {
-		for _, k := range j {
-			// if k < i || k > i {
-			// 	break
-			// } else
-			if i == k {
-				toAdd = false
-				break
-			}
-		}
-
-		if toAdd {
-			newArray = append(newArray, data[i])
-		}
-
-		toAdd = true
-	}
-
-	return newArray
+	return *data
 }
 
 // RemoveElement is delegated to delete the element related to index i
@@ -83,23 +36,6 @@ func RemoveElement(s []string, i int) []string {
 		return s[:len(s)-1]
 	}
 	return s
-}
-
-// JoinStrings use a strings.Builder for concatenate the input string array.
-// It concatenates the strings among the delimiter in input
-func JoinStrings(strs []string, delimiter string) string {
-	if len(strs) == 0 {
-		return ""
-	}
-
-	var sb strings.Builder
-
-	for i := range strs {
-		sb.WriteString(strs[i])
-		sb.WriteString(delimiter)
-	}
-
-	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
 // JoinNumber use a strings.Builder for concatenate the input string array.
@@ -117,132 +53,24 @@ func JoinNumber[T types.Number](n []T, delimiter string) string {
 	return strings.TrimSuffix(sb.String(), delimiter)
 }
 
-// ReverseArray is delegated to return the inverse rappresentation of the array
-// FIXME: Use the same array instead of allocate a new array
-func ReverseArray[T types.Number](n1 []T) []T {
-	var result = make([]T, len(n1))
-	for i := len(n1) - 1; i >= 0; i-- {
-		v := n1[i]
-		j := len(n1) - 1 - i
-		result[j] = v
-	}
-	return result
-}
-
-// ReverseArrayString is delegated to return the inverse rappresentation of the array
-func ReverseArrayString(n1 []string) []string {
-	var result = make([]string, len(n1))
-	for i := len(n1) - 1; i >= 0; i-- {
-		v := n1[i]
-		j := len(n1) - 1 - i
-		result[j] = v
-	}
-	return result
-}
-
 // RemoveByIndex is delegated to remove the element of index s
-func RemoveByIndex[T types.Number](slice []T, s int) []T {
+func RemoveByIndex[T any](slice []T, s int) []T {
 	if s < 0 || s >= len(slice) {
 		return slice
 	}
-	return append(slice[:s], slice[s+1:]...)
+	slice = slices.Delete(slice, s, s+1)
+	return slice
 }
 
 // RemoveByValue is delegated to remove the element that contains the given value
-func RemoveByValue[T types.Number](slice []T, value T) []T {
+func RemoveByValue[T comparable](slice []T, v T) []T {
 	for i := 0; i < len(slice); i++ {
-		if slice[i] == value {
+		if slice[i] == v {
 			slice = append(slice[:i], slice[i+1:]...)
 			i--
 		}
 	}
 	return slice
-}
-
-// InInt is delegated to verify if the given value is present in the target slice
-func InInt(slice []int, target int) bool {
-	for _, b := range slice {
-		if b == target {
-			return true
-		}
-	}
-	return false
-}
-
-// InRune is delegated to verify if the given value is present in the target slice
-func InRune(slice []rune, target rune) bool {
-	for i := range slice {
-		if slice[i] == target {
-			return true
-		}
-	}
-	return false
-}
-
-// RemoveStringByIndex the item in position s from the input array
-func RemoveStringByIndex(slice []string, s int) []string {
-	if s < 0 || s >= len(slice) {
-		return slice
-	}
-	return append(slice[:s], slice[s+1:]...)
-}
-
-// RemoveStrings is delegated to remove the input 'toRemove' value from the given slice
-func RemoveStrings(slice, toRemove []string) []string {
-	for i := 0; i < len(slice); i++ {
-		for j := 0; j < len(toRemove); j++ {
-			if slice[i] == toRemove[j] {
-				slice = RemoveStringByIndex(slice, i)
-				// reset the index
-				i--
-				break
-			}
-		}
-	}
-	return slice
-}
-
-// InStrings is delegated to verify if the given string arrays contains the target
-func InStrings(slice []string, target string) bool {
-	for _, element := range slice {
-		if element == target {
-			return true
-		}
-	}
-	return false
-}
-
-// ContainStrings is delegated to verify if the given string arrays contains the target
-func ContainStrings(slice []string, target string) bool {
-	for _, element := range slice {
-		if strings.Contains(target, element) {
-			return true
-		}
-	}
-	return false
-}
-
-func UniqueString(slice []string) []string {
-	var m = make(map[string]struct{})
-	for _, x := range slice {
-		m[x] = struct{}{}
-	}
-	slice = []string{}
-	for x := range m {
-		slice = append(slice, x)
-	}
-
-	sort.Strings(slice)
-	return slice
-}
-
-func ToByte(slice []string, separator string) []byte {
-	var sb strings.Builder
-	for i := range slice {
-		sb.WriteString(slice[i])
-		sb.WriteString(separator)
-	}
-	return []byte(strings.TrimSuffix(sb.String(), separator))
 }
 
 // SplitEqual is delegated to split the given data into slice of equal length
@@ -277,4 +105,28 @@ func Apply[T any](v *[]T, fn func(int, T) T, inplace bool) []T {
 		res[i] = fn(i, res[i])
 	}
 	return res
+}
+
+func Unique[T constraints.Ordered](slice []T) []T {
+	var m = make(map[T]struct{})
+	var i int
+	for _, x := range slice {
+		if _, ok := m[x]; !ok {
+			m[x] = struct{}{}
+			slice[i] = x
+			i++
+		}
+	}
+
+	return slices.Clip(slice[:i])
+}
+
+func Count[T comparable](data []T, target T) int {
+	var c = 0
+	for i := range data {
+		if data[i] == target {
+			c++
+		}
+	}
+	return c
 }

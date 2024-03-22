@@ -7,100 +7,11 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 const distance1 string = `../testdata/files/testDistance.txt`
 const distance2 string = `../testdata/files/testDistance1.txt`
 const danteDataset string = `../testdata/files/dante.txt`
-
-func TestExtractUpperBlock(t *testing.T) {
-	for _, test := range []string{"test_ID", "test_ID_test", "Test_ID_TEST", "test_ID_test_ID", "test ID", "test_ID test", "Test ID TEST", "test ID_test ID", "TestID", "TestId"} {
-
-		//for _, test := range []string{"CompanyName"} {
-		r := strings.NewReplacer(" ", "_")
-
-		expected := r.Replace(strings.ToLower(test))
-		if res := ExtractUpperBlock(test, r); res != expected {
-			t.Errorf("Expected: %s | Found: %s", expected, res)
-		}
-	}
-}
-func TestIsUpper(t *testing.T) {
-	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
-	dataKO := []string{`aaa`, `bbb`, `zzz`, `<<<`, `!!!`}
-	for i := range dataOK {
-		if !IsUpper(dataOK[i]) {
-			t.Fail()
-		}
-	}
-	for i := range dataKO {
-		if IsUpper(dataKO[i]) {
-			t.Fail()
-		}
-	}
-}
-
-func TestIsLower(t *testing.T) {
-	dataOK := []string{`AAA`, `BBB`, `ZZZ`}
-	dataKO := []string{`aaa`, `bbb`, `zzz`}
-	for i := range dataOK {
-		if IsLower(dataOK[i]) {
-			t.Fail()
-		}
-	}
-	for i := range dataKO {
-		if !IsLower(dataKO[i]) {
-			t.Fail()
-		}
-	}
-}
-func TestContainsLetter(t *testing.T) {
-	dataOK := []string{`baaaa`, `baa!aaa`, `baa aaa`, `!!!!a!!!`}
-	dataKO := []string{`....`, `,,,,,`, `,,,,,,,`, `<<<`, `!!!`}
-	for i := range dataOK {
-		if !ContainsLetter(dataOK[i]) {
-			t.Fail()
-		}
-	}
-	for i := range dataKO {
-		if ContainsLetter(dataKO[i]) {
-			t.Fail()
-		}
-	}
-}
-
-func TestContainsOnlyLetter(t *testing.T) {
-	dataOK := []string{`baaaa`, `baaaaa`, `baaa`, `a`}
-	dataKO := []string{`....`, `,,,,,`, `<<<`, `!!!`, `2`}
-	for i := range dataOK {
-		if !ContainsOnlyLetter(dataOK[i]) {
-			t.Error(dataOK[i])
-		}
-	}
-	for i := range dataKO {
-		if ContainsOnlyLetter(dataKO[i]) {
-			t.Error(dataKO[i])
-		}
-	}
-}
-
-func TestContainsMultiple(t *testing.T) {
-
-}
-
-func TestRemoveNonAscii(t *testing.T) {
-	testData := []string{`AÀ È Ì Ò Ù Ỳ Ǹ ẀA`, `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`, `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`}
-	dataOK := []string{`A A`, `A A`, `AA AA`}
-	var data []string
-	for _, item := range testData {
-		data = append(data, RemoveNonASCII(item))
-	}
-	if !reflect.DeepEqual(dataOK, data) {
-		t.Errorf("Expected: %v | Found: %v", dataOK, data)
-	}
-}
 
 func TestRemoveFromString(t *testing.T) {
 	data := []string{`test1`, `another test`, `another another test`}
@@ -120,33 +31,6 @@ func TestIsBlank(t *testing.T) {
 			t.Log(item)
 			t.Fail()
 		}
-	}
-}
-
-func TestTrimDoubleSpace(t *testing.T) {
-	data := []string{`  test`, `test  `, `t  st`}
-	for _, item := range data {
-		str := Trim(item)
-		if len(str) != 4 {
-			t.Fail()
-		}
-	}
-}
-
-func TestRemoveDoubleWhiteSpace(t *testing.T) {
-	data := []string{`  test`, `test  `, `te  st`}
-	for _, item := range data {
-		str := RemoveDoubleWhiteSpace(item)
-		if len(str) != 5 {
-			t.Fail()
-		}
-	}
-}
-
-func TestIsASCII(t *testing.T) {
-	data := "This is a simple! Text< \n"
-	if !IsASCII(data) {
-		t.Fail()
 	}
 }
 
@@ -196,34 +80,6 @@ func TestReverseString(t *testing.T) {
 		t.Fail()
 	}
 }
-func TestExtractTextFromQuery(t *testing.T) {
-	data := "Golang is better than java :D"
-	ignore := []string{"java"}
-	if len(ExtractTextFromQuery(data, nil)) != 6 {
-		t.Fail()
-	}
-	if len(ExtractTextFromQuery(data, ignore)) != 5 {
-		t.Fail()
-	}
-}
-func TestCheckPresence(t *testing.T) {
-	data := []string{"test1", "test2", "test3", "test4"}
-	if !CheckPresence(data, "test4") {
-		t.Fail()
-	}
-	if CheckPresence(data, "test5") {
-		t.Fail()
-	}
-}
-
-func TestLevenshteinDistanceLegacy(t *testing.T) {
-	str1 := `kitten kitten kitten kitten kitten kitten`
-	str2 := `sitting sitting sitting sitting sitting`
-	distance := LevenshteinDistanceLegacy(str1, str2)
-	if distance != 21 {
-		t.Error(distance)
-	}
-}
 
 func TestJaroDistance(t *testing.T) {
 	var str1, str2 = "MARTHA", "MARHTA"
@@ -249,23 +105,6 @@ func TestLevenshteinDistance(t *testing.T) {
 	}
 }
 
-func BenchmarkLevenshteinDistanceLegacy(t *testing.B) {
-	content, err := os.ReadFile(distance1)
-	if err != nil {
-		return
-	}
-	data1 := strings.ToUpper(string(content))
-	content, err = os.ReadFile(distance2)
-	if err != nil {
-		return
-	}
-	data2 := strings.ToUpper(string(content))
-
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		LevenshteinDistanceLegacy(data1, data2)
-	}
-}
 func BenchmarkLevenshteinDistance(t *testing.B) {
 	content, err := os.ReadFile(distance1)
 	if err != nil {
@@ -316,18 +155,6 @@ func BenchmarkJaroDistance(t *testing.B) {
 	}
 }
 
-func BenchmarkContainsOnlyLetter(t *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := string(content)
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		ContainsOnlyLetter(data)
-	}
-}
-
 func BenchmarkRemoveFromString(t *testing.B) {
 	content, err := os.ReadFile(danteDataset)
 	if err != nil {
@@ -340,28 +167,6 @@ func BenchmarkRemoveFromString(t *testing.B) {
 	}
 }
 
-func BenchmarkExtractTextFromQuery(b *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := string(content)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		ExtractTextFromQuery(data, nil)
-	}
-}
-func BenchmarkCheckPresence(b *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := string(content)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		CheckPresence([]string{"amor, Beatrice"}, data)
-	}
-}
 func BenchmarkIsUpper(b *testing.B) {
 	content, err := os.ReadFile(danteDataset)
 	if err != nil {
@@ -386,17 +191,6 @@ func BenchmarkIsLower(b *testing.B) {
 	}
 }
 
-func BenchmarkRemoveWhiteSpace(b *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := string(content)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		RemoveWhiteSpace(data)
-	}
-}
 func BenchmarkIsASCII(b *testing.B) {
 	content, err := os.ReadFile(danteDataset)
 	if err != nil {
@@ -442,7 +236,7 @@ func BenchmarkExtractString(b *testing.B) {
 	data := string(content)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ExtractString(&data, initial, final)
+		ExtractString(data, initial, final)
 	}
 }
 
@@ -493,18 +287,6 @@ func BenchmarkCreateJSON(t *testing.B) {
 	}
 }
 
-func BenchmarkJoin(t *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := strings.Split(string(content), "\n")
-	t.ResetTimer()
-	for i := 0; i < t.N; i++ {
-		arrayutils.JoinStrings(data, " ")
-	}
-}
-
 func BenchmarkTrim(b *testing.B) {
 	content, err := os.ReadFile(danteDataset)
 	if err != nil {
@@ -517,17 +299,6 @@ func BenchmarkTrim(b *testing.B) {
 	}
 }
 
-func BenchmarkRemoveDoubleWhiteSpace(b *testing.B) {
-	content, err := os.ReadFile(danteDataset)
-	if err != nil {
-		return
-	}
-	data := string(content)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		RemoveDoubleWhiteSpace(data)
-	}
-}
 func BenchmarkCountLines(b *testing.B) {
 	content, err := os.ReadFile(danteDataset)
 	if err != nil {
@@ -669,19 +440,19 @@ func Test_pad(t *testing.T) {
 			},
 		},
 		{
-			name: "1",
+			name: "2",
 			args: args{
 				w: "012500",
 			},
 		},
 		{
-			name: "1",
+			name: "3",
 			args: args{
 				w: " 0012500",
 			},
 		},
 		{
-			name: "1",
+			name: "4",
 			args: args{
 				w: "000000012500",
 			},
@@ -724,6 +495,244 @@ func TestTrimStrings(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := TrimStrings(tt.args.vs); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TrimStrings() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtractString(t *testing.T) {
+	type args struct {
+		data  string
+		first string
+		last  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "ok_1",
+			args: args{
+				data:  "This is a test for extract string",
+				first: "This is a",
+				last:  "for extract string",
+			},
+			want: "test",
+		}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ExtractString(tt.args.data, tt.args.first, tt.args.last); got != tt.want {
+				t.Errorf("ExtractString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsUpper(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "ok_1",
+			args: args{
+				str: "AAA",
+			},
+			want: true,
+		},
+		{
+			name: "ko_1",
+			args: args{
+				str: "AaA",
+			},
+			want: false,
+		},
+		{
+			name: "ko_2",
+			args: args{
+				str: "A!",
+			},
+			want: true,
+		},
+		{
+			name: "ko_3",
+			args: args{
+				str: "a!",
+			},
+			want: false,
+		},
+		{
+			name: "ko_4",
+			args: args{
+				str: "!",
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsUpper(tt.args.str); got != tt.want {
+				t.Errorf("IsUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsLower(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "ok_1",
+			args: args{
+				str: "aaa",
+			},
+			want: true,
+		},
+		{
+			name: "ko_1",
+			args: args{
+				str: "AaA",
+			},
+			want: false,
+		},
+		{
+			name: "ko_2",
+			args: args{
+				str: "a!",
+			},
+			want: true,
+		},
+		{
+			name: "ko_3",
+			args: args{
+				str: "A!",
+			},
+			want: false,
+		},
+		{
+			name: "ko_4",
+			args: args{
+				str: "!",
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsLower(tt.args.str); got != tt.want {
+				t.Errorf("IsUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRemoveNonASCII(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "1",
+			args: args{
+				str: "AÀ È Ì Ò Ù Ỳ Ǹ ẀA",
+			},
+			want: "A A",
+		},
+		{
+			name: "2",
+			args: args{
+				str: `AȨ Ç Ḑ Ģ Ḩ Ķ Ļ Ņ Ŗ ŞA`,
+			},
+			want: "A A",
+		},
+		{
+			name: "3",
+			args: args{
+				str: `AA♩ ♪ ♫ ♬ ♭ ♮ ♯AA`,
+			},
+			want: `AA AA`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RemoveNonASCII(tt.args.str); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("RemoveNonASCII() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsAlpha(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "1",
+			args: args{
+				str: "a",
+			},
+			want: true,
+		},
+		{
+			name: "2",
+			args: args{
+				str: "a a",
+			},
+			want: true,
+		},
+		{
+			name: "3",
+			args: args{
+				str: "A",
+			},
+			want: true,
+		},
+		{
+			name: "4",
+			args: args{
+				str: "A A",
+			},
+			want: true,
+		},
+		{
+			name: "5",
+			args: args{
+				str: "a!",
+			},
+			want: false,
+		},
+		{
+			name: "5",
+			args: args{
+				str: "!!",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsAlpha(tt.args.str); got != tt.want {
+				t.Errorf("IsAlpha() = %v, want %v", got, tt.want)
 			}
 		})
 	}

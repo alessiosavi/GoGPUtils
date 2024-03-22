@@ -18,7 +18,7 @@ func TestDetectCarriageReturn(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		carriageReturn, err := DetectLineTerminator(fd)
+		carriageReturn, err := DetectLineTerminator(fd, 0)
 		if err != nil {
 			t.Log(err)
 			t.Fail()
@@ -30,7 +30,7 @@ func TestCR(t *testing.T) {
 	var terminators = []LineTerminatorType{CR, LF, CRLF, LFCR, RS}
 	for _, terminator := range terminators {
 		fakeCrs := generateFakeDataLineTerminator(terminator)
-		tt, err := DetectLineTerminator(bytes.NewReader(fakeCrs))
+		tt, err := DetectLineTerminator(bytes.NewReader(fakeCrs), 0)
 		if err != nil {
 			t.Error(err)
 		}

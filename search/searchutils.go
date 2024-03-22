@@ -2,11 +2,10 @@ package searchutils
 
 import (
 	"github.com/alessiosavi/ahocorasick"
-	"golang.org/x/exp/constraints"
 )
 
 // LinearSearch is a simple for delegated to find the target value
-func LinearSearch[T constraints.Ordered](data []T, target T) int {
+func LinearSearch[T comparable](data []T, target T) int {
 	var i int
 	for i = range data {
 		if target == data[i] {

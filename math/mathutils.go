@@ -3,6 +3,7 @@ package mathutils
 import (
 	"fmt"
 	"github.com/alessiosavi/GoGPUtils/datastructure/types"
+	"golang.org/x/exp/slices"
 	"log"
 	"math"
 	"sort"
@@ -326,46 +327,16 @@ func MultiplyMatrix[T types.Number](m1, m2 [][]T) [][]T {
 	return result
 }
 
-// MultiplyMatrixLegacy is delegated to execute the multiplication between the given matrix
-func MultiplyMatrixLegacy[T types.Number](m1, m2 [][]T) [][]T {
-	if m1 == nil || m2 == nil || len(m1) == 0 || len(m2) == 0 {
-		log.Println("Matrix empty")
-		return nil
-	}
-
-	if len(m1[0]) != len(m2) {
-		log.Println("Different size\nM1:")
-		DumpMatrix(m1)
-		log.Println("M2:")
-		DumpMatrix(m2)
-		return nil
-	}
-
-	total := InitMatrix[T](len(m1), len(m2[0]))
-	for i := range m1 {
-		arrayM1 := m1[i]
-		for k := 0; k < len(m2); k++ {
-			arrayM2 := make([]T, len(arrayM1))
-			for j := range m2 {
-				arrayM2[j] = m2[j][k]
-			}
-			data := MultiplySumArray(arrayM1, arrayM2)
-			total[i][k] = data
-		}
-	}
-	return total
-}
-
-// MultiplySumArray is delegated to multiply the given array and sum every number of the result array
-func MultiplySumArray[T types.Number](a, b []T) T {
+// Dot is delegated to multiply the given array and sum every number of the result array
+func Dot[T types.Number](a, b []T) T {
 	if len(a) != len(b) {
 		panic("Different length ...")
 	}
-	total := make([]T, len(a))
+	var total T
 	for i := range a {
-		total[i] = a[i] * b[i]
+		total += a[i] * b[i]
 	}
-	return SumArray[T](total)
+	return total
 }
 
 // SumArraysPadded is delegated to sum 2 array of different length.
@@ -381,8 +352,8 @@ func SumArraysPadded[T types.Number](n1, n2 []T) []T {
 	} else {
 		length = len(n2)
 	}
-	n1 = PadArray(n1, length)
-	n2 = PadArray(n2, length)
+	n1 = arrayutils.Pad(&n1, length, 0)
+	n2 = arrayutils.Pad(&n2, length, 0)
 
 	for i := length - 1; i >= 0; i-- {
 		sum = n1[i] + n2[i] + T(odd)
@@ -397,8 +368,8 @@ func SumArraysPadded[T types.Number](n1, n2 []T) []T {
 	if odd != 0 {
 		result = append(result, T(odd))
 	}
-	reversed := arrayutils.ReverseArray[T](result)
-	return reversed
+	slices.Reverse(result)
+	return result
 }
 
 // CalculateMaxPrimeFactor is delegated to calculate the max prime factor for the given input
@@ -453,21 +424,8 @@ func GenerateFibonacci[T types.Number](max T) []T {
 	return array
 }
 
-//// GenerateFibonacciN is delegated to generate N Fibonacci number
-//func GenerateFibonacciN[T types.Number](max T) []T {
-//	var array []T
-//	// Hardcoded for enhance for performance
-//	array = append(array, 1, 1, 2)
-//	i := 3
-//	for T(len(array)) < max && array[len(array)-1] <= T(math.MaxFloat64) {
-//		array = append(array, array[i-1]+array[i-2])
-//		i++
-//	}
-//	return array
-//}
-
-// ExtractEvenValuedNumber Is delegated to extract only the even number from the input array
-func ExtractEvenValuedNumber(array []int64) []int64 {
+// ExtractEvenNumber Is delegated to extract only the even number from the input array
+func ExtractEvenNumber(array []int64) []int64 {
 	var result []int64
 	for i := range array {
 		if array[i]%2 == 0 {
@@ -477,7 +435,7 @@ func ExtractEvenValuedNumber(array []int64) []int64 {
 	return result
 }
 
-// FindDivisor is delegated to find every divisor for the inpuT types.Number
+// FindDivisor is delegated to find every divisor for the given input
 func FindDivisor(n int) []int {
 	var count int
 	var divisor []int
@@ -496,23 +454,6 @@ func FindDivisor(n int) []int {
 	}
 	sort.Ints(divisor)
 	return divisor
-}
-
-// PadArray is delegated to return a new padded array with length n
-func PadArray[T types.Number](array []T, n int) []T {
-	var result []T
-	var length = len(array)
-	if n != length {
-		result = make([]T, n-length)
-		for i := 0; i < n-length; i++ {
-			result[i] = 0
-		}
-		result = append(result, array...)
-	} else {
-		return array
-	}
-	//log.Println("Input: ", result, " Output: ", array)
-	return result
 }
 
 // FindIndexValue is delegated to retrieve the index of the given value into the input array.

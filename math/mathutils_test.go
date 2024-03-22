@@ -66,24 +66,6 @@ func TestGenerateFibonacci(t *testing.T) {
 	}
 }
 
-//func TestGenerateFibonacciN(t *testing.T) {
-//	GenerateFibonacciN(999009)
-//}
-
-func TestSumMatrix(t *testing.T) {
-	m1 := InitMatrixCustom(5, 10, 1)
-	m2 := InitMatrixCustom(5, 10, 1)
-	m3 := SumMatrix(m1, m2)
-	t.Log(DumpMatrix(m3))
-}
-
-func TestMultiplyMatrixLegacy(t *testing.T) {
-	m1 := generateTestMatrix1()
-	m2 := generateTestMatrix2()
-	m3 := MultiplyMatrixLegacy(m1, m2)
-	t.Log(DumpMatrix(m3))
-}
-
 func TestMultiplyMatrix(t *testing.T) {
 	m1 := generateTestMatrix1()
 	m2 := generateTestMatrix2()
@@ -93,13 +75,13 @@ func TestMultiplyMatrix(t *testing.T) {
 
 func TestMultiplySumArray1000(t *testing.T) {
 	data := randomizer.RandomIntArray(0, 100, 1000)
-	t.Log(MultiplySumArray(data, data))
+	t.Log(Dot(data, data))
 }
 func BenchmarkMultiplySumArray1000(t *testing.B) {
 	data := randomizer.RandomIntArray(0, 100, 1000)
 	t.ResetTimer()
 	for i := 0; i < t.N; i++ {
-		MultiplySumArray(data, data)
+		Dot(data, data)
 	}
 }
 
@@ -154,11 +136,6 @@ func BenchmarkIsPrime(t *testing.B) {
 			}
 		}
 	}
-}
-
-func TestPadArray(t *testing.T) {
-	array := []int{1, 2, 3, 4}
-	t.Log(PadArray(array, 5))
 }
 
 func TestSumArrays(t *testing.T) {

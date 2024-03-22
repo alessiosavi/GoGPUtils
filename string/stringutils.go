@@ -3,14 +3,13 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
-	"io"
-	"log"
-	"regexp"
-	"strings"
-	"unicode"
-
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	mathutils "github.com/alessiosavi/GoGPUtils/math"
+	"io"
+	"log"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 var BOMS = [][]byte{
@@ -21,6 +20,7 @@ var BOMS = [][]byte{
 	{0xff, 0xfe, 0x00, 0x00}, // UTF-32 LE
 
 }
+var CUTSET = " \n\r\t"
 
 func Indexes(s string, chs string) []int {
 	var ret []int
@@ -32,69 +32,7 @@ func Indexes(s string, chs string) []int {
 	return ret
 }
 
-func ExtractUpperBlock(word string, replacer *strings.Replacer) string {
-	if replacer != nil {
-		word = replacer.Replace(strings.TrimSpace(word))
-	}
-	//back := word
-	for i := 0; i < len(word); {
-		c := rune(word[i])
-		if unicode.IsUpper(c) {
-			start := i
-			stop := 0
-			for _, c1 := range word[i:] {
-				if unicode.IsUpper(c1) {
-					stop++
-				} else {
-					break
-				}
-			}
-			stop += start
-			if start != stop {
-				if stop != len(word) {
-					word = word[0:start] + strings.ToLower(word[start:stop]) + word[stop:]
-					i = i + (stop - start)
-				} else {
-					word = word[0:start] + strings.ToLower(word[start:stop])
-					i = len(word)
-				}
-
-			}
-		}
-
-		i++
-
-	}
-	//log.Printf("In: %s | Out:%s\n", back, word)
-	return word
-}
-
-func Count(data []string, target string) int {
-	var c = 0
-
-	for i := range data {
-		if data[i] == target {
-			c++
-		}
-	}
-	return c
-}
-
-// ExtractTextFromQuery is delegated to retrieve the list of word involved in the query.
-// It can be viewed as a tokenizer that use whitespace for delimit the word
-func ExtractTextFromQuery(target string, ignore []string) []string {
-	var queries []string
-	rgxp := regexp.MustCompile(`(\w+)`)
-	// Extract the list of word
-	for _, item := range rgxp.FindAllString(target, -1) {
-		if !CheckPresence(ignore, item) {
-			queries = append(queries, item)
-		}
-	}
-	return queries
-}
-
-func HasPrefixArray(prefixs []string, target string) bool {
+func HasPrefixes(prefixs []string, target string) bool {
 	for _, prefix := range prefixs {
 		if strings.HasPrefix(target, prefix) {
 			return true
@@ -103,54 +41,36 @@ func HasPrefixArray(prefixs []string, target string) bool {
 	return false
 }
 
-// CheckPresence verify that the given array contains the target string
-func CheckPresence(array []string, target string) bool {
-	for i := range array {
-		if array[i] == target {
-			return true
-		}
-	}
-	return false
-}
-
 // IsUpper verify that a string contains only upper character
-func IsUpper(str string) bool {
-	for i := range str {
-		ascii := int(str[i])
-		if !(ascii > 64 && ascii < 91) {
+func IsUpper(s string) bool {
+	for _, r := range s {
+		switch {
+		case !unicode.IsOneOf([]*unicode.RangeTable{unicode.Letter}, r):
+			continue
+		case !unicode.IsUpper(r):
 			return false
 		}
 	}
 	return true
 }
 
-// IsLower verify that a string contains only lower character
-func IsLower(str string) bool {
-	for i := range str {
-		ascii := int(str[i])
-		if !(ascii > 96 && ascii < 123) {
+// IsLower verify that a string contains only upper character
+func IsLower(s string) bool {
+	for _, r := range s {
+		switch {
+		case !unicode.IsOneOf([]*unicode.RangeTable{unicode.Letter}, r):
+			continue
+
+		case !unicode.IsLower(r):
 			return false
 		}
 	}
 	return true
 }
 
-// ContainsLetter verity that the given string contains, at least, an ASCII alphabet characters
-// Note: whitespace is allowed
-func ContainsLetter(str string) bool {
-	for i := range str {
-		if (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == ' ' {
-			return true
-		}
-	}
-	return false
-}
-
-// ContainsOnlyLetter verity that the given string contains, only, ASCII alphabet characters
-// Note, whitespace is allowed
-func ContainsOnlyLetter(str string) bool {
-	for i := range str {
-		if !((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == ' ') {
+func IsAlpha(str string) bool {
+	for _, r := range str {
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r)) {
 			return false
 		}
 	}
@@ -184,46 +104,18 @@ func CreateJSON(values []string) string {
 		return ""
 	}
 	for i := 0; i < length; i += 2 {
-		json = arrayutils.JoinStrings([]string{json, `"`, values[i], `":"`, values[i+1], `",`}, "")
+		json = strings.Join([]string{json, `"`, values[i], `":"`, values[i+1], `",`}, "")
 	}
 	json = strings.TrimSuffix(json, `,`)
 	json += `}`
 	return json
 }
 
-// RemoveDoubleWhiteSpace is delegated to remove the whitespace from the given string
-// FIXME: memory inefficient, use 2n size, use RemoveFromString method instead
-func RemoveDoubleWhiteSpace(str string) string {
-	var b strings.Builder
-	var i int
-
-	b.Grow(len(str))
-	for i = range str {
-		if !(str[i] == 32 && (i+1 < len(str) && str[i+1] == 32)) {
-			b.WriteRune(rune(str[i]))
-		}
-	}
-	return b.String()
-}
-
-// RemoveWhiteSpace is delegated to remove the whitespace from the given string
-// FIXME: memory inefficient, use 2n size, use RemoveFromString method instead
-func RemoveWhiteSpace(str string) string {
-	var b strings.Builder
-	b.Grow(len(str))
-	for i := range str {
-		if str[i] != 32 {
-			b.WriteRune(rune(str[i]))
-		}
-	}
-	return b.String()
-}
-
 // IsASCII is delegated to verify if a given string is ASCII compliant
 func IsASCII(s string) bool {
 	n := len(s)
 	for i := 0; i < n; i++ {
-		if s[i] > 127 {
+		if s[i] >= utf8.RuneSelf {
 			return false
 		}
 	}
@@ -232,7 +124,7 @@ func IsASCII(s string) bool {
 
 // IsASCIIRune is delegated to verify if the given character is ASCII compliant
 func IsASCIIRune(r rune) bool {
-	return r < 128
+	return r < utf8.RuneSelf
 }
 
 // RemoveFromString Remove a given character in position i from the input string
@@ -258,24 +150,24 @@ func Split(data io.Reader) []string {
 // CountLines return the number of lines in the given string
 func CountLines(str string) int {
 	scanner := bufio.NewScanner(strings.NewReader(str)) // Create a scanner for iterate the string
-	counter := 0
+	n := 0
 	for scanner.Scan() {
-		counter++
+		n++
 	}
-	return counter
+	return n
 }
 
 // ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
-func ExtractString(data *string, first, last string) string {
+func ExtractString(data string, first, last string) string {
 	// Find the first instance of 'start' in the give string data
-	startHeder := strings.Index(*data, first)
+	startHeder := strings.Index(data, first)
 	if startHeder != -1 { // Found !
 		startHeder += len(first) // Remove the first word
 		// Check the first occurrence of 'last' that delimit the string to return
-		endHeader := strings.Index((*data)[startHeder:], last)
+		endHeader := strings.Index(data[startHeder:], last)
 		// Ok, seems good, return the content of the string delimited by 'first' and 'last'
 		if endHeader != -1 {
-			return (*data)[startHeder : startHeder+endHeader]
+			return strings.Trim(data[startHeder:startHeder+endHeader], CUTSET)
 		}
 	}
 	return ""
@@ -290,12 +182,23 @@ func ReplaceAtIndex(str, replacement string, index int) string {
 func RemoveNonASCII(str string) string {
 	var b bytes.Buffer
 	b.Grow(len(str))
-	for _, c := range str {
-		if IsASCIIRune(c) {
-			b.WriteRune(c)
+	for _, r := range str {
+		if IsASCIIRune(r) {
+			b.WriteRune(r)
 		}
 	}
-	return RemoveDoubleWhiteSpace(b.String())
+
+	scanner := bufio.NewScanner(bytes.NewReader(b.Bytes()))
+	scanner.Split(bufio.ScanWords)
+	var sb strings.Builder
+	v := scanner.Text()
+	sb.WriteString(v)
+	for scanner.Scan() {
+		sb.WriteString(scanner.Text())
+		sb.WriteRune(' ')
+	}
+
+	return sb.String()[:sb.Len()-1]
 }
 
 // IsBlank is delegated to verify that the string does not contain only empty char
@@ -314,13 +217,12 @@ func IsBlank(str string) bool {
 }
 
 // Trim is delegated to remove the initial, final whitespace and the double whitespace present in the data
-// It also converts every new line in a space
 func Trim(str string) string {
 	if str == "" {
 		return str
 	}
 	var b strings.Builder
-	replacer := strings.NewReplacer("\\n", "", "\\r", "", "\\t", "")
+	replacer := strings.NewReplacer("  ", " ", "\\n", "", "\\r", "", "\\t", "")
 	str = replacer.Replace(str)
 	b.Grow(len(str))
 
@@ -328,25 +230,13 @@ func Trim(str string) string {
 		// Write character
 		if str[i] > 32 {
 			b.WriteByte(str[i])
-			// Convert new line in space
-		} else if str[i] == 10 {
-			b.WriteByte(32)
 			// Print the space only if followed by an ASCII character
 		} else if i+1 < len(str) && (str[i] < 33 && str[i+1] > 32) {
 			b.WriteByte(str[i])
 		}
 	}
-	var data = b.String()
 
-	if len(data) > 0 {
-		if data[0] == 32 {
-			data = data[1:]
-		}
-		if data[len(data)-1] == 32 {
-			data = data[:len(data)-1]
-		}
-	}
-	return data
+	return strings.Trim(b.String(), CUTSET)
 }
 
 // CheckPalindrome is delegated to verify if the given string is palindrome
@@ -363,45 +253,14 @@ func CheckPalindrome(str string) bool {
 // ReverseString is delegated to return the reverse of the input string
 func ReverseString(str string) string {
 	length := len(str) - 1
-	var builder strings.Builder
+	var sb strings.Builder
 	for i := length; i >= 0; i-- {
-		builder.WriteByte(str[i])
+		sb.WriteByte(str[i])
 	}
-	return builder.String()
+	return sb.String()
 }
 
-// LevenshteinDistanceLegacy is delegated to calculate the Levenshtein distance for the given string
-func LevenshteinDistanceLegacy(str1, str2 string) int {
-	d := make([][]int, len(str1)+1)
-	for i := range d {
-		d[i] = make([]int, len(str2)+1)
-	}
-	for i := range d {
-		d[i][0] = i
-	}
-	for j := range d[0] {
-		d[0][j] = j
-	}
-	for j := 1; j <= len(str2); j++ {
-		for i := 1; i <= len(str1); i++ {
-			if str1[i-1] == str2[j-1] {
-				d[i][j] = d[i-1][j-1]
-			} else {
-				_min := d[i-1][j]
-				if d[i][j-1] < _min {
-					_min = d[i][j-1]
-				}
-				if d[i-1][j-1] < _min {
-					_min = d[i-1][j-1]
-				}
-				d[i][j] = _min + 1
-			}
-		}
-	}
-	return d[len(str1)][len(str2)]
-}
-
-// LevenshteinDistance is an optimized version for calculate the levenstein distance
+// LevenshteinDistance is an optimized version for calculate the Levenshtein distance
 func LevenshteinDistance(str1, str2 string) int {
 	var n, m = len(str1), len(str2)
 	if n == 0 {
@@ -545,17 +404,6 @@ func Join(strs ...string) string {
 	return sb.String()
 }
 
-// JoinSeparator is a quite efficient string "concatenator"
-func JoinSeparator(sep string, strs ...string) string {
-	var sb strings.Builder
-	for _, str := range strs {
-		sb.WriteString(str)
-		sb.WriteString(sep)
-	}
-	data := sb.String()
-	return data[:len(data)-len(sep)]
-}
-
 func GetFirstRune(data string) rune {
 	for _, c := range data {
 		return c
@@ -573,17 +421,29 @@ func ArrayToMap(slice []string) map[string]struct{} {
 
 func TrimStrings(vs []string) []string {
 	arrayutils.Apply(&vs, func(i int, s string) string {
-		return strings.Trim(s, " \n\r\t")
+		return strings.Trim(s, CUTSET)
 	}, true)
 	return vs
 }
 
-func Pad(w, v string, n int) string {
+func Pad(word, v string, n int) string {
 	var sb strings.Builder
-	w = strings.Trim(w, " \n\r")
-	for i := 0; i < n-len(w); i++ {
+	word = Trim(word)
+	if len(word) > n {
+		return word[:n]
+	}
+	for i := 0; i < n-len(word); i++ {
 		sb.WriteString(v)
 	}
-	sb.WriteString(w)
+	sb.WriteString(word)
 	return sb.String()
+}
+
+func ToByte(slice []string, separator string) []byte {
+	var sb bytes.Buffer
+	for i := range slice {
+		sb.WriteString(slice[i])
+		sb.WriteString(separator)
+	}
+	return bytes.TrimSuffix(sb.Bytes(), []byte(separator))
 }

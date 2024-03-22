@@ -17,99 +17,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
-
-// Tail is delegated to read the latest lines of the file.
-// NOTE: buffer have to be lesser than the minimum string length
-func Tail(FILE string, BUFF_BYTE int64, START_POS, N_STRING int) (string, error) {
-	// list of strings read
-	var stringsArray = make([]string, N_STRING)
-	// Contains the data
-	var buff = make([]byte, -BUFF_BYTE)
-
-	if !(START_POS >= 0 && START_POS <= 2) {
-		log.Fatal("Wrong argument for Seek ...")
-	}
-
-	file, err := os.Open(FILE)
-	if err != nil {
-		log.Println("Unable to open file: " + FILE + " ERR: " + err.Error())
-		return "", err
-	}
-	defer file.Close()
-
-	// Go to end of file
-	_, err = file.Seek(BUFF_BYTE, START_POS)
-	if err != nil {
-		log.Println("Unable to seek to the end of the file: " + FILE + " ERR: " + err.Error())
-		return "", err
-	}
-
-	var (
-		linesReaded  int
-		nByte        int    // Number of byte readed
-		stringBuffer string // Contains the string until we don't found the new line
-		iteration    int64  = 1
-		n                   = -BUFF_BYTE // Just for pass the first check
-		lastPosition int64
-	)
-
-	// Until we haven't read all the string
-	for linesReaded < N_STRING {
-		if n >= -BUFF_BYTE {
-			n, err = file.Seek(iteration*BUFF_BYTE, START_POS)
-			if err != nil {
-				log.Println("2) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-				return "", err
-			}
-			lastPosition = n
-		} else {
-			// We have not enought data for fill the buffer, seeking to the start of the file
-			n, err = file.Seek(0, 0)
-			if err != nil {
-				log.Println("error during seek: ", n)
-				return "", err
-			}
-			buff = make([]byte, lastPosition)
-			_, err = file.Read(buff)
-			if err != nil {
-				log.Println("3) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-				return "", err
-			}
-			stringBuffer = string(buff) + stringBuffer
-			stringsArray[N_STRING-linesReaded-1] = stringBuffer
-			break
-		}
-
-		// Read the string related to the buffer
-		nByte, err = file.Read(buff)
-		if err != nil {
-			log.Println("1) Error during read of file | Lines readed: ", linesReaded, " Byte readed: ", nByte, " Iteration: ", iteration)
-			return "", err
-		}
-		// Append the string in initial position
-		stringBuffer = string(buff) + stringBuffer
-		if strings.Contains(stringBuffer, "\n") {
-			stringsArray[N_STRING-linesReaded-1] = stringBuffer
-			stringBuffer = ""
-			linesReaded++
-			// Continue to read, we have not found a new line, and we have enough file to read
-		}
-		iteration++
-	}
-	err = file.Close()
-	if err != nil {
-		log.Println("Error! -> " + err.Error())
-	}
-
-	if linesReaded > 0 {
-		stringsArray = stringsArray[linesReaded-1:]
-	}
-
-	return arrayutils.JoinStrings(stringsArray, ""), nil
-}
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
 func ReadFileInArray(filePath string) []string {
@@ -156,24 +64,19 @@ func CreateDir(path string) error {
 func GetFileModification(filepath string) int64 {
 	statinfo, err := os.Stat(filepath)
 	if err != nil {
-		return -2
+		return -1
 	}
 	return statinfo.ModTime().Unix()
 }
 
 // GetFileDate is delegated to return the date in a string format in which the file was (latest) modified
-func GetFileDate(filepath string) string {
+func GetFileDate(filepath string) time.Time {
 	unixTimestamp := GetFileModification(filepath)
+	var res time.Time
 	if unixTimestamp != -1 {
-		loc, err := time.LoadLocation("Europe/Rome")
-		if err != nil {
-			return ""
-		}
-		currentTime := time.Unix(unixTimestamp, 0).In(loc)
-		date := currentTime.Format("2006-01-02 15:04:05")
-		return date
+		res = time.Unix(unixTimestamp, 0).In(time.UTC)
 	}
-	return ""
+	return res
 }
 
 // ListFiles is delegated to find the files from the given directory, recursively for each dir
@@ -229,12 +132,12 @@ func FindFiles(path, target string, caseSensitive bool) []string {
 	return fileList
 }
 
-// VerifyFilesExists is delegated to verify that the given list of file exist in the directory
-func VerifyFilesExists(filePath string, files []string) bool {
+// Exist is delegated to verify that the given list of file exist in the directory
+func Exist(filePath string, files []string) bool {
 	if IsDir(filePath) {
 		for i := range files {
 			filename := path.Join(filePath, files[i])
-			if !IsFile(filename) {
+			if !(IsFile(filename) || IsDir(filename)) {
 				return false
 			}
 		}

@@ -2,6 +2,7 @@ package binarytree
 
 import (
 	"fmt"
+	"golang.org/x/exp/slices"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
@@ -176,7 +177,7 @@ func (n *Node) print() string {
 	for key := h; key > 0; key-- {
 		for j := h; j > key; j-- {
 			for _, k := range printMap[j] {
-				if arrayutils.InInt(printMap[key], k) {
+				if slices.Contains(printMap[key], k) {
 					printMap[key] = arrayutils.RemoveByValue[int](printMap[key], k)
 				}
 			}

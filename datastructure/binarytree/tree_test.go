@@ -1,10 +1,9 @@
 package binarytree
 
 import (
+	"golang.org/x/exp/slices"
 	"sort"
 	"testing"
-
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )
 
 func initTestTree() Tree {
@@ -175,7 +174,7 @@ func Test_Remove(t *testing.T) {
 		t.Error("Expected 1 less length of the result")
 	}
 
-	if arrayutils.InInt(res, value) {
+	if slices.Contains(res, value) {
 		t.Errorf("Expected no more [%d]\n", value)
 	}
 
