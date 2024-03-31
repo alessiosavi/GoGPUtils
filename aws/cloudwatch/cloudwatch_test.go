@@ -3,6 +3,7 @@ package cloudwatchutils
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 /*
@@ -20,8 +21,26 @@ func TestGetLogGroups(t *testing.T) {
 	if len(groups) == 0 {
 		t.Errorf("Nessun gruppo di log trovato")
 	}
-	for group := range groups {
-		fmt.Println("log nome ", group)
+
+	//Controlla alcuni gruppi per verificarne la correttezza
+	for _, group := range groups {
+		fmt.Println(group.Arn)
 	}
+
+}
+
+/*
+ * This function return the export of a given log group
+ *
+ */
+func TestExportLog(t *testing.T) {
+	// Chiamata alla funzione ExportLog per esportare i log
+	output, err := ExportLog("friends-s3", "/aws/lambda/VisitCountFunction", "export_test", time.Now().Add(-24*time.Hour), time.Now())
+	if err != nil {
+		fmt.Println("Errore durante l'esportazione dei log:", err)
+		return
+	}
+
+	fmt.Println("Attività di esportazione dei log creata con successo:", output)
 
 }
