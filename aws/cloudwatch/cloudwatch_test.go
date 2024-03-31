@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+/*
+ * This function controlls that there is a least 1 log group
+ * and if there is return it
+ */
 func TestGetLogGroups(t *testing.T) {
 
 	// Chiama la funzione GetLogGroups
@@ -16,11 +20,8 @@ func TestGetLogGroups(t *testing.T) {
 	if len(groups) == 0 {
 		t.Errorf("Nessun gruppo di log trovato")
 	}
-
-	//Controlla alcuni gruppi per verificarne la correttezza
-	for _, group := range groups {
-		fmt.Println(group.LogGroupName)
-
+	for group := range groups {
+		fmt.Println("log nome ", group)
 	}
 
 }
