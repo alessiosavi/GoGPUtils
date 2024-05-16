@@ -22,7 +22,7 @@ var BOMS = [][]byte{
 }
 var CUTSET = " \n\r\t"
 
-func Indexes(s string, chs string) []int {
+func Indexes(s, chs string) []int {
 	var ret []int
 	for i := 0; i <= len(s)-len(chs); i++ {
 		if s[i:i+len(chs)] == chs {
@@ -158,7 +158,7 @@ func CountLines(str string) int {
 }
 
 // ExtractString is delegated to filter the content of the given data delimited by 'first' and 'last' string
-func ExtractString(data string, first, last string) string {
+func ExtractString(data, first, last string) string {
 	// Find the first instance of 'start' in the give string data
 	startHeder := strings.Index(data, first)
 	if startHeder != -1 { // Found !

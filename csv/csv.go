@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/csv"
 	"errors"
-	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
-	"github.com/schollz/progressbar/v3"
 	"strconv"
 	"time"
+
+	processingutils "github.com/alessiosavi/GoGPUtils/files/processing"
+	"github.com/schollz/progressbar/v3"
 )
 
 // FIXME: Migrate the module to map[headers][]row
@@ -16,6 +17,7 @@ type CSVData [][]string
 
 type ExplodeCSV func(int, []string) [][]string
 type ApplyCSV func(int, []string) []string
+type FilterCSV func(int, []string) bool
 type ApplyHeader func(int, *string) string
 
 func (c *Headers) Apply(fn ApplyHeader, inplace bool) Headers {
@@ -57,6 +59,25 @@ func (c *CSVData) Apply(fn ApplyCSV, inplace bool) CSVData {
 		res[i] = fn(i, res[i])
 	}
 	bar.Close()
+	return res
+}
+
+func (c *CSVData) Filter(fn FilterCSV, inplace bool) CSVData {
+	count := 0
+	var res CSVData
+	if inplace {
+		res = *c
+	} else {
+		res = make(CSVData, len(*c))
+		copy(res, *c)
+	}
+	for i, elem := range res {
+		if fn(i, elem) {
+			res[count] = elem
+			count++
+		}
+	}
+	res = res[:count]
 	return res
 }
 

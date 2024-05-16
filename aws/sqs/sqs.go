@@ -2,13 +2,14 @@ package sqs
 
 import (
 	"context"
+	"html"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	guuid "github.com/google/uuid"
-	"html"
-	"sync"
 )
 
 var sqsClient *sqs.Client = nil
@@ -68,14 +69,15 @@ func GetQueueURL(queueName string) (string, error) {
 	return *url.QueueUrl, nil
 }
 
-func WriteMessage(queueURL, message string) (*sqs.SendMessageOutput, error) {
+func WriteMessage(queueURL, message string, metadata map[string]sqsTypes.MessageAttributeValue) (*sqs.SendMessageOutput, error) {
 	return sqsClient.SendMessage(context.Background(), &sqs.SendMessageInput{
-		MessageBody: &message,
-		QueueUrl:    &queueURL,
+		MessageBody:       &message,
+		QueueUrl:          &queueURL,
+		MessageAttributes: metadata,
 	})
 }
 
-func WriteMessages(queueURL string, messages []string) (*sqs.SendMessageBatchOutput, error) {
+func WriteMessages(queueURL string, messages []string, metadatas []map[string]sqsTypes.MessageAttributeValue) (*sqs.SendMessageBatchOutput, error) {
 	var msgs []sqsTypes.SendMessageBatchRequestEntry
 
 	for _, message := range messages {
@@ -84,6 +86,10 @@ func WriteMessages(queueURL string, messages []string) (*sqs.SendMessageBatchOut
 			Id:          &guid,
 			MessageBody: &message,
 		})
+	}
+
+	for i := range metadatas {
+		msgs[i].MessageAttributes = metadatas[i]
 	}
 
 	return sqsClient.SendMessageBatch(context.Background(), &sqs.SendMessageBatchInput{
