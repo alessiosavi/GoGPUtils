@@ -80,3 +80,32 @@ func ReadZipFile(file *zip.File) (string, error) {
 	}
 	return string(content), nil
 }
+
+func CreateArchive(files map[string][]byte) ([]byte, error) {
+	// Create a buffer to write the zip file content
+	buffer := new(bytes.Buffer)
+	// Create a new zip writer
+	zipWriter := zip.NewWriter(buffer)
+
+	// Iterate over the map and add each file to the zip archive
+	for filename, fileData := range files {
+		// Create a new zip file entry
+		zipFile, err := zipWriter.Create(filename)
+		if err != nil {
+			return nil, err
+		}
+		// Write the file data to the zip entry
+		_, err = zipFile.Write(fileData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Close the zip writer to flush the data
+	err := zipWriter.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}

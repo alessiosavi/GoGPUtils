@@ -468,3 +468,91 @@ func TestUnique(t *testing.T) {
 		})
 	}
 }
+
+func Test_eachSlice(t *testing.T) {
+	type args struct {
+		slice []int
+		size  int
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want [][]int
+	}{
+		{
+			name: "ok1",
+			args: args{
+				slice: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				size:  3,
+			},
+			want: [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
+		},
+		{
+			name: "ok2",
+			args: args{
+				slice: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				size:  3,
+			},
+			want: [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10}},
+		},
+		{
+			name: "ok3",
+			args: args{
+				slice: []int{1, 2},
+				size:  3,
+			},
+			want: [][]int{{1, 2}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := EachSlice(tt.args.slice, tt.args.size)
+			var got [][]int
+			for v := range res {
+				got = append(got, v)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("eachSlice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPartition(t *testing.T) {
+	type args[T any] struct {
+		arr       []T
+		condition func(int, T) bool
+	}
+	type testCase[T any] struct {
+		name               string
+		args               args[T]
+		wantSatisfies      []T
+		wantDoesNotSatisfy []T
+	}
+	tests := []testCase[int]{
+		{
+			name: "even_odd",
+			args: args[int]{
+				arr: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				condition: func(i, v int) bool {
+					return v%2 == 0
+				},
+			},
+			wantSatisfies:      Filter([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, func(i, v int) bool { return v%2 == 0 }),
+			wantDoesNotSatisfy: Filter([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, func(i, v int) bool { return v%2 != 0 }),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotSatisfies, gotDoesNotSatisfy := Partition(tt.args.arr, tt.args.condition)
+			if !reflect.DeepEqual(gotSatisfies, tt.wantSatisfies) {
+				t.Errorf("Partition() gotSatisfies = %v, want %v", gotSatisfies, tt.wantSatisfies)
+			}
+			if !reflect.DeepEqual(gotDoesNotSatisfy, tt.wantDoesNotSatisfy) {
+				t.Errorf("Partition() gotDoesNotSatisfy = %v, want %v", gotDoesNotSatisfy, tt.wantDoesNotSatisfy)
+			}
+		})
+	}
+}

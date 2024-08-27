@@ -83,10 +83,10 @@ func SplitEqual[T any](data []T, n int) ([][]T, []T) {
 	return ret, data[i:]
 }
 
-func Filter[T any](slice []T, f func(T) bool) []T {
+func Filter[T any](slice []T, f func(int, T) bool) []T {
 	var n = make([]T, 0, len(slice))
-	for _, e := range slice {
-		if f(e) {
+	for i, e := range slice {
+		if f(i, e) {
 			n = append(n, e)
 		}
 	}
@@ -129,4 +129,31 @@ func Count[T comparable](data []T, target T) int {
 		}
 	}
 	return c
+}
+
+func Partition[T any](slice []T, f func(int, T) bool) ([]T, []T) {
+	var ok []T
+	var ko []T
+	for i, e := range slice {
+		if f(i, e) {
+			ok = append(ok, e)
+		} else {
+			ko = append(ko, e)
+		}
+	}
+	return ok, ko
+}
+func EachSlice(slice []int, size int) <-chan []int {
+	ch := make(chan []int)
+	go func() {
+		defer close(ch)
+		for i := 0; i < len(slice); i += size {
+			end := i + size
+			if end > len(slice) {
+				end = len(slice)
+			}
+			ch <- slice[i:end]
+		}
+	}()
+	return ch
 }

@@ -2,7 +2,12 @@ package ziputils
 
 import (
 	"archive/zip"
+	"io"
+	"os"
+	"reflect"
 	"testing"
+
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
 )
 
 func TestReadZip01(t *testing.T) {
@@ -126,4 +131,100 @@ func BenchmarkReadZip01(b *testing.B) {
 			b.Fail()
 		}
 	}
+}
+
+func TestReadZip(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	var tests []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ReadZip(tt.args.filename)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadZip() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadZip() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_read(t *testing.T) {
+	type args struct {
+		zf *zip.ReadCloser
+	}
+	var tests []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := read(tt.args.zf)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("read() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadZipBytes(t *testing.T) {
+	type args struct {
+		raw io.ReadCloser
+	}
+	var tests []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ReadZipBytes(tt.args.raw)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadZipBytes() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadZipBytes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCreateArchive(t *testing.T) {
+
+	files, err := fileutils.ListFiles(".")
+	if err != nil {
+		panic(err)
+	}
+
+	var res = make(map[string][]byte)
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err != nil {
+			panic(err)
+		}
+		res[f] = data
+	}
+
+	got, err := CreateArchive(res)
+	if err != nil {
+		panic(err)
+	}
+	os.WriteFile("test.zip", got, 0755)
+
 }
