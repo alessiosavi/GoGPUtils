@@ -143,8 +143,8 @@ func Partition[T any](slice []T, f func(int, T) bool) ([]T, []T) {
 	}
 	return ok, ko
 }
-func EachSlice(slice []int, size int) <-chan []int {
-	ch := make(chan []int)
+func EachSlice[T any](slice []T, size int) <-chan []T {
+	ch := make(chan []T)
 	go func() {
 		defer close(ch)
 		for i := 0; i < len(slice); i += size {
