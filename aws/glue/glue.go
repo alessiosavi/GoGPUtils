@@ -3,14 +3,15 @@ package glueutils
 import (
 	"context"
 	"errors"
+	"log"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/glue"
 	"github.com/aws/aws-sdk-go-v2/service/glue/types"
-	"log"
-	"sync"
 )
 
 var glueClient *glue.Client = nil
@@ -354,7 +355,7 @@ func ListConnections() ([]string, error) {
 		return nil, err
 	}
 
-	var connectionNames []string
+	var connectionNames []string = make([]string, 0, len(connections.ConnectionList))
 	for _, connectionName := range connections.ConnectionList {
 		connectionNames = append(connectionNames, *connectionName.Name)
 	}
@@ -389,7 +390,7 @@ func ListDatabases() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var databaseNames []string
+	var databaseNames []string = make([]string, 0, len(databases.DatabaseList))
 	for _, databaseName := range databases.DatabaseList {
 		databaseNames = append(databaseNames, *databaseName.Name)
 	}
@@ -434,7 +435,7 @@ func ListTables(databaseName string) ([]string, error) {
 		return nil, err
 	}
 
-	var tableNames []string
+	var tableNames []string = make([]string, 0, len(tables.TableList))
 	for _, tableName := range tables.TableList {
 		tableNames = append(tableNames, *tableName.Name)
 	}

@@ -2,10 +2,11 @@ package ssmutils
 
 import (
 	"context"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
-	"sync"
 )
 
 var ssmClient *ssm.Client = nil
@@ -38,7 +39,7 @@ func List() ([]string, error) {
 		return nil, err
 	}
 
-	var params []string
+	var params []string = make([]string, 0, len(parameters.Parameters))
 	for _, p := range parameters.Parameters {
 		params = append(params, *p.Name)
 	}

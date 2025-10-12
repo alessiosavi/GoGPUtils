@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 
@@ -25,7 +26,7 @@ func init() {
 			continue
 		}
 		if err != nil {
-			port = fmt.Sprintf("%d", _port)
+			port = strconv.Itoa(_port)
 			break
 		}
 	}
@@ -49,11 +50,13 @@ func TestServeCookie(t *testing.T) {
 func TestDebugRequest(t *testing.T) {
 	go DebugRequest("localhost", port, "")
 	time.Sleep(time.Millisecond * 200)
-	_, err := http.Get(`http://localhost:` + port + "/")
+	resp, err := http.Get(`http://localhost:` + port + "/")
 	if err != nil {
 		t.Log(err)
 		t.Fail()
 	}
+
+	resp.Body.Close()
 	time.Sleep(time.Millisecond * 200)
 }
 
@@ -67,6 +70,7 @@ func TestServeHeaders(t *testing.T) {
 		t.Fail()
 	}
 	t.Log(resp)
+	resp.Body.Close()
 	time.Sleep(time.Millisecond * 200)
 }
 

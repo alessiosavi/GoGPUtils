@@ -1,9 +1,10 @@
 package binarytree
 
 import (
-	"golang.org/x/exp/slices"
 	"sort"
 	"testing"
+
+	"golang.org/x/exp/slices"
 )
 
 func initTestTree() Tree {

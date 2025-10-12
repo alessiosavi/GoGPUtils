@@ -3,10 +3,11 @@ package workspaces
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/workspaces"
-	"sync"
 )
 
 var workspaceClient *workspaces.Client = nil
@@ -55,13 +56,16 @@ func GetWorkspaces(username string) (*workspaces.DescribeWorkspacesOutput, error
 	if err != nil {
 		return nil, nil
 	}
-	if v, ok := listWorkspaces[username]; !ok {
+
+	var v []string
+	var ok bool
+	if v, ok = listWorkspaces[username]; !ok {
 		return nil, fmt.Errorf("username %s not found", username)
-	} else {
-		return workspaceClient.DescribeWorkspaces(context.Background(), &workspaces.DescribeWorkspacesInput{
-			WorkspaceIds: v,
-		})
 	}
+	return workspaceClient.DescribeWorkspaces(context.Background(), &workspaces.DescribeWorkspacesInput{
+		WorkspaceIds: v,
+	})
+
 }
 
 //func DescribeImage(username string) error {

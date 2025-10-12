@@ -3,13 +3,14 @@ package stringutils
 import (
 	"bufio"
 	"bytes"
-	arrayutils "github.com/alessiosavi/GoGPUtils/array"
-	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"io"
 	"log"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	arrayutils "github.com/alessiosavi/GoGPUtils/array"
+	mathutils "github.com/alessiosavi/GoGPUtils/math"
 )
 
 var BOMS = [][]byte{
@@ -93,7 +94,7 @@ func ContainsMultiple(lower bool, s string, substring ...string) bool {
 	return true
 }
 
-// CreateJSON is delegated to create a simple json object for the key pair in input
+// CreateJSON is delegated to create a simple JSON object for the key pair in input
 func CreateJSON(values []string) string {
 	json := `{`
 	length := len(values)
@@ -275,7 +276,7 @@ func LevenshteinDistance(str1, str2 string) int {
 	var i, j, cost int
 	var t_j byte
 
-	for i = 0; i <= n; i++ {
+	for i = range n {
 		p[i] = i
 	}
 

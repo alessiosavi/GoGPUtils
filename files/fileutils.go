@@ -5,8 +5,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/alessiosavi/GoGPUtils/helper"
-	mathutils "github.com/alessiosavi/GoGPUtils/math"
 	"io"
 	"log"
 	"net/http"
@@ -17,6 +15,9 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/alessiosavi/GoGPUtils/helper"
+	mathutils "github.com/alessiosavi/GoGPUtils/math"
 )
 
 // ReadFileInArray is delegated to read the file content as tokenize the data by the new line
@@ -421,10 +422,10 @@ func CompareBinaryFile(file1, file2 string, nByte int) bool {
 				return true
 			} else if err1 == io.EOF || err2 == io.EOF {
 				return false
-			} else {
-				log.Println("Error mismatch!", err1, err2)
-				break
 			}
+
+			log.Println("Error mismatch!", err1, err2)
+			break
 		}
 		if !bytes.Equal(data1, data2) {
 			return false

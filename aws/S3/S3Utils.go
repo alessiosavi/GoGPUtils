@@ -4,15 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	awsutils "github.com/alessiosavi/GoGPUtils/aws"
-	fileutils "github.com/alessiosavi/GoGPUtils/files"
-	"github.com/alessiosavi/GoGPUtils/helper"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/schollz/progressbar/v3"
-	"golang.org/x/net/html/charset"
 	"io"
 	"log"
 	"net/http"
@@ -22,6 +13,16 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	awsutils "github.com/alessiosavi/GoGPUtils/aws"
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
+	"github.com/alessiosavi/GoGPUtils/helper"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/schollz/progressbar/v3"
+	"golang.org/x/net/html/charset"
 )
 
 var S3Client *s3.Client = nil
@@ -41,7 +42,6 @@ func GetObject(bucket, fileName string) ([]byte, error) {
 	object, err := S3Client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fileName)})
-
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func DeleteObjects(data map[string][]string) error {
 	for k := range data {
 		var toDelete = make([][]string, 0)
 		maxIteration := len(data[k]) / 1000
-		for i := 0; i < maxIteration; i++ {
+		for i := range maxIteration {
 			toDelete = append(toDelete, data[k][1000*i:1000*(i+1)])
 		}
 		toDelete = append(toDelete, data[k][maxIteration*1000:])

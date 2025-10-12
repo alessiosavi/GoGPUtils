@@ -1,13 +1,13 @@
 package httputils
 
 import (
-	"context"
 	"errors"
-	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
+
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
 )
 
 // CreateCookie is delegated to initialize and set a cookie with the given value
@@ -90,8 +90,7 @@ func ServeHeaders(headersList []string, ip, port, endpoint string) error {
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		err := s.Shutdown(context.Background())
-		if err != nil {
+		if err := s.Shutdown(r.Context()); err != nil {
 			log.Println("Errors during shutdown the headers server: " + err.Error())
 		}
 	})
@@ -137,8 +136,7 @@ func ServeCookie(ip, port, endpoint, name, value, domain, path string, maxage in
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		err := s.Shutdown(context.Background())
-		if err != nil {
+		if err = s.Shutdown(r.Context()); err != nil {
 			log.Println("Unable to shutdown the server: " + err.Error())
 		}
 	})
@@ -185,8 +183,7 @@ func DebugRequest(ip, port, endpoint string) error {
 
 	// Bind the endpoint for shutdown the server
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		err := s.Shutdown(context.Background())
-		if err != nil {
+		if err := s.Shutdown(r.Context()); err != nil {
 			log.Println("Unable to shutdown the server: " + err.Error())
 		}
 	})

@@ -1,12 +1,13 @@
 package stringutils
 
 import (
-	"golang.org/x/exp/slices"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
+
+	"golang.org/x/exp/slices"
 )
 
 const distance1 string = `../testdata/files/testDistance.txt`

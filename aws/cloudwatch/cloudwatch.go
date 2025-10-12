@@ -2,12 +2,13 @@ package cloudwatchutils
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
-	"sync"
-	"time"
 )
 
 var cloudwatchClient *cloudwatchlogs.Client = nil

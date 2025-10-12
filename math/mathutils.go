@@ -2,13 +2,14 @@ package mathutils
 
 import (
 	"fmt"
-	"github.com/alessiosavi/GoGPUtils/datastructure/types"
-	"golang.org/x/exp/slices"
 	"log"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
+	"golang.org/x/exp/slices"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 )

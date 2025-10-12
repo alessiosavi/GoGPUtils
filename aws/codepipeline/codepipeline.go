@@ -2,11 +2,12 @@ package codepipelineutils
 
 import (
 	"context"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
-	"sync"
 )
 
 var codepClient *codepipeline.Client = nil

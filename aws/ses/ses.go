@@ -2,11 +2,12 @@ package sesutils
 
 import (
 	"context"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	mailTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
-	"sync"
 )
 
 var sesClient *sesv2.Client = nil

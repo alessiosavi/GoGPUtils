@@ -10,9 +10,9 @@ func TestApply(t *testing.T) {
 	fn := ApplyCSV(func(i int, v []string) []string {
 		if i%2 == 0 {
 			return append(v, "NINJA_PARI")
-		} else {
-			return append(v, "NINJA_DISPARI")
 		}
+
+		return append(v, "NINJA_DISPARI")
 	})
 
 	type args struct {

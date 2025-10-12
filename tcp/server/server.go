@@ -3,12 +3,13 @@ package server
 import (
 	"bufio"
 	"fmt"
-	"github.com/alessiosavi/GoGPUtils/helper"
 	"log"
 	"math"
 	"math/rand"
 	"net"
 	"time"
+
+	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
 func handleConnection(c net.Conn, semaphore <-chan struct{}) {
@@ -59,16 +60,13 @@ func Client(port int) {
 		panic(err)
 	}
 	defer conn.Close()
-	_, err = conn.Write([]byte("test data"))
-	_, err = conn.Write([]byte{0x04})
-	if err != nil {
+	conn.Write([]byte("test data"))
+	if _, err = conn.Write([]byte{0x04}); err != nil {
 		panic(err)
 	}
 
-	_, err = bufio.NewReader(conn).ReadString(0x04)
-	if err != nil {
+	if _, err = bufio.NewReader(conn).ReadString(0x04); err != nil {
 		panic(err)
-		return
 	}
 	// log.Println(data[:len(data)-1])
 

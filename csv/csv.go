@@ -38,11 +38,11 @@ func (c *CSVData) Explode(fn ExplodeCSV) CSVData {
 	var res = make(CSVData, 0, len(*c))
 	bar := progressbar.Default(int64(len(res)))
 	for i := range *c {
-		bar.Add(1)
+		_ = bar.Add(1)
 		res = append(res, fn(i, (*c)[i])...)
 	}
 	*c = res
-	bar.Close()
+	_ = bar.Close()
 	return *c
 }
 func (c *CSVData) Apply(fn ApplyCSV, inplace bool) CSVData {
@@ -55,10 +55,10 @@ func (c *CSVData) Apply(fn ApplyCSV, inplace bool) CSVData {
 	}
 	bar := progressbar.Default(int64(len(res)))
 	for i := range res {
-		bar.Add(1)
+		_ = bar.Add(1)
 		res[i] = fn(i, res[i])
 	}
-	bar.Close()
+	_ = bar.Close()
 	return res
 }
 

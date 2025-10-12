@@ -2,12 +2,13 @@ package identity_store
 
 import (
 	"context"
+	"sort"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/identitystore"
 	"github.com/aws/aws-sdk-go-v2/service/identitystore/types"
-	"sort"
-	"sync"
 )
 
 var identityClient *identitystore.Client = nil

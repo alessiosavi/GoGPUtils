@@ -2,16 +2,17 @@ package processingutils
 
 import (
 	"bytes"
-	fileutils "github.com/alessiosavi/GoGPUtils/files"
-	"github.com/alessiosavi/GoGPUtils/helper"
 	"os"
 	"testing"
+
+	fileutils "github.com/alessiosavi/GoGPUtils/files"
+	"github.com/alessiosavi/GoGPUtils/helper"
 )
 
 func TestDetectCarriageReturn(t *testing.T) {
 	files, err := fileutils.ListFiles(".")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err.Error())
 	}
 	for _, f := range files {
 		fd, err := os.Open(f)

@@ -3,15 +3,16 @@ package lambdautils
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"os"
+	"strings"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	stringutils "github.com/alessiosavi/GoGPUtils/string"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"log"
-	"os"
-	"strings"
-	"sync"
 )
 
 var lambdaClient *lambda.Client = nil

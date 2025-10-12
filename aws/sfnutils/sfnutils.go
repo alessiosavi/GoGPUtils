@@ -2,10 +2,11 @@ package sfnutils
 
 import (
 	"context"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sfn"
-	"sync"
 )
 
 var sfnClient *sfn.Client = nil

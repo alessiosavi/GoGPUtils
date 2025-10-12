@@ -2,6 +2,7 @@ package binarytree
 
 import (
 	"fmt"
+
 	"golang.org/x/exp/slices"
 
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"

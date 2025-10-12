@@ -78,7 +78,7 @@ func WriteMessage(queueURL, message string, metadata map[string]sqsTypes.Message
 }
 
 func WriteMessages(queueURL string, messages []string, metadatas []map[string]sqsTypes.MessageAttributeValue) (*sqs.SendMessageBatchOutput, error) {
-	var msgs []sqsTypes.SendMessageBatchRequestEntry
+	var msgs []sqsTypes.SendMessageBatchRequestEntry = make([]sqsTypes.SendMessageBatchRequestEntry, 0, len(messages))
 
 	for _, message := range messages {
 		guid := guuid.New().String()

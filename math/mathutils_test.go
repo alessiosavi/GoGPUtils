@@ -1,10 +1,11 @@
 package mathutils
 
 import (
-	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"math"
 	"reflect"
 	"testing"
+
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 
 	"github.com/alessiosavi/GoGPUtils/helper"
 )

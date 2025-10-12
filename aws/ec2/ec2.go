@@ -3,13 +3,14 @@ package ec2utils
 import (
 	"context"
 	"fmt"
+	"log"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"log"
-	"sync"
 )
 
 var ec2Client *ec2.Client = nil

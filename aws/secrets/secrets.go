@@ -3,11 +3,12 @@ package secretsutils
 import (
 	"context"
 	"encoding/json"
+	"sync"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	secretTypes "github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
-	"sync"
 )
 
 var secretClient *secretsmanager.Client = nil

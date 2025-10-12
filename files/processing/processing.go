@@ -3,13 +3,14 @@ package processingutils
 import (
 	"bytes"
 	"errors"
-	stringutils "github.com/alessiosavi/GoGPUtils/string"
-	"golang.org/x/net/html/charset"
-	"golang.org/x/text/transform"
 	"html"
 	"io"
 	"net/http"
 	"unicode/utf8"
+
+	stringutils "github.com/alessiosavi/GoGPUtils/string"
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
 )
 
 type LineTerminatorType string
@@ -37,9 +38,9 @@ func DetectLineTerminator(reader io.Reader, buffer int) (LineTerminatorType, err
 		if _, err := reader.Read(buff); err != nil {
 			if err != io.EOF {
 				return ND, err
-			} else {
-				break
 			}
+
+			break
 		}
 		counts[CRLF] = bytes.Count(buff, []byte("\r\n"))
 		counts[LFCR] = bytes.Count(buff, []byte("\n\r"))

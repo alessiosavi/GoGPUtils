@@ -2,12 +2,13 @@ package arrayutils
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
+
 	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
-	"reflect"
-	"testing"
 )
 
 func TestSplitEqual(t *testing.T) {
@@ -68,12 +69,12 @@ func BenchmarkApplyInplace(b *testing.B) {
 	data := helper.GenerateSequentialArray[byte](50000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Apply(&data, func(i int, v byte) byte {
+		Apply(&data, func(_ int, v byte) byte {
 			if v%2 == 0 {
 				return v + 1
-			} else {
-				return v - 1
 			}
+
+			return v - 1
 		}, true)
 	}
 }
@@ -82,12 +83,12 @@ func BenchmarkApply(b *testing.B) {
 	data := helper.GenerateSequentialArray[byte](50000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Apply(&data, func(i int, v byte) byte {
+		Apply(&data, func(_ int, v byte) byte {
 			if v%2 == 0 {
 				return v + 1
-			} else {
-				return v - 1
 			}
+
+			return v - 1
 		}, false)
 	}
 }
@@ -418,6 +419,14 @@ func TestRemoveByValue(t *testing.T) {
 			},
 			want: []int{6, 5, 2, 0},
 		},
+		{
+			name: "ok_2",
+			args: args[int]{
+				slice: []int{6, 5, 3, 3, 2, 3, 0},
+				v:     6,
+			},
+			want: []int{5, 3, 3, 2, 3, 0},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -536,7 +545,7 @@ func TestPartition(t *testing.T) {
 			name: "even_odd",
 			args: args[int]{
 				arr: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				condition: func(i, v int) bool {
+				condition: func(_, v int) bool {
 					return v%2 == 0
 				},
 			},

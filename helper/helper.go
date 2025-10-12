@@ -3,9 +3,10 @@ package helper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"math"
-	"math/rand"
+	"math/rand/v2"
+
+	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 
 	crand "crypto/rand"
 
@@ -13,10 +14,6 @@ import (
 	"time"
 	"unsafe"
 )
-
-func init() {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-}
 
 // RandomGenerator is delegated to generate random without call seed every time
 type RandomGenerator struct {
@@ -26,23 +23,23 @@ type RandomGenerator struct {
 // InitRandomizer initialize a new RandomGenerator
 func InitRandomizer() RandomGenerator {
 	var random RandomGenerator
-	random.randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
+	random.randomizer = rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano())))
 	return random
 }
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt(min, max int) int {
-	return rander.randomizer.Intn(max-min) + min
+	return rander.randomizer.IntN(max-min) + min
 }
 
 // RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt32(min, max int32) int32 {
-	return rander.randomizer.Int31n(max-min) + min
+	return rander.randomizer.Int32N(max-min) + min
 }
 
 // RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func (rander RandomGenerator) RandomInt64(min, max int64) int64 {
-	return rander.randomizer.Int63n(max-min) + min
+	return rander.randomizer.Int64N(max-min) + min
 }
 
 // RandomFloat32 initialize a new seed using the UNIX Nano time and return a float32 between the 2 input value
@@ -110,9 +107,9 @@ const (
 func (rander RandomGenerator) RandomString(n int) string {
 	b := make([]byte, n)
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, rander.randomizer.Int63(), LETTER_IDX_MAX; i >= 0; {
+	for i, cache, remain := n-1, rander.randomizer.Int64(), LETTER_IDX_MAX; i >= 0; {
 		if remain == 0 {
-			cache, remain = rander.randomizer.Int63(), LETTER_IDX_MAX
+			cache, remain = rander.randomizer.Int64(), LETTER_IDX_MAX
 		}
 		if idx := int(cache & LETTER_IDX_MASK); idx < len(LETTER_BYTES) {
 			b[i] = LETTER_BYTES[idx]
@@ -134,17 +131,17 @@ func RandomByte(length int) []byte {
 
 // RandomInt initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt(min, max int) int {
-	return rand.Intn(max-min) + min
+	return rand.IntN(max-min) + min
 }
 
 // RandomInt32 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt32(min, max int32) int32 {
-	return rand.Int31n(max-min) + min
+	return rand.Int32N(max-min) + min
 }
 
 // RandomInt64 initialize a new seed using the UNIX Nano time and return an integer between the 2 input value
 func RandomInt64(min, max int64) int64 {
-	return rand.Int63n(max-min) + min
+	return rand.Int64N(max-min) + min
 }
 
 // RandomFloat64 initialize a new seed using the UNIX Nano time and return a float64 between the 2 input value

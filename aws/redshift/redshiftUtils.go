@@ -5,6 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
 	sqlutils "github.com/alessiosavi/GoGPUtils/sql"
@@ -13,11 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	_ "github.com/lib/pq"
 	"github.com/schollz/progressbar/v3"
-	"log"
-	"os"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Conf struct {
@@ -194,10 +195,10 @@ func GetCOPYErrors(connection *sql.DB) []Result {
 			&res.Is_partial,
 			&res.Start_offset); err != nil {
 			panic(err)
-		} else {
-			res.Trim()
-			errorsResult = append(errorsResult, res)
 		}
+
+		res.Trim()
+		errorsResult = append(errorsResult, res)
 	}
 	return errorsResult
 }

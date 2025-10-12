@@ -3,6 +3,12 @@ package dynamodbutils
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+
 	arrayutils "github.com/alessiosavi/GoGPUtils/array"
 	awsutils "github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/alessiosavi/GoGPUtils/helper"
@@ -13,11 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/pkg/errors"
 	"github.com/schollz/progressbar/v3"
-	"log"
-	"os"
-	"strconv"
-	"sync"
-	"time"
 )
 
 var dynamoClient *dynamodb.Client = nil
@@ -89,7 +90,7 @@ func WriteItem(tableName string, item interface{}) error {
 }
 
 func WriteBatchItem(tableName string, items []interface{}) error {
-	var writeReqs []types.WriteRequest
+	var writeReqs []types.WriteRequest = make([]types.WriteRequest, 0, len(items))
 	for i := range items {
 		item, err := attributevalue.MarshalMap(items[i])
 		if err != nil {
@@ -183,7 +184,7 @@ func DeleteAllItems(tableName, projectExpression string) (*string, error) {
 	for i := 0; i < n; i++ {
 		go DeleteItems(tableName, buffer, bar, done)
 	}
-	for i := 0; i < n; i++ {
+	for range n {
 		<-done
 	}
 
@@ -203,7 +204,7 @@ func DeleteItems(tableName string, datas <-chan []map[string]types.AttributeValu
 			if _, err := dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{RequestItems: requestItems}); err != nil {
 				panic(err)
 			}
-			bar.Add(25)
+			_ = bar.Add(25)
 		}
 
 		writeReqs = make([]types.WriteRequest, 0, len(dataN))
@@ -214,7 +215,7 @@ func DeleteItems(tableName string, datas <-chan []map[string]types.AttributeValu
 		if _, err := dynamoClient.BatchWriteItem(context.Background(), &dynamodb.BatchWriteItemInput{RequestItems: requestItems}); err != nil {
 			panic(err)
 		}
-		bar.Add(len(dataN))
+		_ = bar.Add(len(dataN))
 	}
 	done <- true
 }

@@ -2,10 +2,11 @@ package arrayutils
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/alessiosavi/GoGPUtils/datastructure/types"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
-	"strings"
 )
 
 // Pad is delegated to pad/trim the given `data` to `n`, using the value `v`
@@ -14,7 +15,7 @@ func Pad[T any](data *[]T, n int, v T) []T {
 		return Trim(data, n)
 	}
 	res := make([]T, n-len(*data))
-	for i := 0; i < cap(res); i++ {
+	for i := range cap(res) {
 		res[i] = v
 	}
 	*data = append(*data, res...)
@@ -27,15 +28,6 @@ func Trim[T any](data *[]T, n int) []T {
 		*data = (*data)[:n]
 	}
 	return *data
-}
-
-// RemoveElement is delegated to delete the element related to index i
-func RemoveElement(s []string, i int) []string {
-	if i < len(s) {
-		s[len(s)-1], s[i] = s[i], s[len(s)-1]
-		return s[:len(s)-1]
-	}
-	return s
 }
 
 // JoinNumber use a strings.Builder for concatenate the input string array.
