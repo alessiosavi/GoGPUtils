@@ -2,7 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [master, v2]
+    branches: [master, v1]
 
 jobs:
   build:
