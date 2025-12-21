@@ -58,11 +58,11 @@ func (c *Client) GetItem(ctx context.Context, tableName string, key Key, dest an
 		return aws.WrapError(serviceName, "GetItem", err)
 	}
 
-	if output.Item == nil || len(output.Item) == 0 {
+	if len(output.Item) == 0 {
 		return ErrItemNotFound
 	}
 
-	if err := attributevalue.UnmarshalMap(output.Item, dest); err != nil {
+	if err = attributevalue.UnmarshalMap(output.Item, dest); err != nil {
 		return aws.WrapError(serviceName, "GetItem", err)
 	}
 
@@ -101,7 +101,7 @@ func (c *Client) GetItemRaw(ctx context.Context, tableName string, key Key) (map
 		return nil, aws.WrapError(serviceName, "GetItem", err)
 	}
 
-	if output.Item == nil || len(output.Item) == 0 {
+	if len(output.Item) == 0 {
 		return nil, ErrItemNotFound
 	}
 

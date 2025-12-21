@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Unit Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,7 +30,7 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
-      - name: Run tests
+      - name: Run unit tests
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload coverage
@@ -38,6 +38,73 @@ jobs:
         if: matrix.go-version == '1.23'
         with:
           files: coverage.out
+          fail_ci_if_error: false
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+          - 4510-4559:4510-4559
+        env:
+          SERVICES: s3,dynamodb,sqs,secretsmanager,ssm,lambda
+          DEBUG: 0
+          PERSISTENCE: 0
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        options: >-
+          --health-cmd "curl -f http://localhost:4566/_localstack/health"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 10s
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Wait for LocalStack to be ready
+        run: |
+          echo "Waiting for LocalStack to be healthy..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4566/_localstack/health | grep -q '"s3": "available"'; then
+              echo "LocalStack is ready!"
+              break
+            fi
+            echo "Waiting for LocalStack... (attempt $i)"
+            sleep 2
+          done
+          # Show LocalStack health status
+          curl -s http://localhost:4566/_localstack/health | jq .
+
+      - name: Run integration tests
+        env:
+          LOCALSTACK_ENDPOINT: http://localhost:4566
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          go test -v -race -tags=integration -coverprofile=integration-coverage.out -covermode=atomic ./aws/...
+
+      - name: Upload integration coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: integration-coverage.out
+          flags: integration
           fail_ci_if_error: false
 
   lint:

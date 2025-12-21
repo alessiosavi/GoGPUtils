@@ -370,3 +370,253 @@ func (c *Client) DescribeSecret(ctx context.Context, secretName string) (*Secret
 
 	return info, nil
 }
+
+// CreateSecretOption configures CreateSecret operations.
+type CreateSecretOption func(*createSecretOptions)
+
+type createSecretOptions struct {
+	description string
+	tags        []types.Tag
+	kmsKeyID    string
+}
+
+// WithCreateDescription sets the description for the new secret.
+//
+// Example:
+//
+//	err := client.CreateSecretString(ctx, "my-secret", "value", secretsmanager.WithCreateDescription("API key"))
+func WithCreateDescription(desc string) CreateSecretOption {
+	return func(o *createSecretOptions) {
+		o.description = desc
+	}
+}
+
+// WithCreateTags sets tags for the new secret.
+//
+// Example:
+//
+//	tags := map[string]string{"env": "prod"}
+//	err := client.CreateSecretString(ctx, "my-secret", "value", secretsmanager.WithCreateTags(tags))
+func WithCreateTags(tags map[string]string) CreateSecretOption {
+	return func(o *createSecretOptions) {
+		for k, v := range tags {
+			o.tags = append(o.tags, types.Tag{
+				Key:   awssdk.String(k),
+				Value: awssdk.String(v),
+			})
+		}
+	}
+}
+
+// WithCreateKMSKeyID sets the KMS key for encryption.
+//
+// Example:
+//
+//	err := client.CreateSecretString(ctx, "my-secret", "value", secretsmanager.WithCreateKMSKeyID("alias/my-key"))
+func WithCreateKMSKeyID(keyID string) CreateSecretOption {
+	return func(o *createSecretOptions) {
+		o.kmsKeyID = keyID
+	}
+}
+
+// CreateSecretString creates a new secret with a string value.
+//
+// Example:
+//
+//	err := client.CreateSecretString(ctx, "my-secret", "secret-value")
+func (c *Client) CreateSecretString(ctx context.Context, name, value string, opts ...CreateSecretOption) error {
+	if name == "" {
+		return aws.ErrEmptySecret
+	}
+
+	options := &createSecretOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	input := &secretsmanager.CreateSecretInput{
+		Name:         awssdk.String(name),
+		SecretString: awssdk.String(value),
+	}
+
+	if options.description != "" {
+		input.Description = awssdk.String(options.description)
+	}
+
+	if len(options.tags) > 0 {
+		input.Tags = options.tags
+	}
+
+	if options.kmsKeyID != "" {
+		input.KmsKeyId = awssdk.String(options.kmsKeyID)
+	}
+
+	_, err := c.api.CreateSecret(ctx, input)
+	if err != nil {
+		return aws.WrapError(serviceName, "CreateSecret", err)
+	}
+
+	return nil
+}
+
+// CreateSecretBinary creates a new secret with binary data.
+//
+// Example:
+//
+//	err := client.CreateSecretBinary(ctx, "my-cert", certData)
+func (c *Client) CreateSecretBinary(ctx context.Context, name string, value []byte, opts ...CreateSecretOption) error {
+	if name == "" {
+		return aws.ErrEmptySecret
+	}
+
+	options := &createSecretOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	input := &secretsmanager.CreateSecretInput{
+		Name:         awssdk.String(name),
+		SecretBinary: value,
+	}
+
+	if options.description != "" {
+		input.Description = awssdk.String(options.description)
+	}
+
+	if len(options.tags) > 0 {
+		input.Tags = options.tags
+	}
+
+	if options.kmsKeyID != "" {
+		input.KmsKeyId = awssdk.String(options.kmsKeyID)
+	}
+
+	_, err := c.api.CreateSecret(ctx, input)
+	if err != nil {
+		return aws.WrapError(serviceName, "CreateSecret", err)
+	}
+
+	return nil
+}
+
+// UpdateSecretString updates an existing secret with a new string value.
+//
+// Example:
+//
+//	err := client.UpdateSecretString(ctx, "my-secret", "new-value")
+func (c *Client) UpdateSecretString(ctx context.Context, name, value string) error {
+	if name == "" {
+		return aws.ErrEmptySecret
+	}
+
+	_, err := c.api.UpdateSecret(ctx, &secretsmanager.UpdateSecretInput{
+		SecretId:     awssdk.String(name),
+		SecretString: awssdk.String(value),
+	})
+	if err != nil {
+		if isResourceNotFound(err) {
+			return ErrSecretNotFound
+		}
+
+		return aws.WrapError(serviceName, "UpdateSecret", err)
+	}
+
+	return nil
+}
+
+// UpdateSecretBinary updates an existing secret with new binary data.
+//
+// Example:
+//
+//	err := client.UpdateSecretBinary(ctx, "my-cert", newCertData)
+func (c *Client) UpdateSecretBinary(ctx context.Context, name string, value []byte) error {
+	if name == "" {
+		return aws.ErrEmptySecret
+	}
+
+	_, err := c.api.UpdateSecret(ctx, &secretsmanager.UpdateSecretInput{
+		SecretId:     awssdk.String(name),
+		SecretBinary: value,
+	})
+	if err != nil {
+		if isResourceNotFound(err) {
+			return ErrSecretNotFound
+		}
+
+		return aws.WrapError(serviceName, "UpdateSecret", err)
+	}
+
+	return nil
+}
+
+// DeleteSecretOption configures DeleteSecret operations.
+type DeleteSecretOption func(*deleteSecretOptions)
+
+type deleteSecretOptions struct {
+	forceDelete           bool
+	recoveryWindowInDays  int64
+}
+
+// WithForceDelete forces immediate deletion without recovery window.
+//
+// Example:
+//
+//	err := client.DeleteSecret(ctx, "my-secret", secretsmanager.WithForceDelete())
+func WithForceDelete() DeleteSecretOption {
+	return func(o *deleteSecretOptions) {
+		o.forceDelete = true
+	}
+}
+
+// WithRecoveryWindow sets the number of days before permanent deletion.
+// Default is 30 days, minimum is 7 days.
+//
+// Example:
+//
+//	err := client.DeleteSecret(ctx, "my-secret", secretsmanager.WithRecoveryWindow(7))
+func WithRecoveryWindow(days int64) DeleteSecretOption {
+	return func(o *deleteSecretOptions) {
+		o.recoveryWindowInDays = days
+	}
+}
+
+// DeleteSecret deletes a secret.
+// By default, secrets have a recovery window of 30 days.
+//
+// Example:
+//
+//	err := client.DeleteSecret(ctx, "my-secret")
+//
+//	// Force immediate deletion
+//	err := client.DeleteSecret(ctx, "my-secret", secretsmanager.WithForceDelete())
+func (c *Client) DeleteSecret(ctx context.Context, name string, opts ...DeleteSecretOption) error {
+	if name == "" {
+		return aws.ErrEmptySecret
+	}
+
+	options := &deleteSecretOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	input := &secretsmanager.DeleteSecretInput{
+		SecretId: awssdk.String(name),
+	}
+
+	if options.forceDelete {
+		input.ForceDeleteWithoutRecovery = awssdk.Bool(true)
+	} else if options.recoveryWindowInDays > 0 {
+		input.RecoveryWindowInDays = awssdk.Int64(options.recoveryWindowInDays)
+	}
+
+	_, err := c.api.DeleteSecret(ctx, input)
+	if err != nil {
+		if isResourceNotFound(err) {
+			return ErrSecretNotFound
+		}
+
+		return aws.WrapError(serviceName, "DeleteSecret", err)
+	}
+
+	return nil
+}
