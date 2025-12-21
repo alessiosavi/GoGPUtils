@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, main, v2]
+    branches: [master, v2]
   pull_request:
-    branches: [master, main, v2]
+    branches: [master, v2]
 
 jobs:
   test:
@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
@@ -31,11 +31,10 @@ jobs:
         run: go mod verify
 
       - name: Run unit tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -count=1 -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: matrix.go-version == '1.24'
         with:
           files: coverage.out
           fail_ci_if_error: false
@@ -66,10 +65,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "stable"
           cache: true
@@ -98,7 +97,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          go test -v -race -tags=integration -coverprofile=integration-coverage.out -covermode=atomic ./aws/...
+          go test -count=1 -v -race -tags=integration -coverprofile=integration-coverage.out -covermode=atomic ./aws/...
 
       - name: Upload integration coverage
         uses: codecov/codecov-action@v4
@@ -107,26 +106,48 @@ jobs:
           flags: integration
           fail_ci_if_error: false
 
-  # benchmark:
-  #   name: Benchmark
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'push'
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    continue-on-error: true
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v5
-  #       with:
-  #         go-version: stable
-  #         cache: true
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+          cache: true
 
-  #     - name: Run benchmarks
-  #       run: go test -bench=. -benchmem ./... | tee benchmark.txt
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=5m
+        continue-on-error: true
 
-  #     - name: Upload benchmark results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: benchmark-results
-  #         path: benchmark.txt
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Run benchmarks
+        run: go test -bench=. -benchmem ./... | tee benchmark.txt
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark.txt

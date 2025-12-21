@@ -147,7 +147,7 @@ Include:
 
 ## Output Requirements
 
-### Structure your response as follows:
+### Structure your response as follows
 
 1. **Analysis of current utility packages**
 2. **Critique of the old AWS implementation**

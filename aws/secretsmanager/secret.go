@@ -553,8 +553,8 @@ func (c *Client) UpdateSecretBinary(ctx context.Context, name string, value []by
 type DeleteSecretOption func(*deleteSecretOptions)
 
 type deleteSecretOptions struct {
-	forceDelete           bool
-	recoveryWindowInDays  int64
+	forceDelete          bool
+	recoveryWindowInDays int64
 }
 
 // WithForceDelete forces immediate deletion without recovery window.
