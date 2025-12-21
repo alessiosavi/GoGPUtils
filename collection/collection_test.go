@@ -50,6 +50,7 @@ func TestStack_Peek(t *testing.T) {
 	}
 
 	stack.Push("hello")
+
 	val, ok := stack.Peek()
 	if !ok || val != "hello" {
 		t.Errorf("Peek() = %q, %v; want 'hello', true", val, ok)
@@ -69,11 +70,13 @@ func TestStack_IsEmpty(t *testing.T) {
 	}
 
 	stack.Push(1)
+
 	if stack.IsEmpty() {
 		t.Error("IsEmpty() should return false after push")
 	}
 
 	stack.Pop()
+
 	if !stack.IsEmpty() {
 		t.Error("IsEmpty() should return true after popping all elements")
 	}
@@ -103,6 +106,7 @@ func TestStack_Values(t *testing.T) {
 
 	// Values should be a copy
 	values[0] = 999
+
 	if stack.Values()[0] == 999 {
 		t.Error("Values() should return a copy")
 	}
@@ -217,6 +221,7 @@ func TestSet_AddContains(t *testing.T) {
 
 	// Adding duplicate should not increase size
 	set.Add(1)
+
 	if set.Len() != 3 {
 		t.Error("Adding duplicate should not increase size")
 	}
@@ -230,12 +235,14 @@ func TestSet_Remove(t *testing.T) {
 	if set.Contains(3) {
 		t.Error("Set should not contain removed element")
 	}
+
 	if set.Len() != 4 {
 		t.Errorf("Len() = %d, want 4", set.Len())
 	}
 
 	// Remove non-existent element
 	set.Remove(999)
+
 	if set.Len() != 4 {
 		t.Error("Removing non-existent element should not change size")
 	}
@@ -377,6 +384,7 @@ func TestSet_Clone(t *testing.T) {
 
 	// Modifying clone should not affect original
 	clone.Add(4)
+
 	if original.Contains(4) {
 		t.Error("Modifying clone should not affect original")
 	}
@@ -435,29 +443,35 @@ func TestBST_Remove(t *testing.T) {
 	if !tree.Remove(1) {
 		t.Error("Remove(1) should return true")
 	}
+
 	if tree.Contains(1) {
 		t.Error("Tree should not contain 1 after removal")
 	}
 
 	// Remove node with one child
 	tree.Remove(6)
+
 	if tree.Contains(6) {
 		t.Error("Tree should not contain 6 after removal")
 	}
 
 	// Remove node with two children
 	tree.Remove(3)
+
 	if tree.Contains(3) {
 		t.Error("Tree should not contain 3 after removal")
 	}
 
 	// Tree structure should still be valid
 	inOrder := tree.InOrder()
+
 	prev := inOrder[0]
+
 	for _, v := range inOrder[1:] {
 		if v < prev {
 			t.Error("InOrder should be sorted after removals")
 		}
+
 		prev = v
 	}
 
@@ -482,6 +496,7 @@ func TestBST_MinMax(t *testing.T) {
 
 	// Empty tree
 	emptyTree := NewBST[int]()
+
 	_, ok = emptyTree.Min()
 	if ok {
 		t.Error("Min() on empty tree should return false")
@@ -540,11 +555,13 @@ func TestBST_Height(t *testing.T) {
 	}
 
 	tree.Insert(5)
+
 	if tree.Height() != 1 {
 		t.Error("Single node tree should have height 1")
 	}
 
 	tree.Insert(3, 7)
+
 	if tree.Height() != 2 {
 		t.Error("Balanced 3-node tree should have height 2")
 	}
@@ -592,7 +609,7 @@ func TestBST_String(t *testing.T) {
 func BenchmarkStack_PushPop(b *testing.B) {
 	stack := NewStack[int]()
 
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		stack.Push(i)
 		stack.Pop()
 	}
@@ -601,7 +618,7 @@ func BenchmarkStack_PushPop(b *testing.B) {
 func BenchmarkQueue_EnqueueDequeue(b *testing.B) {
 	queue := NewQueue[int]()
 
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		queue.Enqueue(i)
 		queue.Dequeue()
 	}
@@ -610,19 +627,18 @@ func BenchmarkQueue_EnqueueDequeue(b *testing.B) {
 func BenchmarkSet_Add(b *testing.B) {
 	set := NewSet[int]()
 
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		set.Add(i % 1000)
 	}
 }
 
 func BenchmarkSet_Contains(b *testing.B) {
 	set := NewSetWithCapacity[int](10000)
-	for i := 0; i < 10000; i++ {
+	for i := range 10000 {
 		set.Add(i)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		set.Contains(i % 10000)
 	}
 }
@@ -630,31 +646,29 @@ func BenchmarkSet_Contains(b *testing.B) {
 func BenchmarkBST_Insert(b *testing.B) {
 	tree := NewBST[int]()
 
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		tree.Insert(i)
 	}
 }
 
 func BenchmarkBST_Contains(b *testing.B) {
 	tree := NewBST[int]()
-	for i := 0; i < 10000; i++ {
+	for i := range 10000 {
 		tree.Insert(i)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := 0; b.Loop(); i++ {
 		tree.Contains(i % 10000)
 	}
 }
 
 func BenchmarkBST_InOrder(b *testing.B) {
 	tree := NewBST[int]()
-	for i := 0; i < 10000; i++ {
+	for i := range 10000 {
 		tree.Insert(i)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		tree.InOrder()
 	}
 }

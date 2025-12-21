@@ -147,7 +147,9 @@ func TestReduce(t *testing.T) {
 	t.Run("sum", func(t *testing.T) {
 		input := []int{1, 2, 3, 4, 5}
 		got := Reduce(input, 0, func(acc, n int) int { return acc + n })
+
 		want := 15
+
 		if got != want {
 			t.Errorf("Reduce sum = %v, want %v", got, want)
 		}
@@ -156,7 +158,9 @@ func TestReduce(t *testing.T) {
 	t.Run("product", func(t *testing.T) {
 		input := []int{1, 2, 3, 4}
 		got := Reduce(input, 1, func(acc, n int) int { return acc * n })
+
 		want := 24
+
 		if got != want {
 			t.Errorf("Reduce product = %v, want %v", got, want)
 		}
@@ -165,7 +169,9 @@ func TestReduce(t *testing.T) {
 	t.Run("empty slice", func(t *testing.T) {
 		input := []int{}
 		got := Reduce(input, 42, func(acc, n int) int { return acc + n })
+
 		want := 42
+
 		if got != want {
 			t.Errorf("Reduce empty = %v, want %v", got, want)
 		}
@@ -205,6 +211,7 @@ func TestContainsFunc(t *testing.T) {
 		name string
 		age  int
 	}
+
 	people := []person{{"Alice", 30}, {"Bob", 25}, {"Charlie", 35}}
 
 	if !ContainsFunc(people, func(p person) bool { return p.age > 30 }) {
@@ -296,6 +303,7 @@ func TestUniqueFunc(t *testing.T) {
 		id   int
 		name string
 	}
+
 	input := []item{{1, "a"}, {2, "b"}, {1, "c"}, {3, "d"}}
 	got := UniqueFunc(input, func(i item) int { return i.id })
 	want := []item{{1, "a"}, {2, "b"}, {3, "d"}}
@@ -303,6 +311,7 @@ func TestUniqueFunc(t *testing.T) {
 	if len(got) != len(want) {
 		t.Errorf("UniqueFunc() length = %v, want %v", len(got), len(want))
 	}
+
 	for i := range got {
 		if got[i].id != want[i].id {
 			t.Errorf("UniqueFunc()[%d].id = %v, want %v", i, got[i].id, want[i].id)
@@ -376,8 +385,10 @@ func TestChunk(t *testing.T) {
 			got := Chunk(tt.input, tt.size)
 			if len(got) != len(tt.want) {
 				t.Errorf("Chunk() length = %v, want %v", len(got), len(tt.want))
+
 				return
 			}
+
 			for i := range got {
 				if !Equal(got[i], tt.want[i]) {
 					t.Errorf("Chunk()[%d] = %v, want %v", i, got[i], tt.want[i])
@@ -458,6 +469,7 @@ func TestReverse(t *testing.T) {
 				for i, v := range tt.input {
 					if v != original[i] {
 						t.Error("Reverse modified original slice")
+
 						break
 					}
 				}
@@ -469,6 +481,7 @@ func TestReverse(t *testing.T) {
 func TestReverseInPlace(t *testing.T) {
 	input := []int{1, 2, 3, 4}
 	ReverseInPlace(input)
+
 	want := []int{4, 3, 2, 1}
 
 	if !Equal(input, want) {
@@ -559,12 +572,14 @@ func TestGroupBy(t *testing.T) {
 		if n%2 == 0 {
 			return "even"
 		}
+
 		return "odd"
 	})
 
 	if !Equal(got["even"], []int{2, 4, 6}) {
 		t.Errorf("GroupBy even = %v, want [2, 4, 6]", got["even"])
 	}
+
 	if !Equal(got["odd"], []int{1, 3, 5}) {
 		t.Errorf("GroupBy odd = %v, want [1, 3, 5]", got["odd"])
 	}
@@ -586,6 +601,7 @@ func TestPartition(t *testing.T) {
 	if !Equal(evens, []int{2, 4}) {
 		t.Errorf("Partition evens = %v, want [2, 4]", evens)
 	}
+
 	if !Equal(odds, []int{1, 3, 5}) {
 		t.Errorf("Partition odds = %v, want [1, 3, 5]", odds)
 	}
@@ -731,6 +747,7 @@ func TestNone(t *testing.T) {
 	if !None([]int{1, 3, 5}, func(n int) bool { return n%2 == 0 }) {
 		t.Error("None should return true when no elements match")
 	}
+
 	if None([]int{1, 2, 3}, func(n int) bool { return n%2 == 0 }) {
 		t.Error("None should return false when some elements match")
 	}
@@ -797,6 +814,7 @@ func TestMin(t *testing.T) {
 			if ok != tt.ok {
 				t.Errorf("Min() ok = %v, want %v", ok, tt.ok)
 			}
+
 			if ok && got != tt.want {
 				t.Errorf("Min() = %v, want %v", got, tt.want)
 			}
@@ -822,6 +840,7 @@ func TestMax(t *testing.T) {
 			if ok != tt.ok {
 				t.Errorf("Max() ok = %v, want %v", ok, tt.ok)
 			}
+
 			if ok && got != tt.want {
 				t.Errorf("Max() = %v, want %v", got, tt.want)
 			}
@@ -833,6 +852,7 @@ func TestMinMaxFunc(t *testing.T) {
 	type item struct {
 		val int
 	}
+
 	items := []item{{3}, {1}, {4}, {1}, {5}}
 	cmpFunc := func(a, b item) int { return cmp.Compare(a.val, b.val) }
 
@@ -1033,6 +1053,7 @@ func TestAssociate(t *testing.T) {
 		id   int
 		name string
 	}
+
 	users := []user{{1, "Alice"}, {2, "Bob"}}
 	got := Associate(users, func(u user) int { return u.id })
 
@@ -1092,6 +1113,7 @@ func TestShuffle(t *testing.T) {
 
 	// Verify same elements
 	slices.Sort(shuffled)
+
 	if !Equal(shuffled, original) {
 		t.Error("Shuffle changed elements")
 	}
@@ -1101,9 +1123,11 @@ func TestShuffleDeterministic(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 
 	SeedShuffle(42)
+
 	first := Shuffle(input)
 
 	SeedShuffle(42)
+
 	second := Shuffle(input)
 
 	if !Equal(first, second) {
@@ -1121,19 +1145,20 @@ func BenchmarkFilter(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Filter(data, func(n int) bool { return n%2 == 0 })
 	}
 }
 
 func BenchmarkFilterInPlace(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		b.StopTimer()
+
 		data := make([]int, 10000)
 		for j := range data {
 			data[j] = j
 		}
+
 		b.StartTimer()
 		FilterInPlace(data, func(n int) bool { return n%2 == 0 })
 	}
@@ -1145,8 +1170,7 @@ func BenchmarkMap(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Map(data, func(n int) int { return n * 2 })
 	}
 }
@@ -1157,8 +1181,7 @@ func BenchmarkContains(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Contains(data, 9999)
 	}
 }
@@ -1169,8 +1192,7 @@ func BenchmarkUnique(b *testing.B) {
 		data[i] = i % 100 // Lots of duplicates
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Unique(data)
 	}
 }
@@ -1181,8 +1203,7 @@ func BenchmarkChunk(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Chunk(data, 100)
 	}
 }
@@ -1193,8 +1214,7 @@ func BenchmarkGroupBy(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		GroupBy(data, func(n int) int { return n % 10 })
 	}
 }
@@ -1202,13 +1222,13 @@ func BenchmarkGroupBy(b *testing.B) {
 func BenchmarkIntersect(b *testing.B) {
 	a := make([]int, 5000)
 	bSlice := make([]int, 5000)
+
 	for i := range a {
 		a[i] = i
 		bSlice[i] = i + 2500
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Intersect(a, bSlice)
 	}
 }

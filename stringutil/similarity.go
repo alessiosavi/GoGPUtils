@@ -17,9 +17,11 @@ func LevenshteinDistance(s1, s2 string) int {
 	if s1 == s2 {
 		return 0
 	}
+
 	if len(s1) == 0 {
 		return len(s2)
 	}
+
 	if len(s2) == 0 {
 		return len(s1)
 	}
@@ -44,6 +46,7 @@ func LevenshteinDistance(s1, s2 string) int {
 
 	for j := 1; j <= len(r2); j++ {
 		curr[0] = j
+
 		for i := 1; i <= len(r1); i++ {
 			cost := 0
 			if r1[i-1] != r2[j-1] {
@@ -56,6 +59,7 @@ func LevenshteinDistance(s1, s2 string) int {
 				prev[i-1]+cost, // substitution
 			)
 		}
+
 		prev, curr = curr, prev
 	}
 
@@ -79,6 +83,7 @@ func LevenshteinSimilarity(s1, s2 string) float64 {
 	}
 
 	distance := LevenshteinDistance(s1, s2)
+
 	return 1.0 - float64(distance)/float64(maxLen)
 }
 
@@ -103,6 +108,7 @@ func DamerauLevenshteinDistance(s1, s2 string) int {
 	if len1 == 0 {
 		return len2
 	}
+
 	if len2 == 0 {
 		return len1
 	}
@@ -113,6 +119,7 @@ func DamerauLevenshteinDistance(s1, s2 string) int {
 		d[i] = make([]int, len2+1)
 		d[i][0] = i
 	}
+
 	for j := 0; j <= len2; j++ {
 		d[0][j] = j
 	}
@@ -166,10 +173,7 @@ func JaroSimilarity(s1, s2 string) float64 {
 	}
 
 	// Calculate match window
-	matchWindow := max(len1, len2)/2 - 1
-	if matchWindow < 0 {
-		matchWindow = 0
-	}
+	matchWindow := max(max(len1, len2)/2-1, 0)
 
 	s1Matches := make([]bool, len1)
 	s2Matches := make([]bool, len2)
@@ -178,7 +182,7 @@ func JaroSimilarity(s1, s2 string) float64 {
 	transpositions := 0
 
 	// Find matches
-	for i := 0; i < len1; i++ {
+	for i := range len1 {
 		start := max(0, i-matchWindow)
 		end := min(len2, i+matchWindow+1)
 
@@ -186,9 +190,11 @@ func JaroSimilarity(s1, s2 string) float64 {
 			if s2Matches[j] || r1[i] != r2[j] {
 				continue
 			}
+
 			s1Matches[i] = true
 			s2Matches[j] = true
 			matches++
+
 			break
 		}
 	}
@@ -199,20 +205,25 @@ func JaroSimilarity(s1, s2 string) float64 {
 
 	// Count transpositions
 	j := 0
-	for i := 0; i < len1; i++ {
+
+	for i := range len1 {
 		if !s1Matches[i] {
 			continue
 		}
+
 		for !s2Matches[j] {
 			j++
 		}
+
 		if r1[i] != r2[j] {
 			transpositions++
 		}
+
 		j++
 	}
 
 	m := float64(matches)
+
 	return (m/float64(len1) + m/float64(len2) + (m-float64(transpositions)/2)/m) / 3
 }
 
@@ -232,6 +243,7 @@ func JaroWinklerSimilarity(s1, s2 string, prefixScale float64) float64 {
 	if prefixScale < 0 {
 		prefixScale = 0
 	}
+
 	if prefixScale > 0.25 {
 		prefixScale = 0.25
 	}
@@ -242,7 +254,7 @@ func JaroWinklerSimilarity(s1, s2 string, prefixScale float64) float64 {
 	prefixLen := 0
 	maxPrefix := min(4, min(len(r1), len(r2)))
 
-	for i := 0; i < maxPrefix; i++ {
+	for i := range maxPrefix {
 		if r1[i] == r2[i] {
 			prefixLen++
 		} else {
@@ -273,12 +285,14 @@ func DiceCoefficient(s1, s2 string) float64 {
 	if len(bigrams1) == 0 && len(bigrams2) == 0 {
 		return 1.0
 	}
+
 	if len(bigrams1) == 0 || len(bigrams2) == 0 {
 		return 0.0
 	}
 
 	// Count intersection
 	intersection := 0
+
 	counted := make(map[string]int)
 	for bg := range bigrams1 {
 		counted[bg] = bigrams1[bg]
@@ -296,6 +310,7 @@ func DiceCoefficient(s1, s2 string) float64 {
 	for _, count := range bigrams1 {
 		total1 += count
 	}
+
 	total2 := 0
 	for _, count := range bigrams2 {
 		total2 += count
@@ -304,7 +319,7 @@ func DiceCoefficient(s1, s2 string) float64 {
 	return 2.0 * float64(intersection) / float64(total1+total2)
 }
 
-// bigrams generates a map of bigrams and their counts
+// bigrams generates a map of bigrams and their counts.
 func bigrams(s string) map[string]int {
 	runes := []rune(s)
 	if len(runes) < 2 {
@@ -312,10 +327,12 @@ func bigrams(s string) map[string]int {
 	}
 
 	result := make(map[string]int)
+
 	for i := 0; i < len(runes)-1; i++ {
 		bg := string(runes[i : i+2])
 		result[bg]++
 	}
+
 	return result
 }
 
@@ -335,11 +352,13 @@ func HammingDistance(s1, s2 string) int {
 	}
 
 	distance := 0
+
 	for i := range r1 {
 		if r1[i] != r2[i] {
 			distance++
 		}
 	}
+
 	return distance
 }
 
@@ -373,6 +392,7 @@ func LongestCommonSubsequence(s1, s2 string) int {
 				curr[j] = max(prev[j], curr[j-1])
 			}
 		}
+
 		prev, curr = curr, prev
 	}
 
@@ -414,6 +434,7 @@ func LongestCommonSubstring(s1, s2 string) string {
 				curr[j] = 0
 			}
 		}
+
 		prev, curr = curr, prev
 	}
 
@@ -432,6 +453,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	if n <= 0 {
 		n = 2
 	}
+
 	if s1 == s2 {
 		return 1.0
 	}
@@ -442,6 +464,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	if len(ngrams1) == 0 && len(ngrams2) == 0 {
 		return 1.0
 	}
+
 	if len(ngrams1) == 0 || len(ngrams2) == 0 {
 		return 0.0
 	}
@@ -456,6 +479,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	for k := range ngrams1 {
 		allKeys[k] = true
 	}
+
 	for k := range ngrams2 {
 		allKeys[k] = true
 	}
@@ -475,7 +499,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	return dotProduct / (sqrt(mag1) * sqrt(mag2))
 }
 
-// ngrams generates a map of n-grams and their counts
+// ngrams generates a map of n-grams and their counts.
 func ngrams(s string, n int) map[string]int {
 	runes := []rune(s)
 	if len(runes) < n {
@@ -483,26 +507,31 @@ func ngrams(s string, n int) map[string]int {
 	}
 
 	result := make(map[string]int)
+
 	for i := 0; i <= len(runes)-n; i++ {
 		ng := string(runes[i : i+n])
 		result[ng]++
 	}
+
 	return result
 }
 
-// Simple square root using Newton's method (to avoid math package import)
+// Simple square root using Newton's method (to avoid math package import).
 func sqrt(x float64) float64 {
 	if x == 0 || x == 1 {
 		return x
 	}
+
 	guess := x / 2
-	for i := 0; i < 50; i++ { // 50 iterations for precision
+	for range 50 { // 50 iterations for precision
 		newGuess := (guess + x/guess) / 2
 		if abs(newGuess-guess) < 1e-15 {
 			break
 		}
+
 		guess = newGuess
 	}
+
 	return guess
 }
 
@@ -510,5 +539,6 @@ func abs(x float64) float64 {
 	if x < 0 {
 		return -x
 	}
+
 	return x
 }

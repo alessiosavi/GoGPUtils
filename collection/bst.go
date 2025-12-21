@@ -29,6 +29,7 @@ func NewBST[T cmp.Ordered]() *BST[T] {
 func NewBSTFrom[T cmp.Ordered](items []T) *BST[T] {
 	tree := NewBST[T]()
 	tree.Insert(items...)
+
 	return tree
 }
 
@@ -48,24 +49,30 @@ func (t *BST[T]) insert(value T) {
 	if t.root == nil {
 		t.root = &bstNode[T]{value: value}
 		t.size++
+
 		return
 	}
 
 	current := t.root
+
 	for {
 		if value < current.value {
 			if current.left == nil {
 				current.left = &bstNode[T]{value: value}
 				t.size++
+
 				return
 			}
+
 			current = current.left
 		} else if value > current.value {
 			if current.right == nil {
 				current.right = &bstNode[T]{value: value}
 				t.size++
+
 				return
 			}
+
 			current = current.right
 		} else {
 			// Duplicate, ignore
@@ -90,6 +97,7 @@ func (t *BST[T]) find(value T) *bstNode[T] {
 			return current
 		}
 	}
+
 	return nil
 }
 
@@ -97,12 +105,14 @@ func (t *BST[T]) find(value T) *bstNode[T] {
 // Returns true if the value was found and removed.
 func (t *BST[T]) Remove(value T) bool {
 	var parent *bstNode[T]
+
 	current := t.root
 	isLeft := false
 
 	// Find the node to remove
 	for current != nil && current.value != value {
 		parent = current
+
 		if value < current.value {
 			current = current.left
 			isLeft = true
@@ -163,6 +173,7 @@ func (t *BST[T]) Remove(value T) bool {
 	}
 
 	t.size--
+
 	return true
 }
 
@@ -187,6 +198,7 @@ func (t *BST[T]) Clear() {
 func (t *BST[T]) Min() (T, bool) {
 	if t.root == nil {
 		var zero T
+
 		return zero, false
 	}
 
@@ -194,6 +206,7 @@ func (t *BST[T]) Min() (T, bool) {
 	for current.left != nil {
 		current = current.left
 	}
+
 	return current.value, true
 }
 
@@ -202,6 +215,7 @@ func (t *BST[T]) Min() (T, bool) {
 func (t *BST[T]) Max() (T, bool) {
 	if t.root == nil {
 		var zero T
+
 		return zero, false
 	}
 
@@ -209,6 +223,7 @@ func (t *BST[T]) Max() (T, bool) {
 	for current.right != nil {
 		current = current.right
 	}
+
 	return current.value, true
 }
 
@@ -220,7 +235,9 @@ func (t *BST[T]) Max() (T, bool) {
 //	tree.InOrder() // [1, 3, 4, 5, 7]
 func (t *BST[T]) InOrder() []T {
 	var result []T
+
 	t.inOrderTraverse(t.root, &result)
+
 	return result
 }
 
@@ -228,6 +245,7 @@ func (t *BST[T]) inOrderTraverse(node *bstNode[T], result *[]T) {
 	if node == nil {
 		return
 	}
+
 	t.inOrderTraverse(node.left, result)
 	*result = append(*result, node.value)
 	t.inOrderTraverse(node.right, result)
@@ -236,7 +254,9 @@ func (t *BST[T]) inOrderTraverse(node *bstNode[T], result *[]T) {
 // PreOrder returns values in pre-order (root, left, right).
 func (t *BST[T]) PreOrder() []T {
 	var result []T
+
 	t.preOrderTraverse(t.root, &result)
+
 	return result
 }
 
@@ -244,6 +264,7 @@ func (t *BST[T]) preOrderTraverse(node *bstNode[T], result *[]T) {
 	if node == nil {
 		return
 	}
+
 	*result = append(*result, node.value)
 	t.preOrderTraverse(node.left, result)
 	t.preOrderTraverse(node.right, result)
@@ -252,7 +273,9 @@ func (t *BST[T]) preOrderTraverse(node *bstNode[T], result *[]T) {
 // PostOrder returns values in post-order (left, right, root).
 func (t *BST[T]) PostOrder() []T {
 	var result []T
+
 	t.postOrderTraverse(t.root, &result)
+
 	return result
 }
 
@@ -260,6 +283,7 @@ func (t *BST[T]) postOrderTraverse(node *bstNode[T], result *[]T) {
 	if node == nil {
 		return
 	}
+
 	t.postOrderTraverse(node.left, result)
 	t.postOrderTraverse(node.right, result)
 	*result = append(*result, node.value)
@@ -272,6 +296,7 @@ func (t *BST[T]) LevelOrder() []T {
 	}
 
 	var result []T
+
 	queue := []*bstNode[T]{t.root}
 
 	for len(queue) > 0 {
@@ -283,6 +308,7 @@ func (t *BST[T]) LevelOrder() []T {
 		if node.left != nil {
 			queue = append(queue, node.left)
 		}
+
 		if node.right != nil {
 			queue = append(queue, node.right)
 		}
@@ -301,11 +327,15 @@ func (t *BST[T]) height(node *bstNode[T]) int {
 	if node == nil {
 		return 0
 	}
+
 	leftHeight := t.height(node.left)
+
 	rightHeight := t.height(node.right)
+
 	if leftHeight > rightHeight {
 		return leftHeight + 1
 	}
+
 	return rightHeight + 1
 }
 
@@ -318,6 +348,7 @@ func (t *BST[T]) forEach(node *bstNode[T], fn func(T)) {
 	if node == nil {
 		return
 	}
+
 	t.forEach(node.left, fn)
 	fn(node.value)
 	t.forEach(node.right, fn)

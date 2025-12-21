@@ -17,15 +17,15 @@ import (
 type LineTerminator int
 
 const (
-	// LF represents Unix-style line endings (\n)
+	// LF represents Unix-style line endings (\n).
 	LF LineTerminator = iota
-	// CRLF represents Windows-style line endings (\r\n)
+	// CRLF represents Windows-style line endings (\r\n).
 	CRLF
-	// CR represents old Mac-style line endings (\r)
+	// CR represents old Mac-style line endings (\r).
 	CR
-	// Mixed indicates the file has inconsistent line endings
+	// Mixed indicates the file has inconsistent line endings.
 	Mixed
-	// Unknown indicates no line endings were found
+	// Unknown indicates no line endings were found.
 	Unknown
 )
 
@@ -63,11 +63,11 @@ func (lt LineTerminator) Bytes() []byte {
 type ListOption int
 
 const (
-	// FilesOnly lists only files (not directories)
+	// FilesOnly lists only files (not directories).
 	FilesOnly ListOption = 1 << iota
-	// DirsOnly lists only directories (not files)
+	// DirsOnly lists only directories (not files).
 	DirsOnly
-	// Recursive lists contents recursively
+	// Recursive lists contents recursively.
 	Recursive
 	// IncludeHidden includes hidden files (starting with .)
 	IncludeHidden
@@ -88,30 +88,35 @@ var (
 // Exists reports whether the path exists.
 func Exists(path string) bool {
 	_, err := os.Stat(path)
+
 	return err == nil
 }
 
 // IsFile reports whether the path is a regular file.
 func IsFile(path string) bool {
 	info, err := os.Stat(path)
+
 	return err == nil && info.Mode().IsRegular()
 }
 
 // IsDir reports whether the path is a directory.
 func IsDir(path string) bool {
 	info, err := os.Stat(path)
+
 	return err == nil && info.IsDir()
 }
 
 // IsSymlink reports whether the path is a symbolic link.
 func IsSymlink(path string) bool {
 	info, err := os.Lstat(path)
+
 	return err == nil && info.Mode()&os.ModeSymlink != 0
 }
 
 // IsExecutable reports whether the path is executable.
 func IsExecutable(path string) bool {
 	info, err := os.Stat(path)
+
 	return err == nil && info.Mode()&0111 != 0
 }
 
@@ -132,9 +137,10 @@ func IsEmpty(path string) (bool, error) {
 		defer f.Close()
 
 		_, err = f.Readdirnames(1)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return true, nil
 		}
+
 		return false, err
 	}
 
@@ -151,9 +157,11 @@ func Size(path string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	if info.IsDir() {
 		return 0, ErrNotFile
 	}
+
 	return info.Size(), nil
 }
 
@@ -163,6 +171,7 @@ func ModTime(path string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
+
 	return info.ModTime(), nil
 }
 
@@ -172,6 +181,7 @@ func Mode(path string) (fs.FileMode, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return info.Mode(), nil
 }
 
@@ -185,6 +195,7 @@ func Extension(path string) string {
 func BaseName(path string) string {
 	base := filepath.Base(path)
 	ext := filepath.Ext(base)
+
 	return strings.TrimSuffix(base, ext)
 }
 
@@ -210,6 +221,7 @@ func ReadString(ctx context.Context, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(data), nil
 }
 
@@ -223,6 +235,7 @@ func ReadLines(ctx context.Context, path string) ([]string, error) {
 	defer f.Close()
 
 	var lines []string
+
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		select {
@@ -230,12 +243,14 @@ func ReadLines(ctx context.Context, path string) ([]string, error) {
 			return nil, ctx.Err()
 		default:
 		}
+
 		lines = append(lines, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
+
 	return lines, nil
 }
 
@@ -253,6 +268,7 @@ func ReadLinesN(ctx context.Context, path string, n int) ([]string, error) {
 	defer f.Close()
 
 	lines := make([]string, 0, n)
+
 	scanner := bufio.NewScanner(f)
 	for i := 0; i < n && scanner.Scan(); i++ {
 		select {
@@ -260,12 +276,14 @@ func ReadLinesN(ctx context.Context, path string, n int) ([]string, error) {
 			return nil, ctx.Err()
 		default:
 		}
+
 		lines = append(lines, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
+
 	return lines, nil
 }
 
@@ -295,6 +313,7 @@ func CountLines(ctx context.Context, path string) (int, error) {
 		if err == io.EOF {
 			break
 		}
+
 		if err != nil {
 			return 0, err
 		}
@@ -321,10 +340,13 @@ func WriteString(path, content string, perm fs.FileMode) error {
 // WriteLines writes lines to a file, joining with the specified terminator.
 func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.FileMode) error {
 	term := string(terminator.Bytes())
+
 	content := strings.Join(lines, term)
+
 	if len(lines) > 0 {
 		content += term
 	}
+
 	return WriteString(path, content, perm)
 }
 
@@ -337,6 +359,7 @@ func AppendBytes(path string, data []byte, perm fs.FileMode) error {
 	defer f.Close()
 
 	_, err = f.Write(data)
+
 	return err
 }
 
@@ -361,8 +384,10 @@ func EnsureDir(path string, perm fs.FileMode) error {
 		if !IsDir(path) {
 			return ErrNotDir
 		}
+
 		return nil
 	}
+
 	return os.MkdirAll(path, perm)
 }
 
@@ -402,6 +427,7 @@ func List(ctx context.Context, dir string, opts ListOption) ([]string, error) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
+
 			return nil
 		}
 
@@ -410,8 +436,10 @@ func List(ctx context.Context, dir string, opts ListOption) ([]string, error) {
 			if recursive {
 				return nil // Continue into directory but don't include it
 			}
+
 			return filepath.SkipDir
 		}
+
 		if dirsOnly && !d.IsDir() {
 			return nil
 		}
@@ -448,12 +476,15 @@ func List(ctx context.Context, dir string, opts ListOption) ([]string, error) {
 			if !includeHidden && strings.HasPrefix(name, ".") {
 				continue
 			}
+
 			if filesOnly && entry.IsDir() {
 				continue
 			}
+
 			if dirsOnly && !entry.IsDir() {
 				continue
 			}
+
 			entries = append(entries, filepath.Join(dir, name))
 		}
 	}
@@ -469,6 +500,7 @@ func Find(ctx context.Context, dir, pattern string) ([]string, error) {
 	}
 
 	var matches []string
+
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		select {
 		case <-ctx.Done():
@@ -488,15 +520,17 @@ func Find(ctx context.Context, dir, pattern string) ([]string, error) {
 		if err != nil {
 			return err
 		}
+
 		if matched {
 			matches = append(matches, path)
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
+
 	return matches, nil
 }
 
@@ -506,6 +540,7 @@ func FindByExtension(ctx context.Context, dir, ext string) ([]string, error) {
 	if !strings.HasPrefix(ext, ".") {
 		ext = "." + ext
 	}
+
 	return Find(ctx, dir, "*"+ext)
 }
 
@@ -526,6 +561,7 @@ func Copy(ctx context.Context, src, dst string) error {
 	if err != nil {
 		return err
 	}
+
 	if srcInfo.IsDir() {
 		return ErrNotFile
 	}
@@ -568,6 +604,7 @@ func Move(ctx context.Context, src, dst string) error {
 	if err := Copy(ctx, src, dst); err != nil {
 		return err
 	}
+
 	return os.Remove(src)
 }
 
@@ -575,6 +612,7 @@ func Move(ctx context.Context, src, dst string) error {
 func Touch(path string) error {
 	if Exists(path) {
 		now := time.Now()
+
 		return os.Chtimes(path, now, now)
 	}
 
@@ -588,6 +626,7 @@ func Touch(path string) error {
 	if err != nil {
 		return err
 	}
+
 	return f.Close()
 }
 
@@ -604,14 +643,15 @@ func DetectLineTerminator(data []byte) LineTerminator {
 	hasCR := false
 
 	for i := 0; i < len(data); i++ {
-		if data[i] == '\r' {
+		switch data[i] {
+		case '\r':
 			if i+1 < len(data) && data[i+1] == '\n' {
 				hasCRLF = true
 				i++ // Skip the \n
 			} else {
 				hasCR = true
 			}
-		} else if data[i] == '\n' {
+		case '\n':
 			hasLF = true
 		}
 	}
@@ -621,9 +661,11 @@ func DetectLineTerminator(data []byte) LineTerminator {
 	if hasLF {
 		count++
 	}
+
 	if hasCRLF {
 		count++
 	}
+
 	if hasCR {
 		count++
 	}
@@ -631,6 +673,7 @@ func DetectLineTerminator(data []byte) LineTerminator {
 	if count == 0 {
 		return Unknown
 	}
+
 	if count > 1 {
 		return Mixed
 	}
@@ -638,9 +681,11 @@ func DetectLineTerminator(data []byte) LineTerminator {
 	if hasCRLF {
 		return CRLF
 	}
+
 	if hasCR {
 		return CR
 	}
+
 	return LF
 }
 
@@ -669,8 +714,9 @@ func DetectFileLineTerminator(ctx context.Context, path string) (LineTerminator,
 
 	// Read first 4KB to detect
 	buf := make([]byte, 4096)
+
 	n, err := f.Read(buf)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return Unknown, err
 	}
 
@@ -688,6 +734,7 @@ func Abs(path string) string {
 	if err != nil {
 		return path
 	}
+
 	return abs
 }
 
@@ -732,8 +779,10 @@ func TempFile(dir, pattern string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	name := f.Name()
 	f.Close()
+
 	return name, nil
 }
 
@@ -749,16 +798,19 @@ func SameFile(path1, path2 string) bool {
 	if err != nil {
 		return false
 	}
+
 	fi2, err := os.Stat(path2)
 	if err != nil {
 		return false
 	}
+
 	return os.SameFile(fi1, fi2)
 }
 
 // DirSize calculates the total size of a directory and its contents.
 func DirSize(ctx context.Context, dir string) (int64, error) {
 	var total int64
+
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		select {
 		case <-ctx.Done():
@@ -769,14 +821,18 @@ func DirSize(ctx context.Context, dir string) (int64, error) {
 		if err != nil {
 			return err
 		}
+
 		if !d.IsDir() {
 			info, err := d.Info()
 			if err != nil {
 				return err
 			}
+
 			total += info.Size()
 		}
+
 		return nil
 	})
+
 	return total, err
 }

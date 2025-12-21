@@ -2,6 +2,7 @@ package cryptoutil
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 )
 
@@ -76,7 +77,7 @@ func TestDecryptWrongKey(t *testing.T) {
 	ciphertext, _ := Encrypt([]byte("secret"), key1)
 
 	_, err := Decrypt(ciphertext, key2)
-	if err != ErrDecryptFailed {
+	if !errors.Is(err, ErrDecryptFailed) {
 		t.Errorf("Decrypt with wrong key error = %v, want ErrDecryptFailed", err)
 	}
 }
@@ -99,8 +100,9 @@ func TestInvalidKeySize(t *testing.T) {
 
 	for _, size := range invalidKeys {
 		key := make([]byte, size)
+
 		_, err := Encrypt([]byte("test"), key)
-		if err != ErrInvalidKeySize {
+		if !errors.Is(err, ErrInvalidKeySize) {
 			t.Errorf("Encrypt with %d-byte key error = %v, want ErrInvalidKeySize", size, err)
 		}
 	}
@@ -108,6 +110,7 @@ func TestInvalidKeySize(t *testing.T) {
 	validKeys := []int{16, 24, 32}
 	for _, size := range validKeys {
 		key := make([]byte, size)
+
 		_, err := Encrypt([]byte("test"), key)
 		if err != nil {
 			t.Errorf("Encrypt with %d-byte key should succeed, got error: %v", size, err)
@@ -123,6 +126,7 @@ func TestGenerateKey(t *testing.T) {
 		if err != nil {
 			t.Errorf("GenerateKey(%d) error: %v", size, err)
 		}
+
 		if len(key) != size {
 			t.Errorf("GenerateKey(%d) returned %d bytes", size, len(key))
 		}
@@ -130,7 +134,7 @@ func TestGenerateKey(t *testing.T) {
 
 	// Invalid sizes
 	_, err := GenerateKey(17)
-	if err != ErrInvalidKeySize {
+	if !errors.Is(err, ErrInvalidKeySize) {
 		t.Errorf("GenerateKey(17) error = %v, want ErrInvalidKeySize", err)
 	}
 }
@@ -226,6 +230,7 @@ func TestRandomBytes(t *testing.T) {
 		if err != nil {
 			t.Errorf("RandomBytes(%d) error: %v", size, err)
 		}
+
 		if len(data) != size {
 			t.Errorf("RandomBytes(%d) returned %d bytes", size, len(data))
 		}
@@ -233,7 +238,9 @@ func TestRandomBytes(t *testing.T) {
 
 	// Two calls should produce different output
 	data1, _ := RandomBytes(32)
+
 	data2, _ := RandomBytes(32)
+
 	if bytes.Equal(data1, data2) {
 		t.Error("RandomBytes should produce different output on each call")
 	}
@@ -250,6 +257,7 @@ func TestGenerateNonce(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateNonce() error: %v", err)
 	}
+
 	if len(nonce) != 12 {
 		t.Errorf("GenerateNonce(12) returned %d bytes", len(nonce))
 	}
@@ -310,8 +318,7 @@ func BenchmarkEncrypt(b *testing.B) {
 	key, _ := GenerateKey(32)
 	plaintext := make([]byte, 1024)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Encrypt(plaintext, key)
 	}
 }
@@ -321,8 +328,7 @@ func BenchmarkDecrypt(b *testing.B) {
 	plaintext := make([]byte, 1024)
 	ciphertext, _ := Encrypt(plaintext, key)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Decrypt(ciphertext, key)
 	}
 }
@@ -330,14 +336,13 @@ func BenchmarkDecrypt(b *testing.B) {
 func BenchmarkHash(b *testing.B) {
 	data := make([]byte, 1024)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Hash(data)
 	}
 }
 
 func BenchmarkGenerateKey(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		GenerateKey(32)
 	}
 }

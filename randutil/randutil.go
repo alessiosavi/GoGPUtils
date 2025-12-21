@@ -46,6 +46,7 @@ func SecureBytes(n int) ([]byte, error) {
 	if _, err := io.ReadFull(cryptorand.Reader, b); err != nil {
 		return nil, err
 	}
+
 	return b, nil
 }
 
@@ -60,6 +61,7 @@ func SecureString(length int, charset string) (string, error) {
 	if length <= 0 {
 		return "", ErrInvalidLength
 	}
+
 	if len(charset) == 0 {
 		return "", ErrEmptyCharset
 	}
@@ -92,6 +94,7 @@ func SecureInt(max int) (int, error) {
 	}
 
 	n := binary.BigEndian.Uint64(b[:])
+
 	return int(n % uint64(max)), nil
 }
 
@@ -107,6 +110,7 @@ func SecureInt64(max int64) (int64, error) {
 	}
 
 	n := binary.BigEndian.Uint64(b[:])
+
 	return int64(n % uint64(max)), nil
 }
 
@@ -121,6 +125,7 @@ func SecureID() (string, error) {
 	if _, err := io.ReadFull(cryptorand.Reader, b); err != nil {
 		return "", err
 	}
+
 	return hex.EncodeToString(b), nil
 }
 
@@ -128,12 +133,14 @@ func SecureID() (string, error) {
 func SecureChoice[T any](s []T) (T, error) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, ErrEmptySlice
 	}
 
 	idx, err := SecureInt(len(s))
 	if err != nil {
 		var zero T
+
 		return zero, err
 	}
 
@@ -178,6 +185,7 @@ func secureUint64() uint64 {
 		// Fallback to less random but functional seed
 		return uint64(0xDEADBEEF)
 	}
+
 	return binary.BigEndian.Uint64(b[:])
 }
 
@@ -193,6 +201,7 @@ func (g *Generator) IntRange(min, max int) int {
 	if min == max {
 		return min
 	}
+
 	return min + g.rng.IntN(max-min+1)
 }
 
@@ -206,6 +215,7 @@ func (g *Generator) Int64Range(min, max int64) int64 {
 	if min == max {
 		return min
 	}
+
 	return min + g.rng.Int64N(max-min+1)
 }
 
@@ -235,6 +245,7 @@ func (g *Generator) Bytes(n int) []byte {
 	for i := range b {
 		b[i] = byte(g.rng.IntN(256))
 	}
+
 	return b
 }
 
@@ -248,6 +259,7 @@ func (g *Generator) String(length int, charset string) string {
 	for i := range result {
 		result[i] = charset[g.rng.IntN(len(charset))]
 	}
+
 	return string(result)
 }
 
@@ -298,6 +310,7 @@ func (g *Generator) SampleInts(s []int, n int) []int {
 	if n >= len(s) {
 		return result
 	}
+
 	return result[:n]
 }
 
@@ -316,6 +329,7 @@ func ChoiceN[T any](g *Generator, s []T, n int) []T {
 	for i := range result {
 		result[i] = s[g.rng.IntN(len(s))]
 	}
+
 	return result
 }
 
@@ -332,6 +346,7 @@ func Sample[T any](g *Generator, s []T, n int) []T {
 	if n >= len(s) {
 		return result
 	}
+
 	return result[:n]
 }
 
@@ -348,6 +363,7 @@ func ShuffleCopy[T any](g *Generator, s []T) []T {
 	result := make([]T, len(s))
 	copy(result, s)
 	Shuffle(g, result)
+
 	return result
 }
 
@@ -399,10 +415,12 @@ func Sequence(start, n int) []int {
 	if n <= 0 {
 		return nil
 	}
+
 	result := make([]int, n)
 	for i := range result {
 		result[i] = start + i
 	}
+
 	return result
 }
 
@@ -411,6 +429,7 @@ func Range(start, end int) []int {
 	if end <= start {
 		return nil
 	}
+
 	return Sequence(start, end-start)
 }
 
@@ -421,6 +440,7 @@ func RangeStep(start, end, step int) []int {
 	}
 
 	var result []int
+
 	if step > 0 {
 		for i := start; i < end; i += step {
 			result = append(result, i)
@@ -430,5 +450,6 @@ func RangeStep(start, end, step int) []int {
 			result = append(result, i)
 		}
 	}
+
 	return result
 }

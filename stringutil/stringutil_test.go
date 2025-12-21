@@ -64,6 +64,7 @@ func TestHasAnySuffix(t *testing.T) {
 	if !HasAnySuffix("file.txt", ".txt", ".doc") {
 		t.Error("HasAnySuffix should match .txt")
 	}
+
 	if HasAnySuffix("file.pdf", ".txt", ".doc") {
 		t.Error("HasAnySuffix should not match .pdf")
 	}
@@ -99,6 +100,7 @@ func TestContainsAll(t *testing.T) {
 	if !ContainsAll("foo bar baz", "foo", "bar") {
 		t.Error("ContainsAll should find both substrings")
 	}
+
 	if ContainsAll("foo bar", "foo", "baz") {
 		t.Error("ContainsAll should return false when one is missing")
 	}
@@ -189,7 +191,9 @@ func TestTruncate(t *testing.T) {
 
 func TestTruncateWords(t *testing.T) {
 	got := TruncateWords("Hello wonderful world", 15, "...")
+
 	want := "Hello..."
+
 	if got != want {
 		t.Errorf("TruncateWords() = %q, want %q", got, want)
 	}
@@ -223,7 +227,9 @@ func TestPadLeft(t *testing.T) {
 
 func TestPadRight(t *testing.T) {
 	got := PadRight("42", 5, '0')
+
 	want := "42000"
+
 	if got != want {
 		t.Errorf("PadRight() = %q, want %q", got, want)
 	}
@@ -231,7 +237,9 @@ func TestPadRight(t *testing.T) {
 
 func TestPadCenter(t *testing.T) {
 	got := PadCenter("hello", 11, '*')
+
 	want := "***hello***"
+
 	if got != want {
 		t.Errorf("PadCenter() = %q, want %q", got, want)
 	}
@@ -348,6 +356,7 @@ func TestIsAlphanumeric(t *testing.T) {
 	if !IsAlphanumeric("hello123") {
 		t.Error("IsAlphanumeric should return true for 'hello123'")
 	}
+
 	if IsAlphanumeric("hello 123") {
 		t.Error("IsAlphanumeric should return false for 'hello 123'")
 	}
@@ -357,9 +366,11 @@ func TestIsUpper(t *testing.T) {
 	if !IsUpper("HELLO") {
 		t.Error("IsUpper should return true for 'HELLO'")
 	}
+
 	if IsUpper("Hello") {
 		t.Error("IsUpper should return false for 'Hello'")
 	}
+
 	if !IsUpper("123") { // No letters
 		t.Error("IsUpper should return true for string with no letters")
 	}
@@ -369,6 +380,7 @@ func TestIsLower(t *testing.T) {
 	if !IsLower("hello") {
 		t.Error("IsLower should return true for 'hello'")
 	}
+
 	if IsLower("Hello") {
 		t.Error("IsLower should return false for 'Hello'")
 	}
@@ -378,6 +390,7 @@ func TestIsASCII(t *testing.T) {
 	if !IsASCII("hello") {
 		t.Error("IsASCII should return true for 'hello'")
 	}
+
 	if IsASCII("héllo") {
 		t.Error("IsASCII should return false for 'héllo'")
 	}
@@ -387,6 +400,7 @@ func TestIsPrintable(t *testing.T) {
 	if !IsPrintable("hello world") {
 		t.Error("IsPrintable should return true for 'hello world'")
 	}
+
 	if IsPrintable("hello\x00world") {
 		t.Error("IsPrintable should return false for string with null char")
 	}
@@ -416,7 +430,9 @@ func TestCapitalize(t *testing.T) {
 
 func TestSwapCase(t *testing.T) {
 	got := SwapCase("Hello World")
+
 	want := "hELLO wORLD"
+
 	if got != want {
 		t.Errorf("SwapCase() = %q, want %q", got, want)
 	}
@@ -460,7 +476,9 @@ func TestCamelCase(t *testing.T) {
 
 func TestPascalCase(t *testing.T) {
 	got := PascalCase("hello_world")
+
 	want := "HelloWorld"
+
 	if got != want {
 		t.Errorf("PascalCase() = %q, want %q", got, want)
 	}
@@ -468,7 +486,9 @@ func TestPascalCase(t *testing.T) {
 
 func TestKebabCase(t *testing.T) {
 	got := KebabCase("HelloWorld")
+
 	want := "hello-world"
+
 	if got != want {
 		t.Errorf("KebabCase() = %q, want %q", got, want)
 	}
@@ -579,7 +599,9 @@ func TestCommonPrefix(t *testing.T) {
 
 func TestCommonSuffix(t *testing.T) {
 	got := CommonSuffix("testing", "running", "jumping")
+
 	want := "ing"
+
 	if got != want {
 		t.Errorf("CommonSuffix() = %q, want %q", got, want)
 	}
@@ -612,7 +634,9 @@ func TestBetween(t *testing.T) {
 
 func TestBetweenAll(t *testing.T) {
 	got := BetweenAll("a[1]b[2]c[3]", "[", "]")
+
 	want := []string{"1", "2", "3"}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("BetweenAll() = %v, want %v", got, want)
 	}
@@ -640,7 +664,9 @@ func TestWrap(t *testing.T) {
 
 func TestIndent(t *testing.T) {
 	got := Indent("a\nb\nc", "  ")
+
 	want := "  a\n  b\n  c"
+
 	if got != want {
 		t.Errorf("Indent() = %q, want %q", got, want)
 	}
@@ -648,7 +674,9 @@ func TestIndent(t *testing.T) {
 
 func TestDedent(t *testing.T) {
 	got := Dedent("  a\n  b\n  c")
+
 	want := "a\nb\nc"
+
 	if got != want {
 		t.Errorf("Dedent() = %q, want %q", got, want)
 	}
@@ -682,7 +710,9 @@ func TestStripTags(t *testing.T) {
 
 func TestRemoveAll(t *testing.T) {
 	got := RemoveAll("hello world", "l", "o")
+
 	want := "he wrd"
+
 	if got != want {
 		t.Errorf("RemoveAll() = %q, want %q", got, want)
 	}
@@ -728,7 +758,7 @@ func TestDamerauLevenshteinDistance(t *testing.T) {
 		s1, s2 string
 		want   int
 	}{
-		{"ca", "ac", 1},  // Single transposition
+		{"ca", "ac", 1},   // Single transposition
 		{"abc", "acb", 1}, // Single transposition
 		{"kitten", "sitting", 3},
 	}
@@ -763,7 +793,9 @@ func TestJaroWinklerSimilarity(t *testing.T) {
 
 	// Winkler should be >= Jaro due to common prefix boost
 	jaro := JaroSimilarity("martha", "marhta")
+
 	winkler := JaroWinklerSimilarity("martha", "marhta", 0.1)
+
 	if winkler < jaro {
 		t.Error("JaroWinkler should be >= Jaro for strings with common prefix")
 	}
@@ -810,7 +842,7 @@ func TestLongestCommonSubsequence(t *testing.T) {
 		s1, s2 string
 		want   int
 	}{
-		{"ABCDGH", "AEDFHR", 3}, // ADH
+		{"ABCDGH", "AEDFHR", 3},  // ADH
 		{"AGGTAB", "GXTXAYB", 4}, // GTAB
 		{"", "abc", 0},
 	}
@@ -858,52 +890,58 @@ func TestCosineSimilarity(t *testing.T) {
 
 func BenchmarkReverse(b *testing.B) {
 	s := "The quick brown fox jumps over the lazy dog"
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Reverse(s)
 	}
 }
 
 func BenchmarkLevenshteinDistance(b *testing.B) {
 	s1 := "kitten"
+
 	s2 := "sitting"
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		LevenshteinDistance(s1, s2)
 	}
 }
 
 func BenchmarkLevenshteinDistanceLong(b *testing.B) {
 	s1 := "The quick brown fox jumps over the lazy dog"
+
 	s2 := "The slow brown cat walks under the busy cat"
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		LevenshteinDistance(s1, s2)
 	}
 }
 
 func BenchmarkJaroWinklerSimilarity(b *testing.B) {
 	s1 := "martha"
+
 	s2 := "marhta"
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		JaroWinklerSimilarity(s1, s2, 0.1)
 	}
 }
 
 func BenchmarkSnakeCase(b *testing.B) {
 	s := "ThisIsACamelCaseString"
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		SnakeCase(s)
 	}
 }
 
 func BenchmarkAllIndexes(b *testing.B) {
-	s := "banana banana banana banana banana"
-	for i := 0; i < b.N; i++ {
+	s := "banana "
+	for b.Loop() {
 		AllIndexes(s, "an")
 	}
 }
 
 func BenchmarkIsPalindrome(b *testing.B) {
 	s := "A man a plan a canal Panama"
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		IsPalindrome(s, true)
 	}
 }

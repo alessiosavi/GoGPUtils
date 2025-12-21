@@ -35,6 +35,7 @@ func NewSetFrom[T comparable](items []T) *Set[T] {
 	for _, item := range items {
 		s.items[item] = struct{}{}
 	}
+
 	return s
 }
 
@@ -61,6 +62,7 @@ func (s *Set[T]) Remove(items ...T) {
 // Contains returns true if the element is in the set.
 func (s *Set[T]) Contains(item T) bool {
 	_, ok := s.items[item]
+
 	return ok
 }
 
@@ -71,6 +73,7 @@ func (s *Set[T]) ContainsAll(items ...T) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -81,6 +84,7 @@ func (s *Set[T]) ContainsAny(items ...T) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -106,6 +110,7 @@ func (s *Set[T]) Values() []T {
 	for item := range s.items {
 		result = append(result, item)
 	}
+
 	return result
 }
 
@@ -121,9 +126,11 @@ func (s *Set[T]) Union(other *Set[T]) *Set[T] {
 	for item := range s.items {
 		result.items[item] = struct{}{}
 	}
+
 	for item := range other.items {
 		result.items[item] = struct{}{}
 	}
+
 	return result
 }
 
@@ -142,11 +149,13 @@ func (s *Set[T]) Intersection(other *Set[T]) *Set[T] {
 	}
 
 	result := NewSet[T]()
+
 	for item := range smaller.items {
 		if _, ok := larger.items[item]; ok {
 			result.items[item] = struct{}{}
 		}
 	}
+
 	return result
 }
 
@@ -159,11 +168,13 @@ func (s *Set[T]) Intersection(other *Set[T]) *Set[T] {
 //	c := a.Difference(b) // {1}
 func (s *Set[T]) Difference(other *Set[T]) *Set[T] {
 	result := NewSet[T]()
+
 	for item := range s.items {
 		if _, ok := other.items[item]; !ok {
 			result.items[item] = struct{}{}
 		}
 	}
+
 	return result
 }
 
@@ -176,16 +187,19 @@ func (s *Set[T]) Difference(other *Set[T]) *Set[T] {
 //	c := a.SymmetricDifference(b) // {1, 4}
 func (s *Set[T]) SymmetricDifference(other *Set[T]) *Set[T] {
 	result := NewSet[T]()
+
 	for item := range s.items {
 		if _, ok := other.items[item]; !ok {
 			result.items[item] = struct{}{}
 		}
 	}
+
 	for item := range other.items {
 		if _, ok := s.items[item]; !ok {
 			result.items[item] = struct{}{}
 		}
 	}
+
 	return result
 }
 
@@ -196,6 +210,7 @@ func (s *Set[T]) IsSubset(other *Set[T]) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -209,11 +224,13 @@ func (s *Set[T]) Equal(other *Set[T]) bool {
 	if len(s.items) != len(other.items) {
 		return false
 	}
+
 	for item := range s.items {
 		if _, ok := other.items[item]; !ok {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -223,6 +240,7 @@ func (s *Set[T]) Clone() *Set[T] {
 	for item := range s.items {
 		result.items[item] = struct{}{}
 	}
+
 	return result
 }
 
@@ -236,10 +254,12 @@ func (s *Set[T]) ForEach(fn func(T)) {
 // Filter returns a new set with elements that satisfy the predicate.
 func (s *Set[T]) Filter(predicate func(T) bool) *Set[T] {
 	result := NewSet[T]()
+
 	for item := range s.items {
 		if predicate(item) {
 			result.items[item] = struct{}{}
 		}
 	}
+
 	return result
 }

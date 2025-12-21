@@ -2,17 +2,6 @@
 
 A collection of well-tested, idiomatic Go utilities for common programming tasks.
 
-## Key Differences from v1
-
-| Aspect | v1 | v2 |
-|--------|----|----|
-| **Error Handling** | Panics in 43+ places | Returns errors consistently |
-| **Global State** | Singletons everywhere | No global state; explicit dependencies |
-| **Encryption** | AES-ECB (insecure) | AES-GCM (authenticated encryption) |
-| **Data Structures** | Type-specific (float64 Stack) | Generic (Stack[T], BST[T]) |
-| **Context Support** | context.Background() hardcoded | All I/O accepts context.Context |
-| **Dependencies** | Heavy (AWS SDK, progressbar) | Zero external dependencies in core |
-
 ## Installation
 
 ```bash

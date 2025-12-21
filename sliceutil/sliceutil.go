@@ -16,12 +16,15 @@ func Filter[T any](s []T, predicate func(T) bool) []T {
 	if s == nil {
 		return nil
 	}
+
 	result := make([]T, 0, len(s)/2) // Estimate half will match
+
 	for _, v := range s {
 		if predicate(v) {
 			result = append(result, v)
 		}
 	}
+
 	return result
 }
 
@@ -38,13 +41,16 @@ func FilterInPlace[T any](s []T, predicate func(T) bool) []T {
 	if s == nil {
 		return nil
 	}
+
 	n := 0
+
 	for _, v := range s {
 		if predicate(v) {
 			s[n] = v
 			n++
 		}
 	}
+
 	return s[:n]
 }
 
@@ -59,10 +65,12 @@ func Map[T, U any](s []T, transform func(T) U) []U {
 	if s == nil {
 		return nil
 	}
+
 	result := make([]U, len(s))
 	for i, v := range s {
 		result[i] = transform(v)
 	}
+
 	return result
 }
 
@@ -78,10 +86,12 @@ func MapWithIndex[T, U any](s []T, transform func(int, T) U) []U {
 	if s == nil {
 		return nil
 	}
+
 	result := make([]U, len(s))
 	for i, v := range s {
 		result[i] = transform(i, v)
 	}
+
 	return result
 }
 
@@ -96,6 +106,7 @@ func Reduce[T, U any](s []T, initial U, accumulator func(U, T) U) U {
 	for _, v := range s {
 		result = accumulator(result, v)
 	}
+
 	return result
 }
 
@@ -106,12 +117,8 @@ func Reduce[T, U any](s []T, initial U, accumulator func(U, T) U) U {
 //
 //	if Contains(names, "Alice") { ... }
 func Contains[T comparable](s []T, target T) bool {
-	for _, v := range s {
-		if v == target {
-			return true
-		}
-	}
-	return false
+
+	return slices.Contains(s, target)
 }
 
 // ContainsFunc reports whether any element satisfies the predicate.
@@ -120,12 +127,8 @@ func Contains[T comparable](s []T, target T) bool {
 //
 //	hasNegative := ContainsFunc(nums, func(n int) bool { return n < 0 })
 func ContainsFunc[T any](s []T, predicate func(T) bool) bool {
-	for _, v := range s {
-		if predicate(v) {
-			return true
-		}
-	}
-	return false
+
+	return slices.ContainsFunc(s, predicate)
 }
 
 // IndexOf returns the index of the first occurrence of target, or -1 if not found.
@@ -140,6 +143,7 @@ func IndexOf[T comparable](s []T, target T) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -150,6 +154,7 @@ func IndexOfFunc[T any](s []T, predicate func(T) bool) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -160,6 +165,7 @@ func LastIndexOf[T comparable](s []T, target T) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -174,17 +180,23 @@ func Unique[T comparable](s []T) []T {
 	if s == nil {
 		return nil
 	}
+
 	if len(s) == 0 {
 		return []T{}
 	}
+
 	seen := make(map[T]struct{}, len(s))
+
 	result := make([]T, 0, len(s))
+
 	for _, v := range s {
 		if _, ok := seen[v]; !ok {
 			seen[v] = struct{}{}
+
 			result = append(result, v)
 		}
 	}
+
 	return result
 }
 
@@ -201,15 +213,20 @@ func UniqueFunc[T any, K comparable](s []T, key func(T) K) []T {
 	if s == nil {
 		return nil
 	}
+
 	seen := make(map[K]struct{}, len(s))
+
 	result := make([]T, 0, len(s))
+
 	for _, v := range s {
 		k := key(v)
 		if _, ok := seen[k]; !ok {
 			seen[k] = struct{}{}
+
 			result = append(result, v)
 		}
 	}
+
 	return result
 }
 
@@ -225,18 +242,20 @@ func Chunk[T any](s []T, size int) [][]T {
 	if size <= 0 || s == nil {
 		return nil
 	}
+
 	if len(s) == 0 {
 		return [][]T{}
 	}
+
 	numChunks := (len(s) + size - 1) / size
 	result := make([][]T, 0, numChunks)
+
 	for i := 0; i < len(s); i += size {
-		end := i + size
-		if end > len(s) {
-			end = len(s)
-		}
+		end := min(i+size, len(s))
+
 		result = append(result, s[i:end])
 	}
+
 	return result
 }
 
@@ -250,14 +269,17 @@ func Flatten[T any](s [][]T) []T {
 	if s == nil {
 		return nil
 	}
+
 	total := 0
 	for _, inner := range s {
 		total += len(inner)
 	}
+
 	result := make([]T, 0, total)
 	for _, inner := range s {
 		result = append(result, inner...)
 	}
+
 	return result
 }
 
@@ -271,10 +293,12 @@ func Reverse[T any](s []T) []T {
 	if s == nil {
 		return nil
 	}
+
 	result := make([]T, len(s))
 	for i, v := range s {
 		result[len(s)-1-i] = v
 	}
+
 	return result
 }
 
@@ -289,6 +313,7 @@ func ReverseInPlace[T any](s []T) []T {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
+
 	return s
 }
 
@@ -303,16 +328,20 @@ func Intersect[T comparable](a, b []T) []T {
 	if a == nil || b == nil {
 		return nil
 	}
+
 	set := make(map[T]struct{}, len(b))
 	for _, v := range b {
 		set[v] = struct{}{}
 	}
+
 	result := make([]T, 0)
+
 	for _, v := range a {
 		if _, ok := set[v]; ok {
 			result = append(result, v)
 		}
 	}
+
 	return Unique(result)
 }
 
@@ -326,19 +355,24 @@ func Difference[T comparable](a, b []T) []T {
 	if a == nil {
 		return nil
 	}
+
 	if b == nil {
 		return slices.Clone(a)
 	}
+
 	set := make(map[T]struct{}, len(b))
 	for _, v := range b {
 		set[v] = struct{}{}
 	}
+
 	result := make([]T, 0)
+
 	for _, v := range a {
 		if _, ok := set[v]; !ok {
 			result = append(result, v)
 		}
 	}
+
 	return result
 }
 
@@ -352,9 +386,11 @@ func Union[T comparable](a, b []T) []T {
 	if a == nil && b == nil {
 		return nil
 	}
+
 	combined := make([]T, 0, len(a)+len(b))
 	combined = append(combined, a...)
 	combined = append(combined, b...)
+
 	return Unique(combined)
 }
 
@@ -372,11 +408,14 @@ func GroupBy[T any, K comparable](s []T, key func(T) K) map[K][]T {
 	if s == nil {
 		return nil
 	}
+
 	result := make(map[K][]T)
+
 	for _, v := range s {
 		k := key(v)
 		result[k] = append(result[k], v)
 	}
+
 	return result
 }
 
@@ -390,8 +429,11 @@ func Partition[T any](s []T, predicate func(T) bool) (matching, notMatching []T)
 	if s == nil {
 		return nil, nil
 	}
+
 	matching = make([]T, 0, len(s)/2)
+
 	notMatching = make([]T, 0, len(s)/2)
+
 	for _, v := range s {
 		if predicate(v) {
 			matching = append(matching, v)
@@ -399,6 +441,7 @@ func Partition[T any](s []T, predicate func(T) bool) (matching, notMatching []T)
 			notMatching = append(notMatching, v)
 		}
 	}
+
 	return matching, notMatching
 }
 
@@ -412,9 +455,11 @@ func Take[T any](s []T, n int) []T {
 	if s == nil || n <= 0 {
 		return nil
 	}
+
 	if n > len(s) {
 		n = len(s)
 	}
+
 	return slices.Clone(s[:n])
 }
 
@@ -428,9 +473,11 @@ func TakeLast[T any](s []T, n int) []T {
 	if s == nil || n <= 0 {
 		return nil
 	}
+
 	if n > len(s) {
 		n = len(s)
 	}
+
 	return slices.Clone(s[len(s)-n:])
 }
 
@@ -444,12 +491,15 @@ func Drop[T any](s []T, n int) []T {
 	if s == nil {
 		return nil
 	}
+
 	if n >= len(s) {
 		return []T{}
 	}
+
 	if n < 0 {
 		n = 0
 	}
+
 	return slices.Clone(s[n:])
 }
 
@@ -458,12 +508,15 @@ func DropLast[T any](s []T, n int) []T {
 	if s == nil {
 		return nil
 	}
+
 	if n >= len(s) {
 		return []T{}
 	}
+
 	if n < 0 {
 		n = 0
 	}
+
 	return slices.Clone(s[:len(s)-n])
 }
 
@@ -477,11 +530,13 @@ func TakeWhile[T any](s []T, predicate func(T) bool) []T {
 	if s == nil {
 		return nil
 	}
+
 	for i, v := range s {
 		if !predicate(v) {
 			return slices.Clone(s[:i])
 		}
 	}
+
 	return slices.Clone(s)
 }
 
@@ -490,11 +545,13 @@ func DropWhile[T any](s []T, predicate func(T) bool) []T {
 	if s == nil {
 		return nil
 	}
+
 	for i, v := range s {
 		if !predicate(v) {
 			return slices.Clone(s[i:])
 		}
 	}
+
 	return []T{}
 }
 
@@ -511,6 +568,7 @@ func All[T any](s []T, predicate func(T) bool) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -522,12 +580,8 @@ func All[T any](s []T, predicate func(T) bool) bool {
 //	hasNegative := Any([]int{1, -2, 3}, func(n int) bool { return n < 0 })
 //	// hasNegative = true
 func Any[T any](s []T, predicate func(T) bool) bool {
-	for _, v := range s {
-		if predicate(v) {
-			return true
-		}
-	}
-	return false
+
+	return slices.ContainsFunc(s, predicate)
 }
 
 // None returns true if no elements satisfy the predicate.
@@ -539,11 +593,13 @@ func None[T any](s []T, predicate func(T) bool) bool {
 // Count returns the number of elements satisfying the predicate.
 func Count[T any](s []T, predicate func(T) bool) int {
 	count := 0
+
 	for _, v := range s {
 		if predicate(v) {
 			count++
 		}
 	}
+
 	return count
 }
 
@@ -558,7 +614,9 @@ func Find[T any](s []T, predicate func(T) bool) (T, bool) {
 			return v, true
 		}
 	}
+
 	var zero T
+
 	return zero, false
 }
 
@@ -569,7 +627,9 @@ func FindLast[T any](s []T, predicate func(T) bool) (T, bool) {
 			return s[i], true
 		}
 	}
+
 	var zero T
+
 	return zero, false
 }
 
@@ -578,14 +638,17 @@ func FindLast[T any](s []T, predicate func(T) bool) (T, bool) {
 func Min[T cmp.Ordered](s []T) (T, bool) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	min := s[0]
 	for _, v := range s[1:] {
 		if v < min {
 			min = v
 		}
 	}
+
 	return min, true
 }
 
@@ -594,14 +657,17 @@ func Min[T cmp.Ordered](s []T) (T, bool) {
 func Max[T cmp.Ordered](s []T) (T, bool) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	max := s[0]
 	for _, v := range s[1:] {
 		if v > max {
 			max = v
 		}
 	}
+
 	return max, true
 }
 
@@ -610,14 +676,17 @@ func Max[T cmp.Ordered](s []T) (T, bool) {
 func MinFunc[T any](s []T, cmpFn func(a, b T) int) (T, bool) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	min := s[0]
 	for _, v := range s[1:] {
 		if cmpFn(v, min) < 0 {
 			min = v
 		}
 	}
+
 	return min, true
 }
 
@@ -625,14 +694,17 @@ func MinFunc[T any](s []T, cmpFn func(a, b T) int) (T, bool) {
 func MaxFunc[T any](s []T, cmpFn func(a, b T) int) (T, bool) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	max := s[0]
 	for _, v := range s[1:] {
 		if cmpFn(v, max) > 0 {
 			max = v
 		}
 	}
+
 	return max, true
 }
 
@@ -641,11 +713,13 @@ func Equal[T comparable](a, b []T) bool {
 	if len(a) != len(b) {
 		return false
 	}
+
 	for i := range a {
 		if a[i] != b[i] {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -654,11 +728,13 @@ func EqualFunc[T, U any](a []T, b []U, eq func(T, U) bool) bool {
 	if len(a) != len(b) {
 		return false
 	}
+
 	for i := range a {
 		if !eq(a[i], b[i]) {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -688,14 +764,13 @@ func ForEachWithIndex[T any](s []T, fn func(int, T)) {
 //	pairs := Zip([]int{1, 2}, []string{"a", "b"})
 //	// pairs = [{1, "a"}, {2, "b"}]
 func Zip[T, U any](a []T, b []U) [][2]any {
-	length := len(a)
-	if len(b) < length {
-		length = len(b)
-	}
+	length := min(len(b), len(a))
+
 	result := make([][2]any, length)
 	for i := 0; i < length; i++ {
 		result[i] = [2]any{a[i], b[i]}
 	}
+
 	return result
 }
 
@@ -706,14 +781,13 @@ func Zip[T, U any](a []T, b []U) [][2]any {
 //	sums := ZipWith([]int{1, 2, 3}, []int{4, 5, 6}, func(a, b int) int { return a + b })
 //	// sums = [5, 7, 9]
 func ZipWith[T, U, V any](a []T, b []U, combine func(T, U) V) []V {
-	length := len(a)
-	if len(b) < length {
-		length = len(b)
-	}
+	length := min(len(b), len(a))
+
 	result := make([]V, length)
 	for i := 0; i < length; i++ {
 		result[i] = combine(a[i], b[i])
 	}
+
 	return result
 }
 
@@ -728,11 +802,14 @@ func Pad[T any](s []T, length int, fill T) []T {
 	if len(s) >= length {
 		return slices.Clone(s)
 	}
+
 	result := make([]T, length)
 	copy(result, s)
+
 	for i := len(s); i < length; i++ {
 		result[i] = fill
 	}
+
 	return result
 }
 
@@ -746,12 +823,17 @@ func PadLeft[T any](s []T, length int, fill T) []T {
 	if len(s) >= length {
 		return slices.Clone(s)
 	}
+
 	result := make([]T, length)
+
 	offset := length - len(s)
-	for i := 0; i < offset; i++ {
+
+	for i := range offset {
 		result[i] = fill
 	}
+
 	copy(result[offset:], s)
+
 	return result
 }
 
@@ -766,9 +848,11 @@ func RemoveAt[T any](s []T, index int) []T {
 	if index < 0 || index >= len(s) {
 		return nil
 	}
+
 	result := make([]T, 0, len(s)-1)
 	result = append(result, s[:index]...)
 	result = append(result, s[index+1:]...)
+
 	return result
 }
 
@@ -788,6 +872,7 @@ func RemoveFirst[T comparable](s []T, value T) []T {
 	if idx == -1 {
 		return slices.Clone(s)
 	}
+
 	return RemoveAt(s, idx)
 }
 
@@ -802,16 +887,20 @@ func Insert[T any](s []T, index int, value T) []T {
 	if index < 0 {
 		index = 0
 	}
+
 	if index >= len(s) {
 		result := make([]T, len(s)+1)
 		copy(result, s)
 		result[len(s)] = value
+
 		return result
 	}
+
 	result := make([]T, len(s)+1)
 	copy(result, s[:index])
 	result[index] = value
 	copy(result[index+1:], s[index:])
+
 	return result
 }
 
@@ -823,8 +912,10 @@ func Shuffle[T any](s []T) []T {
 	if s == nil {
 		return nil
 	}
+
 	result := slices.Clone(s)
 	ShuffleInPlace(result)
+
 	return result
 }
 
@@ -840,7 +931,7 @@ func ShuffleInPlace[T any](s []T) {
 	}
 }
 
-// Simple fast random for shuffling (not crypto secure)
+// Simple fast random for shuffling (not crypto secure).
 var fastrandState uint64 = 1
 
 func fastrand() uint32 {
@@ -848,6 +939,7 @@ func fastrand() uint32 {
 	fastrandState ^= fastrandState << 13
 	fastrandState ^= fastrandState >> 7
 	fastrandState ^= fastrandState << 17
+
 	return uint32(fastrandState)
 }
 
@@ -856,6 +948,7 @@ func SeedShuffle(seed uint64) {
 	if seed == 0 {
 		seed = 1
 	}
+
 	fastrandState = seed
 }
 
@@ -870,13 +963,17 @@ func Compact[T comparable](s []T) []T {
 	if len(s) <= 1 {
 		return slices.Clone(s)
 	}
+
 	result := make([]T, 0, len(s))
+
 	result = append(result, s[0])
+
 	for i := 1; i < len(s); i++ {
 		if s[i] != s[i-1] {
 			result = append(result, s[i])
 		}
 	}
+
 	return result
 }
 
@@ -885,13 +982,17 @@ func CompactFunc[T any](s []T, eq func(T, T) bool) []T {
 	if len(s) <= 1 {
 		return slices.Clone(s)
 	}
+
 	result := make([]T, 0, len(s))
+
 	result = append(result, s[0])
+
 	for i := 1; i < len(s); i++ {
 		if !eq(s[i-1], s[i]) {
 			result = append(result, s[i])
 		}
 	}
+
 	return result
 }
 
@@ -907,10 +1008,12 @@ func FlatMap[T, U any](s []T, transform func(T) []U) []U {
 	if s == nil {
 		return nil
 	}
+
 	var result []U
 	for _, v := range s {
 		result = append(result, transform(v)...)
 	}
+
 	return result
 }
 
@@ -925,10 +1028,12 @@ func Associate[T any, K comparable](s []T, key func(T) K) map[K]T {
 	if s == nil {
 		return nil
 	}
+
 	result := make(map[K]T, len(s))
 	for _, v := range s {
 		result[key(v)] = v
 	}
+
 	return result
 }
 
@@ -942,9 +1047,11 @@ func AssociateWith[K comparable, V any](s []K, value func(K) V) map[K]V {
 	if s == nil {
 		return nil
 	}
+
 	result := make(map[K]V, len(s))
 	for _, k := range s {
 		result[k] = value(k)
 	}
+
 	return result
 }

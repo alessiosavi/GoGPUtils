@@ -3,7 +3,6 @@ package mathutil
 import (
 	"errors"
 	"slices"
-	"sort"
 )
 
 // Number is a constraint for all numeric types.
@@ -47,6 +46,7 @@ func Sum[T Number](s []T) T {
 	for _, v := range s {
 		sum += v
 	}
+
 	return sum
 }
 
@@ -60,10 +60,12 @@ func Product[T Number](s []T) T {
 	if len(s) == 0 {
 		return 1
 	}
+
 	product := s[0]
 	for _, v := range s[1:] {
 		product *= v
 	}
+
 	return product
 }
 
@@ -77,6 +79,7 @@ func Average[T Number](s []T) float64 {
 	if len(s) == 0 {
 		return 0
 	}
+
 	return float64(Sum(s)) / float64(len(s))
 }
 
@@ -89,14 +92,17 @@ func Average[T Number](s []T) float64 {
 func Min[T Number](s []T) (T, error) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, ErrEmptySlice
 	}
+
 	min := s[0]
 	for _, v := range s[1:] {
 		if v < min {
 			min = v
 		}
 	}
+
 	return min, nil
 }
 
@@ -105,14 +111,17 @@ func Min[T Number](s []T) (T, error) {
 func Max[T Number](s []T) (T, error) {
 	if len(s) == 0 {
 		var zero T
+
 		return zero, ErrEmptySlice
 	}
+
 	max := s[0]
 	for _, v := range s[1:] {
 		if v > max {
 			max = v
 		}
 	}
+
 	return max, nil
 }
 
@@ -122,15 +131,18 @@ func MinMax[T Number](s []T) (min, max T, err error) {
 	if len(s) == 0 {
 		return min, max, ErrEmptySlice
 	}
+
 	min, max = s[0], s[0]
 	for _, v := range s[1:] {
 		if v < min {
 			min = v
 		}
+
 		if v > max {
 			max = v
 		}
 	}
+
 	return min, max, nil
 }
 
@@ -140,12 +152,14 @@ func MinIndex[T Number](s []T) int {
 	if len(s) == 0 {
 		return -1
 	}
+
 	minIdx := 0
 	for i, v := range s {
 		if v < s[minIdx] {
 			minIdx = i
 		}
 	}
+
 	return minIdx
 }
 
@@ -155,12 +169,14 @@ func MaxIndex[T Number](s []T) int {
 	if len(s) == 0 {
 		return -1
 	}
+
 	maxIdx := 0
 	for i, v := range s {
 		if v > s[maxIdx] {
 			maxIdx = i
 		}
 	}
+
 	return maxIdx
 }
 
@@ -170,8 +186,10 @@ func Range[T Number](s []T) (T, error) {
 	min, max, err := MinMax(s)
 	if err != nil {
 		var zero T
+
 		return zero, err
 	}
+
 	return max - min, nil
 }
 
@@ -201,6 +219,7 @@ func Median[T Number](s []T) float64 {
 	if len(sorted)%2 == 0 {
 		return (float64(sorted[mid-1]) + float64(sorted[mid])) / 2
 	}
+
 	return float64(sorted[mid])
 }
 
@@ -219,6 +238,7 @@ func Mode[T Number](s []T) []T {
 
 	counts := make(map[T]int)
 	maxCount := 0
+
 	for _, v := range s {
 		counts[v]++
 		if counts[v] > maxCount {
@@ -227,6 +247,7 @@ func Mode[T Number](s []T) []T {
 	}
 
 	var modes []T
+
 	for v, count := range counts {
 		if count == maxCount {
 			modes = append(modes, v)
@@ -235,6 +256,7 @@ func Mode[T Number](s []T) []T {
 
 	// Sort for deterministic output
 	slices.Sort(modes)
+
 	return modes
 }
 
@@ -248,11 +270,14 @@ func Variance[T Number](s []T) float64 {
 	}
 
 	avg := Average(s)
+
 	var sumSquares float64
+
 	for _, v := range s {
 		diff := float64(v) - avg
 		sumSquares += diff * diff
 	}
+
 	return sumSquares / float64(len(s))
 }
 
@@ -264,11 +289,14 @@ func SampleVariance[T Number](s []T) float64 {
 	}
 
 	avg := Average(s)
+
 	var sumSquares float64
+
 	for _, v := range s {
 		diff := float64(v) - avg
 		sumSquares += diff * diff
 	}
+
 	return sumSquares / float64(len(s)-1)
 }
 
@@ -303,18 +331,21 @@ func Percentile[T Number](s []T, p float64) float64 {
 	if p == 0 {
 		return float64(sorted[0])
 	}
+
 	if p == 100 {
 		return float64(sorted[len(sorted)-1])
 	}
 
 	rank := (p / 100) * float64(len(sorted)-1)
 	lower := int(rank)
+
 	upper := lower + 1
 	if upper >= len(sorted) {
 		return float64(sorted[len(sorted)-1])
 	}
 
 	fraction := rank - float64(lower)
+
 	return float64(sorted[lower]) + fraction*(float64(sorted[upper])-float64(sorted[lower]))
 }
 
@@ -323,12 +354,14 @@ func Quartiles[T Number](s []T) (q1, q2, q3 float64) {
 	q1 = Percentile(s, 25)
 	q2 = Percentile(s, 50)
 	q3 = Percentile(s, 75)
+
 	return
 }
 
 // IQR returns the interquartile range (Q3 - Q1).
 func IQR[T Number](s []T) float64 {
 	q1, _, q3 := Quartiles(s)
+
 	return q3 - q1
 }
 
@@ -347,9 +380,11 @@ func IsPrime[T Integer](n T) bool {
 	if n < 2 {
 		return false
 	}
+
 	if n == 2 {
 		return true
 	}
+
 	if n%2 == 0 {
 		return false
 	}
@@ -360,8 +395,10 @@ func IsPrime[T Integer](n T) bool {
 		if n%i == 0 {
 			return false
 		}
+
 		i += 2
 	}
+
 	return true
 }
 
@@ -381,6 +418,7 @@ func Primes(n int) []int {
 	for i := range sieve {
 		sieve[i] = true
 	}
+
 	sieve[0], sieve[1] = false, false
 
 	for i := 2; i*i <= n; i++ {
@@ -392,11 +430,13 @@ func Primes(n int) []int {
 	}
 
 	var primes []int
+
 	for i, isPrime := range sieve {
 		if isPrime {
 			primes = append(primes, i)
 		}
 	}
+
 	return primes
 }
 
@@ -409,12 +449,15 @@ func GCD[T Integer](a, b T) T {
 	if a < 0 {
 		a = -a
 	}
+
 	if b < 0 {
 		b = -b
 	}
+
 	for b != 0 {
 		a, b = b, a%b
 	}
+
 	return a
 }
 
@@ -427,6 +470,7 @@ func LCM[T Integer](a, b T) T {
 	if a == 0 || b == 0 {
 		return 0
 	}
+
 	return Abs(a*b) / GCD(a, b)
 }
 
@@ -437,13 +481,16 @@ func Factorial(n int) int64 {
 	if n <= 1 {
 		return 1
 	}
+
 	if n > 20 { // 21! overflows int64
 		return 0
 	}
+
 	result := int64(1)
 	for i := 2; i <= n; i++ {
 		result *= int64(i)
 	}
+
 	return result
 }
 
@@ -457,6 +504,7 @@ func Fibonacci(n int) int64 {
 	if n < 0 {
 		return 0
 	}
+
 	if n <= 1 {
 		return int64(n)
 	}
@@ -465,6 +513,7 @@ func Fibonacci(n int) int64 {
 	for i := 2; i <= n; i++ {
 		a, b = b, a+b
 	}
+
 	return b
 }
 
@@ -477,6 +526,7 @@ func Abs[T Number](x T) T {
 	if x < 0 {
 		return -x
 	}
+
 	return x
 }
 
@@ -485,9 +535,11 @@ func Sign[T Number](x T) int {
 	if x < 0 {
 		return -1
 	}
+
 	if x > 0 {
 		return 1
 	}
+
 	return 0
 }
 
@@ -502,9 +554,11 @@ func Clamp[T Number](x, min, max T) T {
 	if x < min {
 		return min
 	}
+
 	if x > max {
 		return max
 	}
+
 	return x
 }
 
@@ -514,18 +568,21 @@ func Sqrt(x float64) float64 {
 	if x < 0 {
 		return 0
 	}
+
 	if x == 0 || x == 1 {
 		return x
 	}
 
 	guess := x / 2
-	for i := 0; i < 100; i++ { // Sufficient iterations for precision
+	for range 100 { // Sufficient iterations for precision
 		newGuess := (guess + x/guess) / 2
 		if absFloat(newGuess-guess) < 1e-15 {
 			break
 		}
+
 		guess = newGuess
 	}
+
 	return guess
 }
 
@@ -533,6 +590,7 @@ func absFloat(x float64) float64 {
 	if x < 0 {
 		return -x
 	}
+
 	return x
 }
 
@@ -542,6 +600,7 @@ func Pow[T Number](x T, n int) T {
 	if n == 0 {
 		return 1
 	}
+
 	if n < 0 {
 		return 0 // Integer types can't represent fractions
 	}
@@ -550,6 +609,7 @@ func Pow[T Number](x T, n int) T {
 	for i := 1; i < n; i++ {
 		result *= x
 	}
+
 	return result
 }
 
@@ -558,6 +618,7 @@ func PowFloat(x float64, n int) float64 {
 	if n == 0 {
 		return 1
 	}
+
 	negative := n < 0
 	if negative {
 		n = -n
@@ -571,6 +632,7 @@ func PowFloat(x float64, n int) float64 {
 	if negative {
 		return 1 / result
 	}
+
 	return result
 }
 
@@ -583,6 +645,7 @@ func PowFloat(x float64, n int) float64 {
 func DotProduct[T Number](a, b []T) T {
 	if len(a) != len(b) {
 		var zero T
+
 		return zero
 	}
 
@@ -590,6 +653,7 @@ func DotProduct[T Number](a, b []T) T {
 	for i := range a {
 		sum += a[i] * b[i]
 	}
+
 	return sum
 }
 
@@ -599,6 +663,7 @@ func Magnitude[T Number](v []T) float64 {
 	for _, x := range v {
 		sumSquares += float64(x) * float64(x)
 	}
+
 	return Sqrt(sumSquares)
 }
 
@@ -614,6 +679,7 @@ func Normalize[T Float](v []T) []T {
 	for i, x := range v {
 		result[i] = T(float64(x) / mag)
 	}
+
 	return result
 }
 
@@ -642,10 +708,12 @@ func EuclideanDistance[T Number](a, b []T) float64 {
 	}
 
 	var sumSquares float64
+
 	for i := range a {
 		diff := float64(a[i]) - float64(b[i])
 		sumSquares += diff * diff
 	}
+
 	return Sqrt(sumSquares)
 }
 
@@ -653,6 +721,7 @@ func EuclideanDistance[T Number](a, b []T) float64 {
 func ManhattanDistance[T Number](a, b []T) T {
 	if len(a) != len(b) {
 		var zero T
+
 		return zero
 	}
 
@@ -660,6 +729,7 @@ func ManhattanDistance[T Number](a, b []T) T {
 	for i := range a {
 		sum += Abs(a[i] - b[i])
 	}
+
 	return sum
 }
 
@@ -673,17 +743,19 @@ type Matrix[T Number] [][]T
 // MatrixMultiply multiplies two matrices.
 // Returns nil and ErrInvalidDimensions if dimensions don't match.
 //
-// Matrix A (m×n) × Matrix B (n×p) = Matrix C (m×p)
+// Matrix A (m×n) × Matrix B (n×p) = Matrix C (m×p).
 func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error) {
 	if len(a) == 0 || len(b) == 0 {
 		return nil, ErrInvalidDimensions
 	}
 
 	m := len(a)
+
 	n := len(a[0])
 	if len(b) != n {
 		return nil, ErrInvalidDimensions
 	}
+
 	p := len(b[0])
 
 	// Verify all rows have consistent length
@@ -692,6 +764,7 @@ func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error) {
 			return nil, ErrInvalidDimensions
 		}
 	}
+
 	for _, row := range b {
 		if len(row) != p {
 			return nil, ErrInvalidDimensions
@@ -701,14 +774,17 @@ func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error) {
 	result := make(Matrix[T], m)
 	for i := range result {
 		result[i] = make([]T, p)
-		for j := 0; j < p; j++ {
+
+		for j := range p {
 			var sum T
-			for k := 0; k < n; k++ {
+			for k := range n {
 				sum += a[i][k] * b[k][j]
 			}
+
 			result[i][j] = sum
 		}
 	}
+
 	return result, nil
 }
 
@@ -724,10 +800,11 @@ func MatrixTranspose[T Number](m Matrix[T]) Matrix[T] {
 	result := make(Matrix[T], cols)
 	for i := range result {
 		result[i] = make([]T, rows)
-		for j := 0; j < rows; j++ {
+		for j := range rows {
 			result[i][j] = m[j][i]
 		}
 	}
+
 	return result
 }
 
@@ -736,6 +813,7 @@ func MatrixAdd[T Number](a, b Matrix[T]) (Matrix[T], error) {
 	if len(a) != len(b) || len(a) == 0 {
 		return nil, ErrInvalidDimensions
 	}
+
 	if len(a[0]) != len(b[0]) {
 		return nil, ErrInvalidDimensions
 	}
@@ -747,6 +825,7 @@ func MatrixAdd[T Number](a, b Matrix[T]) (Matrix[T], error) {
 			result[i][j] = a[i][j] + b[i][j]
 		}
 	}
+
 	return result, nil
 }
 
@@ -763,6 +842,7 @@ func MatrixScalar[T Number](m Matrix[T], scalar T) Matrix[T] {
 			result[i][j] = m[i][j] * scalar
 		}
 	}
+
 	return result
 }
 
@@ -781,11 +861,13 @@ func Cumsum[T Number](s []T) []T {
 	}
 
 	result := make([]T, len(s))
+
 	var sum T
 	for i, v := range s {
 		sum += v
 		result[i] = sum
 	}
+
 	return result
 }
 
@@ -803,6 +885,7 @@ func Diff[T Number](s []T) []T {
 	for i := 0; i < len(s)-1; i++ {
 		result[i] = s[i+1] - s[i]
 	}
+
 	return result
 }
 
@@ -816,49 +899,44 @@ func Scale[T Number](s []T, scalar T) []T {
 	for i, v := range s {
 		result[i] = v * scalar
 	}
+
 	return result
 }
 
 // Add performs element-wise addition of two slices.
 // The shorter slice determines the result length.
 func Add[T Number](a, b []T) []T {
-	length := len(a)
-	if len(b) < length {
-		length = len(b)
-	}
+	length := min(len(b), len(a))
 
 	result := make([]T, length)
 	for i := 0; i < length; i++ {
 		result[i] = a[i] + b[i]
 	}
+
 	return result
 }
 
 // Subtract performs element-wise subtraction (a - b).
 func Subtract[T Number](a, b []T) []T {
-	length := len(a)
-	if len(b) < length {
-		length = len(b)
-	}
+	length := min(len(b), len(a))
 
 	result := make([]T, length)
 	for i := 0; i < length; i++ {
 		result[i] = a[i] - b[i]
 	}
+
 	return result
 }
 
 // Multiply performs element-wise multiplication.
 func Multiply[T Number](a, b []T) []T {
-	length := len(a)
-	if len(b) < length {
-		length = len(b)
-	}
+	length := min(len(b), len(a))
 
 	result := make([]T, length)
 	for i := 0; i < length; i++ {
 		result[i] = a[i] * b[i]
 	}
+
 	return result
 }
 
@@ -867,15 +945,19 @@ func LinSpace(start, end float64, n int) []float64 {
 	if n <= 0 {
 		return nil
 	}
+
 	if n == 1 {
 		return []float64{start}
 	}
 
 	result := make([]float64, n)
+
 	step := (end - start) / float64(n-1)
+
 	for i := range result {
 		result[i] = start + float64(i)*step
 	}
+
 	return result
 }
 
@@ -884,6 +966,7 @@ func Arange[T Number](start, stop, step T) []T {
 	if step == 0 {
 		return nil
 	}
+
 	if (step > 0 && start >= stop) || (step < 0 && start <= stop) {
 		return nil
 	}
@@ -892,6 +975,7 @@ func Arange[T Number](start, stop, step T) []T {
 	for v := start; (step > 0 && v < stop) || (step < 0 && v > stop); v += step {
 		result = append(result, v)
 	}
+
 	return result
 }
 
@@ -905,13 +989,15 @@ func Histogram[T Number](data []T, bins []T) []int {
 	// Sort bins
 	sortedBins := make([]T, len(bins))
 	copy(sortedBins, bins)
-	sort.Slice(sortedBins, func(i, j int) bool { return sortedBins[i] < sortedBins[j] })
+	slices.Sort(sortedBins)
 
 	counts := make([]int, len(sortedBins)-1)
+
 	for _, v := range data {
 		for i := 0; i < len(sortedBins)-1; i++ {
 			if v >= sortedBins[i] && v < sortedBins[i+1] {
 				counts[i]++
+
 				break
 			}
 			// Include values equal to the last bin edge
@@ -920,5 +1006,6 @@ func Histogram[T Number](data []T, bins []T) []int {
 			}
 		}
 	}
+
 	return counts
 }

@@ -47,12 +47,14 @@ func (s *Stack[T]) Push(item T) {
 func (s *Stack[T]) Pop() (T, bool) {
 	if len(s.items) == 0 {
 		var zero T
+
 		return zero, false
 	}
 
 	idx := len(s.items) - 1
 	item := s.items[idx]
 	s.items = s.items[:idx]
+
 	return item, true
 }
 
@@ -61,8 +63,10 @@ func (s *Stack[T]) Pop() (T, bool) {
 func (s *Stack[T]) Peek() (T, bool) {
 	if len(s.items) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	return s.items[len(s.items)-1], true
 }
 
@@ -85,6 +89,7 @@ func (s *Stack[T]) Clear() {
 func (s *Stack[T]) Values() []T {
 	result := make([]T, len(s.items))
 	copy(result, s.items)
+
 	return result
 }
 
@@ -101,6 +106,8 @@ func (s *Stack[T]) PopAll() []T {
 	for i := len(s.items) - 1; i >= 0; i-- {
 		result[len(s.items)-1-i] = s.items[i]
 	}
+
 	s.items = s.items[:0]
+
 	return result
 }

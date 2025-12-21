@@ -1,6 +1,7 @@
 package randutil
 
 import (
+	"errors"
 	"slices"
 	"testing"
 )
@@ -17,6 +18,7 @@ func TestSecureBytes(t *testing.T) {
 		if err != nil {
 			t.Errorf("SecureBytes(%d) error: %v", size, err)
 		}
+
 		if len(b) != size {
 			t.Errorf("SecureBytes(%d) returned %d bytes", size, len(b))
 		}
@@ -24,14 +26,16 @@ func TestSecureBytes(t *testing.T) {
 
 	// Two calls should produce different output
 	b1, _ := SecureBytes(32)
+
 	b2, _ := SecureBytes(32)
+
 	if slices.Equal(b1, b2) {
 		t.Error("SecureBytes should produce different output")
 	}
 
 	// Invalid size
 	_, err := SecureBytes(0)
-	if err != ErrInvalidLength {
+	if !errors.Is(err, ErrInvalidLength) {
 		t.Errorf("SecureBytes(0) error = %v, want ErrInvalidLength", err)
 	}
 }
@@ -52,6 +56,7 @@ func TestSecureString(t *testing.T) {
 		if err != nil {
 			t.Errorf("SecureString(%d, %q) error: %v", tt.length, tt.charset, err)
 		}
+
 		if len(s) != tt.length {
 			t.Errorf("SecureString(%d, %q) returned len %d", tt.length, tt.charset, len(s))
 		}
@@ -66,12 +71,12 @@ func TestSecureString(t *testing.T) {
 
 	// Invalid inputs
 	_, err := SecureString(0, AlphaNumeric)
-	if err != ErrInvalidLength {
+	if !errors.Is(err, ErrInvalidLength) {
 		t.Errorf("SecureString(0, ...) error = %v, want ErrInvalidLength", err)
 	}
 
 	_, err = SecureString(10, "")
-	if err != ErrEmptyCharset {
+	if !errors.Is(err, ErrEmptyCharset) {
 		t.Errorf("SecureString(10, '') error = %v, want ErrEmptyCharset", err)
 	}
 }
@@ -79,11 +84,12 @@ func TestSecureString(t *testing.T) {
 func TestSecureInt(t *testing.T) {
 	max := 100
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		n, err := SecureInt(max)
 		if err != nil {
 			t.Fatalf("SecureInt error: %v", err)
 		}
+
 		if n < 0 || n >= max {
 			t.Errorf("SecureInt(%d) = %d, out of range", max, n)
 		}
@@ -91,13 +97,14 @@ func TestSecureInt(t *testing.T) {
 
 	// Distribution test (rough check)
 	counts := make(map[int]int)
-	for i := 0; i < 10000; i++ {
+
+	for range 10000 {
 		n, _ := SecureInt(10)
 		counts[n]++
 	}
 
 	// Each bucket should have roughly 1000 hits (±300)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		if counts[i] < 700 || counts[i] > 1300 {
 			t.Logf("Warning: SecureInt distribution may be biased: bucket %d has %d hits", i, counts[i])
 		}
@@ -131,11 +138,12 @@ func TestSecureID(t *testing.T) {
 func TestSecureChoice(t *testing.T) {
 	items := []string{"a", "b", "c", "d", "e"}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		choice, err := SecureChoice(items)
 		if err != nil {
 			t.Fatalf("SecureChoice error: %v", err)
 		}
+
 		if !slices.Contains(items, choice) {
 			t.Errorf("SecureChoice returned %q, not in items", choice)
 		}
@@ -143,7 +151,7 @@ func TestSecureChoice(t *testing.T) {
 
 	// Empty slice
 	_, err := SecureChoice([]int{})
-	if err != ErrEmptySlice {
+	if !errors.Is(err, ErrEmptySlice) {
 		t.Errorf("SecureChoice(empty) error = %v, want ErrEmptySlice", err)
 	}
 }
@@ -155,7 +163,7 @@ func TestSecureChoice(t *testing.T) {
 func TestGenerator_Int(t *testing.T) {
 	rng := NewGenerator()
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		n := rng.Int(100)
 		if n < 0 || n >= 100 {
 			t.Errorf("Int(100) = %d, out of range", n)
@@ -166,7 +174,7 @@ func TestGenerator_Int(t *testing.T) {
 func TestGenerator_IntRange(t *testing.T) {
 	rng := NewGenerator()
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		n := rng.IntRange(10, 20)
 		if n < 10 || n > 20 {
 			t.Errorf("IntRange(10, 20) = %d, out of range", n)
@@ -182,7 +190,7 @@ func TestGenerator_IntRange(t *testing.T) {
 func TestGenerator_Float64(t *testing.T) {
 	rng := NewGenerator()
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		f := rng.Float64()
 		if f < 0 || f >= 1 {
 			t.Errorf("Float64() = %v, out of range [0, 1)", f)
@@ -193,7 +201,7 @@ func TestGenerator_Float64(t *testing.T) {
 func TestGenerator_Float64Range(t *testing.T) {
 	rng := NewGenerator()
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		f := rng.Float64Range(10.0, 20.0)
 		if f < 10.0 || f >= 20.0 {
 			t.Errorf("Float64Range(10, 20) = %v, out of range", f)
@@ -205,7 +213,8 @@ func TestGenerator_Bool(t *testing.T) {
 	rng := NewGenerator()
 
 	trueCount := 0
-	for i := 0; i < 10000; i++ {
+
+	for range 10000 {
 		if rng.Bool() {
 			trueCount++
 		}
@@ -236,7 +245,7 @@ func TestGenerator_Choice(t *testing.T) {
 	rng := NewGenerator()
 	items := []int{1, 2, 3, 4, 5}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		choice := rng.ChoiceInt(items)
 		if !slices.Contains(items, choice) {
 			t.Errorf("ChoiceInt returned %d, not in items", choice)
@@ -266,6 +275,7 @@ func TestGenerator_Sample(t *testing.T) {
 		if seen[v] {
 			t.Error("Sample contains duplicates")
 		}
+
 		seen[v] = true
 	}
 
@@ -289,6 +299,7 @@ func TestGenerator_Shuffle(t *testing.T) {
 
 	// Same elements
 	slices.Sort(shuffled)
+
 	if !slices.Equal(shuffled, original) {
 		t.Error("Shuffle changed elements")
 	}
@@ -309,6 +320,7 @@ func TestGenerator_ShuffleSlice(t *testing.T) {
 	// Same elements
 	slices.Sort(items)
 	slices.Sort(originalCopy)
+
 	if !slices.Equal(items, originalCopy) {
 		t.Error("ShuffleInts changed elements")
 	}
@@ -321,7 +333,7 @@ func TestGenerator_WeightedChoice(t *testing.T) {
 	weights := []float64{0.9, 0.05, 0.05}
 	counts := make([]int, 3)
 
-	for i := 0; i < 10000; i++ {
+	for range 10000 {
 		idx := rng.WeightedChoice(weights)
 		counts[idx]++
 	}
@@ -336,14 +348,14 @@ func TestGenerator_Probability(t *testing.T) {
 	rng := NewGenerator()
 
 	// 0% probability
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		if rng.Probability(0) {
 			t.Error("Probability(0) should always return false")
 		}
 	}
 
 	// 100% probability
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		if !rng.Probability(1) {
 			t.Error("Probability(1) should always return true")
 		}
@@ -351,7 +363,8 @@ func TestGenerator_Probability(t *testing.T) {
 
 	// 50% probability (rough check)
 	trueCount := 0
-	for i := 0; i < 10000; i++ {
+
+	for range 10000 {
 		if rng.Probability(0.5) {
 			trueCount++
 		}
@@ -368,7 +381,7 @@ func TestGeneratorDeterministic(t *testing.T) {
 	rng1 := NewGeneratorWithSeed(seed)
 	rng2 := NewGeneratorWithSeed(seed)
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		n1 := rng1.Int(1000)
 		n2 := rng2.Int(1000)
 
@@ -451,6 +464,7 @@ func containsRune(s string, r rune) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -459,40 +473,40 @@ func containsRune(s string, r rune) bool {
 // ============================================================================
 
 func BenchmarkSecureBytes(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		SecureBytes(32)
 	}
 }
 
 func BenchmarkSecureString(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		SecureString(32, AlphaNumeric)
 	}
 }
 
 func BenchmarkGenerator_Int(b *testing.B) {
 	rng := NewGenerator()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		rng.Int(1000)
 	}
 }
 
 func BenchmarkGenerator_String(b *testing.B) {
 	rng := NewGenerator()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		rng.String(32, AlphaNumeric)
 	}
 }
 
 func BenchmarkGenerator_Shuffle(b *testing.B) {
 	rng := NewGenerator()
+
 	items := make([]int, 1000)
 	for i := range items {
 		items[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		rng.ShuffleInts(items)
 	}
 }

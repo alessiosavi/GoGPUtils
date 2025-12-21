@@ -46,11 +46,13 @@ func (q *Queue[T]) Enqueue(item T) {
 func (q *Queue[T]) Dequeue() (T, bool) {
 	if len(q.items) == 0 {
 		var zero T
+
 		return zero, false
 	}
 
 	item := q.items[0]
 	q.items = q.items[1:]
+
 	return item, true
 }
 
@@ -59,8 +61,10 @@ func (q *Queue[T]) Dequeue() (T, bool) {
 func (q *Queue[T]) Peek() (T, bool) {
 	if len(q.items) == 0 {
 		var zero T
+
 		return zero, false
 	}
+
 	return q.items[0], true
 }
 
@@ -83,6 +87,7 @@ func (q *Queue[T]) Clear() {
 func (q *Queue[T]) Values() []T {
 	result := make([]T, len(q.items))
 	copy(result, q.items)
+
 	return result
 }
 

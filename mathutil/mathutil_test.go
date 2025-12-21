@@ -1,6 +1,7 @@
 package mathutil
 
 import (
+	"errors"
 	"slices"
 	"testing"
 )
@@ -33,7 +34,9 @@ func TestSum(t *testing.T) {
 
 func TestSumFloat(t *testing.T) {
 	got := Sum([]float64{1.5, 2.5, 3.0})
+
 	want := 7.0
+
 	if got != want {
 		t.Errorf("Sum() = %v, want %v", got, want)
 	}
@@ -92,7 +95,7 @@ func TestMin(t *testing.T) {
 	}
 
 	_, err = Min([]int{})
-	if err != ErrEmptySlice {
+	if !errors.Is(err, ErrEmptySlice) {
 		t.Errorf("Min(empty) error = %v, want ErrEmptySlice", err)
 	}
 }
@@ -104,7 +107,7 @@ func TestMax(t *testing.T) {
 	}
 
 	_, err = Max([]int{})
-	if err != ErrEmptySlice {
+	if !errors.Is(err, ErrEmptySlice) {
 		t.Errorf("Max(empty) error = %v, want ErrEmptySlice", err)
 	}
 }
@@ -215,7 +218,9 @@ func TestVariance(t *testing.T) {
 	// Population variance: 10/5 = 2
 	data := []float64{1, 2, 3, 4, 5}
 	got := Variance(data)
+
 	want := 2.0
+
 	if got != want {
 		t.Errorf("Variance() = %v, want %v", got, want)
 	}
@@ -225,7 +230,9 @@ func TestSampleVariance(t *testing.T) {
 	// Sample variance: 10/4 = 2.5
 	data := []float64{1, 2, 3, 4, 5}
 	got := SampleVariance(data)
+
 	want := 2.5
+
 	if got != want {
 		t.Errorf("SampleVariance() = %v, want %v", got, want)
 	}
@@ -271,9 +278,11 @@ func TestQuartiles(t *testing.T) {
 	if q1 != 3.25 {
 		t.Errorf("Q1 = %v, want 3.25", q1)
 	}
+
 	if q2 != 5.5 {
 		t.Errorf("Q2 = %v, want 5.5", q2)
 	}
+
 	if q3 != 7.75 {
 		t.Errorf("Q3 = %v, want 7.75", q3)
 	}
@@ -282,7 +291,9 @@ func TestQuartiles(t *testing.T) {
 func TestIQR(t *testing.T) {
 	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	got := IQR(data)
+
 	want := 4.5 // 7.75 - 3.25
+
 	if got != want {
 		t.Errorf("IQR() = %v, want %v", got, want)
 	}
@@ -311,7 +322,9 @@ func TestIsPrime(t *testing.T) {
 
 func TestPrimes(t *testing.T) {
 	got := Primes(20)
+
 	want := []int{2, 3, 5, 7, 11, 13, 17, 19}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Primes(20) = %v, want %v", got, want)
 	}
@@ -525,7 +538,9 @@ func TestDotProduct(t *testing.T) {
 	a := []int{1, 2, 3}
 	b := []int{4, 5, 6}
 	got := DotProduct(a, b)
+
 	want := 32 // 1*4 + 2*5 + 3*6
+
 	if got != want {
 		t.Errorf("DotProduct() = %d, want %d", got, want)
 	}
@@ -539,7 +554,9 @@ func TestDotProduct(t *testing.T) {
 func TestMagnitude(t *testing.T) {
 	v := []float64{3, 4}
 	got := Magnitude(v)
+
 	want := 5.0
+
 	if got != want {
 		t.Errorf("Magnitude() = %v, want %v", got, want)
 	}
@@ -562,6 +579,7 @@ func TestNormalize(t *testing.T) {
 func TestCosineSimilarity(t *testing.T) {
 	a := []float64{1, 0}
 	b := []float64{0, 1}
+
 	got := CosineSimilarity(a, b)
 	if got != 0 {
 		t.Errorf("Cosine similarity of orthogonal vectors = %v, want 0", got)
@@ -578,7 +596,9 @@ func TestEuclideanDistance(t *testing.T) {
 	a := []float64{0, 0}
 	b := []float64{3, 4}
 	got := EuclideanDistance(a, b)
+
 	want := 5.0
+
 	if got != want {
 		t.Errorf("EuclideanDistance() = %v, want %v", got, want)
 	}
@@ -588,7 +608,9 @@ func TestManhattanDistance(t *testing.T) {
 	a := []int{0, 0}
 	b := []int{3, 4}
 	got := ManhattanDistance(a, b)
+
 	want := 7 // |3-0| + |4-0|
+
 	if got != want {
 		t.Errorf("ManhattanDistance() = %d, want %d", got, want)
 	}
@@ -601,6 +623,7 @@ func TestManhattanDistance(t *testing.T) {
 func TestMatrixMultiply(t *testing.T) {
 	a := Matrix[int]{{1, 2}, {3, 4}}
 	b := Matrix[int]{{5, 6}, {7, 8}}
+
 	got, err := MatrixMultiply(a, b)
 	if err != nil {
 		t.Fatalf("MatrixMultiply() error = %v", err)
@@ -610,6 +633,7 @@ func TestMatrixMultiply(t *testing.T) {
 	for i := range want {
 		if !slices.Equal(got[i], want[i]) {
 			t.Errorf("MatrixMultiply() = %v, want %v", got, want)
+
 			break
 		}
 	}
@@ -618,8 +642,9 @@ func TestMatrixMultiply(t *testing.T) {
 func TestMatrixMultiplyInvalidDimensions(t *testing.T) {
 	a := Matrix[int]{{1, 2, 3}}
 	b := Matrix[int]{{1, 2}} // 1x2, needs 3 rows
+
 	_, err := MatrixMultiply(a, b)
-	if err != ErrInvalidDimensions {
+	if !errors.Is(err, ErrInvalidDimensions) {
 		t.Errorf("Expected ErrInvalidDimensions, got %v", err)
 	}
 }
@@ -632,6 +657,7 @@ func TestMatrixTranspose(t *testing.T) {
 	for i := range want {
 		if !slices.Equal(got[i], want[i]) {
 			t.Errorf("MatrixTranspose() = %v, want %v", got, want)
+
 			break
 		}
 	}
@@ -640,6 +666,7 @@ func TestMatrixTranspose(t *testing.T) {
 func TestMatrixAdd(t *testing.T) {
 	a := Matrix[int]{{1, 2}, {3, 4}}
 	b := Matrix[int]{{5, 6}, {7, 8}}
+
 	got, err := MatrixAdd(a, b)
 	if err != nil {
 		t.Fatalf("MatrixAdd() error = %v", err)
@@ -649,6 +676,7 @@ func TestMatrixAdd(t *testing.T) {
 	for i := range want {
 		if !slices.Equal(got[i], want[i]) {
 			t.Errorf("MatrixAdd() = %v, want %v", got, want)
+
 			break
 		}
 	}
@@ -662,6 +690,7 @@ func TestMatrixScalar(t *testing.T) {
 	for i := range want {
 		if !slices.Equal(got[i], want[i]) {
 			t.Errorf("MatrixScalar() = %v, want %v", got, want)
+
 			break
 		}
 	}
@@ -673,7 +702,9 @@ func TestMatrixScalar(t *testing.T) {
 
 func TestCumsum(t *testing.T) {
 	got := Cumsum([]int{1, 2, 3, 4})
+
 	want := []int{1, 3, 6, 10}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Cumsum() = %v, want %v", got, want)
 	}
@@ -681,7 +712,9 @@ func TestCumsum(t *testing.T) {
 
 func TestDiff(t *testing.T) {
 	got := Diff([]int{1, 3, 6, 10})
+
 	want := []int{2, 3, 4}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Diff() = %v, want %v", got, want)
 	}
@@ -694,7 +727,9 @@ func TestDiff(t *testing.T) {
 
 func TestScale(t *testing.T) {
 	got := Scale([]int{1, 2, 3}, 2)
+
 	want := []int{2, 4, 6}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Scale() = %v, want %v", got, want)
 	}
@@ -702,7 +737,9 @@ func TestScale(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	got := Add([]int{1, 2, 3}, []int{4, 5, 6})
+
 	want := []int{5, 7, 9}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Add() = %v, want %v", got, want)
 	}
@@ -710,7 +747,9 @@ func TestAdd(t *testing.T) {
 
 func TestSubtract(t *testing.T) {
 	got := Subtract([]int{5, 7, 9}, []int{1, 2, 3})
+
 	want := []int{4, 5, 6}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Subtract() = %v, want %v", got, want)
 	}
@@ -718,7 +757,9 @@ func TestSubtract(t *testing.T) {
 
 func TestMultiply(t *testing.T) {
 	got := Multiply([]int{1, 2, 3}, []int{4, 5, 6})
+
 	want := []int{4, 10, 18}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Multiply() = %v, want %v", got, want)
 	}
@@ -726,10 +767,13 @@ func TestMultiply(t *testing.T) {
 
 func TestLinSpace(t *testing.T) {
 	got := LinSpace(0, 10, 5)
+
 	want := []float64{0, 2.5, 5, 7.5, 10}
+
 	if len(got) != len(want) {
 		t.Errorf("LinSpace() = %v, want %v", got, want)
 	}
+
 	for i := range got {
 		if absFloat(got[i]-want[i]) > 0.00001 {
 			t.Errorf("LinSpace()[%d] = %v, want %v", i, got[i], want[i])
@@ -739,7 +783,9 @@ func TestLinSpace(t *testing.T) {
 
 func TestArange(t *testing.T) {
 	got := Arange(0, 10, 2)
+
 	want := []int{0, 2, 4, 6, 8}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Arange() = %v, want %v", got, want)
 	}
@@ -754,7 +800,9 @@ func TestHistogram(t *testing.T) {
 	data := []int{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}
 	bins := []int{1, 2, 3, 4, 5}
 	got := Histogram(data, bins)
+
 	want := []int{1, 2, 3, 4}
+
 	if !slices.Equal(got, want) {
 		t.Errorf("Histogram() = %v, want %v", got, want)
 	}
@@ -770,8 +818,7 @@ func BenchmarkSum(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Sum(data)
 	}
 }
@@ -782,8 +829,7 @@ func BenchmarkAverage(b *testing.B) {
 		data[i] = float64(i)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Average(data)
 	}
 }
@@ -794,20 +840,19 @@ func BenchmarkMedian(b *testing.B) {
 		data[i] = i
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Median(data)
 	}
 }
 
 func BenchmarkIsPrime(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		IsPrime(104729) // 10000th prime
 	}
 }
 
 func BenchmarkPrimes(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Primes(10000)
 	}
 }
@@ -815,18 +860,21 @@ func BenchmarkPrimes(b *testing.B) {
 func BenchmarkMatrixMultiply(b *testing.B) {
 	size := 100
 	a := make(Matrix[int], size)
+
 	bMat := make(Matrix[int], size)
-	for i := 0; i < size; i++ {
+
+	for i := range size {
 		a[i] = make([]int, size)
+
 		bMat[i] = make([]int, size)
-		for j := 0; j < size; j++ {
+
+		for j := range size {
 			a[i][j] = i + j
 			bMat[i][j] = i - j
 		}
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		MatrixMultiply(a, bMat)
 	}
 }
@@ -834,13 +882,13 @@ func BenchmarkMatrixMultiply(b *testing.B) {
 func BenchmarkCosineSimilarity(b *testing.B) {
 	a := make([]float64, 1000)
 	bVec := make([]float64, 1000)
+
 	for i := range a {
 		a[i] = float64(i)
 		bVec[i] = float64(i * 2)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		CosineSimilarity(a, bVec)
 	}
 }

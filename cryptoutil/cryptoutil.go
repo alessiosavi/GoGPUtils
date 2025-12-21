@@ -108,6 +108,7 @@ func DecryptString(ciphertextB64 string, key []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(plaintext), nil
 }
 
@@ -123,6 +124,7 @@ func DeriveKey(password, salt string) []byte {
 	h := sha256.New()
 	h.Write([]byte(password))
 	h.Write([]byte(salt))
+
 	return h.Sum(nil) // Returns 32 bytes (AES-256 key)
 }
 
@@ -142,6 +144,7 @@ func GenerateKey(size int) ([]byte, error) {
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
 		return nil, err
 	}
+
 	return key, nil
 }
 
@@ -156,18 +159,21 @@ func GenerateNonce(size int) ([]byte, error) {
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
 	}
+
 	return nonce, nil
 }
 
 // Hash returns the SHA-256 hash of data as a byte slice.
 func Hash(data []byte) []byte {
 	h := sha256.Sum256(data)
+
 	return h[:]
 }
 
 // HashString returns the SHA-256 hash of a string as a hex-encoded string.
 func HashString(s string) string {
 	h := sha256.Sum256([]byte(s))
+
 	return encodeHex(h[:])
 }
 
@@ -184,6 +190,7 @@ func CompareHash(data, expectedHash []byte) bool {
 	for i := range computed {
 		result |= computed[i] ^ expectedHash[i]
 	}
+
 	return result == 0
 }
 
@@ -192,6 +199,7 @@ func RandomBytes(n int) ([]byte, error) {
 	if n < 0 {
 		return nil, errors.New("size must be non-negative")
 	}
+
 	if n == 0 {
 		return []byte{}, nil
 	}
@@ -200,6 +208,7 @@ func RandomBytes(n int) ([]byte, error) {
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		return nil, err
 	}
+
 	return b, nil
 }
 
@@ -211,11 +220,13 @@ func isValidKeySize(size int) bool {
 // encodeHex encodes bytes to hexadecimal string.
 func encodeHex(data []byte) string {
 	const hexChars = "0123456789abcdef"
+
 	buf := make([]byte, len(data)*2)
 	for i, b := range data {
 		buf[i*2] = hexChars[b>>4]
 		buf[i*2+1] = hexChars[b&0x0f]
 	}
+
 	return string(buf)
 }
 
@@ -226,17 +237,21 @@ func decodeHex(s string) ([]byte, error) {
 	}
 
 	result := make([]byte, len(s)/2)
+
 	for i := 0; i < len(s); i += 2 {
 		high, err := hexCharToByte(s[i])
 		if err != nil {
 			return nil, err
 		}
+
 		low, err := hexCharToByte(s[i+1])
 		if err != nil {
 			return nil, err
 		}
+
 		result[i/2] = (high << 4) | low
 	}
+
 	return result, nil
 }
 
