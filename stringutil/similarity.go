@@ -328,7 +328,7 @@ func bigrams(s string) map[string]int {
 
 	result := make(map[string]int)
 
-	for i := range len(runes) - 1 {
+	for i := 0; i < len(runes)-1; i++ {
 		bg := string(runes[i : i+2])
 		result[bg]++
 	}
