@@ -8,7 +8,7 @@ A collection of well-tested, idiomatic Go utilities for common programming tasks
 go get github.com/alessiosavi/GoGPUtils/v2
 ```
 
-Requires Go 1.21 or later.
+Requires Go 1.24 or later.
 
 ## Packages
 
