@@ -117,7 +117,6 @@ func Reduce[T, U any](s []T, initial U, accumulator func(U, T) U) U {
 //
 //	if Contains(names, "Alice") { ... }
 func Contains[T comparable](s []T, target T) bool {
-
 	return slices.Contains(s, target)
 }
 
@@ -127,7 +126,6 @@ func Contains[T comparable](s []T, target T) bool {
 //
 //	hasNegative := ContainsFunc(nums, func(n int) bool { return n < 0 })
 func ContainsFunc[T any](s []T, predicate func(T) bool) bool {
-
 	return slices.ContainsFunc(s, predicate)
 }
 
@@ -580,7 +578,6 @@ func All[T any](s []T, predicate func(T) bool) bool {
 //	hasNegative := Any([]int{1, -2, 3}, func(n int) bool { return n < 0 })
 //	// hasNegative = true
 func Any[T any](s []T, predicate func(T) bool) bool {
-
 	return slices.ContainsFunc(s, predicate)
 }
 
@@ -767,7 +764,7 @@ func Zip[T, U any](a []T, b []U) [][2]any {
 	length := min(len(b), len(a))
 
 	result := make([][2]any, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = [2]any{a[i], b[i]}
 	}
 
@@ -784,7 +781,7 @@ func ZipWith[T, U, V any](a []T, b []U, combine func(T, U) V) []V {
 	length := min(len(b), len(a))
 
 	result := make([]V, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = combine(a[i], b[i])
 	}
 

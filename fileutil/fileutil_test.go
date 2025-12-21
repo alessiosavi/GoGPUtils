@@ -30,6 +30,7 @@ func createTestFile(t *testing.T, dir, name, content string) string {
 	t.Helper()
 
 	path := filepath.Join(dir, name)
+
 	err := os.WriteFile(path, []byte(content), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
@@ -784,11 +785,15 @@ func BenchmarkReadLines(b *testing.B) {
 	defer os.RemoveAll(dir)
 
 	// Create a file with 1000 lines
-	var content string
-	var contentSb740 strings.Builder
-	for i := 0; i < 1000; i++ {
+	var (
+		content      string
+		contentSb740 strings.Builder
+	)
+
+	for range 1000 {
 		contentSb740.WriteString("This is a test line for benchmarking purposes.\n")
 	}
+
 	content += contentSb740.String()
 
 	path := filepath.Join(dir, "bench.txt")
@@ -796,9 +801,7 @@ func BenchmarkReadLines(b *testing.B) {
 
 	ctx := context.Background()
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		ReadLines(ctx, path)
 	}
 }
@@ -808,11 +811,15 @@ func BenchmarkCountLines(b *testing.B) {
 	defer os.RemoveAll(dir)
 
 	// Create a file with 10000 lines
-	var content string
-	var contentSb760 strings.Builder
-	for i := 0; i < 10000; i++ {
+	var (
+		content      string
+		contentSb760 strings.Builder
+	)
+
+	for range 10000 {
 		contentSb760.WriteString("This is a test line for benchmarking purposes.\n")
 	}
+
 	content += contentSb760.String()
 
 	path := filepath.Join(dir, "bench.txt")
@@ -820,9 +827,7 @@ func BenchmarkCountLines(b *testing.B) {
 
 	ctx := context.Background()
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		CountLines(ctx, path)
 	}
 }
@@ -832,16 +837,14 @@ func BenchmarkList(b *testing.B) {
 	defer os.RemoveAll(dir)
 
 	// Create 100 files
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		path := filepath.Join(dir, string(rune('a'+i%26))+".txt")
 		os.WriteFile(path, []byte("content"), 0644)
 	}
 
 	ctx := context.Background()
 
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		List(ctx, dir, 0)
 	}
 }

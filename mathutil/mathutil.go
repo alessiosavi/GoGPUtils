@@ -909,7 +909,7 @@ func Add[T Number](a, b []T) []T {
 	length := min(len(b), len(a))
 
 	result := make([]T, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = a[i] + b[i]
 	}
 
@@ -921,7 +921,7 @@ func Subtract[T Number](a, b []T) []T {
 	length := min(len(b), len(a))
 
 	result := make([]T, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = a[i] - b[i]
 	}
 
@@ -933,7 +933,7 @@ func Multiply[T Number](a, b []T) []T {
 	length := min(len(b), len(a))
 
 	result := make([]T, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = a[i] * b[i]
 	}
 

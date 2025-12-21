@@ -427,7 +427,7 @@ func IsLower(s string) bool {
 
 // IsASCII reports whether s contains only ASCII characters.
 func IsASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if s[i] > 127 {
 			return false
 		}
@@ -678,7 +678,7 @@ func CommonPrefix(strs ...string) string {
 
 	var prefix strings.Builder
 
-	for i := 0; i < minLen; i++ {
+	for i := range minLen {
 		char := strs[0][i]
 		for _, s := range strs[1:] {
 			if s[i] != char {
