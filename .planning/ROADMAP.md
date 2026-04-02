@@ -8,6 +8,11 @@
 
 **Requirements:** PIPE-01, PIPE-02, PIPE-03, UNIC-01, UNIC-02
 
+**Plans:** 1 plan
+
+**Plan List:**
+- [ ] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — build the immutable `textnorm` pipeline and Unicode-safe cleanup stages
+
 **Deliverables:**
 - New package scaffold and public docs
 - Immutable pipeline type and ordered stage execution
@@ -79,6 +84,11 @@
 **Goal:** Establish the immutable fluent pipeline and the Unicode-safe cleanup foundation.
 
 **Requirements:** PIPE-01, PIPE-02, PIPE-03, UNIC-01, UNIC-02
+
+**Plans:** 1 plan
+
+**Plan List:**
+- [ ] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — implement the new top-level `textnorm` package, immutable stage chaining, and Unicode-safe cleanup
 
 **Success Criteria:**
 1. Fluent chaining returns a reusable pipeline value.

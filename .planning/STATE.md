@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Turn messy text into consistent, search-friendly output through a fluent, explicit pipeline that is easy to reuse and hard to misuse.
-**Current focus:** Phase 1 planning
+**Current focus:** Phase 1 complete
 
 ## Current Snapshot
 
@@ -13,6 +13,8 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 - Primary use cases: search/DB canonicalization and scraping cleanup
 - Stack baseline: Go 1.25.0 + `golang.org/x/text` v0.35.0
 - Workflow posture: YOLO, parallel execution, research enabled, plan check enabled, verifier enabled
+- Phase 1 plan completed: `.planning/phases/01-core-pipeline-and-unicode-safety/01-01-SUMMARY.md`
+- Phase 1 commits: `9360aa8`, `6afa81b`
 
 ## Open Questions
 
