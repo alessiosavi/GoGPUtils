@@ -1,5 +1,10 @@
 package collection
 
+import (
+	"cmp"
+	"slices"
+)
+
 // Set is a generic unordered collection of unique elements.
 // The zero value is not usable; use NewSet to create a Set.
 type Set[T comparable] struct {
@@ -260,6 +265,24 @@ func (s *Set[T]) Filter(predicate func(T) bool) *Set[T] {
 			result.items[item] = struct{}{}
 		}
 	}
+
+	return result
+}
+
+// ToSliceSorted returns all elements of s as a sorted slice.
+// Unlike Values(), the result is deterministic — suitable for tests and serialization.
+//
+// This is a package-level function rather than a method because Go does not allow
+// methods to declare stricter type constraints than their receiver (Set[T comparable]
+// cannot add a cmp.Ordered constraint inside a method signature).
+//
+// Example:
+//
+//	set := NewSetFrom([]int{3, 1, 2})
+//	ToSliceSorted(set) // [1, 2, 3]
+func ToSliceSorted[T cmp.Ordered](s *Set[T]) []T {
+	result := s.Values()
+	slices.Sort(result)
 
 	return result
 }

@@ -195,8 +195,8 @@ func TestNormalizeUnicode(t *testing.T) {
 		{"punctuation preserved", "café, résumé!", "cafe, resume!"},
 		{"spaces preserved", "  café  ", "  cafe  "},
 		{"emoji preserved", "Hello 🌍", "Hello 🌍"},
-		{"japanese", "日本語", "日本語"},             // CJK characters have no diacritics to remove
-		{"korean", "한국어", "한국어"},               // Hangul stays as-is (decomposed and recomposed)
+		{"japanese", "日本語", "日本語"}, // CJK characters have no diacritics to remove
+		{"korean", "한국어", "한국어"},   // Hangul stays as-is (decomposed and recomposed)
 		{"cedilla", "façade", "facade"},
 		{"circumflex", "crêpe", "crepe"},
 		{"tilde n", "cañón", "canon"},

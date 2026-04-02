@@ -3,6 +3,7 @@ package sliceutil
 import (
 	"cmp"
 	"slices"
+	"sync"
 )
 
 // Filter returns a new slice containing only elements for which the predicate returns true.
@@ -902,9 +903,9 @@ func Insert[T any](s []T, index int, value T) []T {
 }
 
 // Shuffle returns a new slice with elements in random order.
-// Uses crypto/rand for secure randomness.
+// Uses math/rand (NOT crypto/rand) for performance; not suitable for security-sensitive use.
 //
-// For a deterministic shuffle, use ShuffleWithSeed.
+// For a deterministic shuffle use ShuffleWithSeed; for crypto-secure shuffling use randutil.Shuffle.
 func Shuffle[T any](s []T) []T {
 	if s == nil {
 		return nil
@@ -929,15 +930,23 @@ func ShuffleInPlace[T any](s []T) {
 }
 
 // Simple fast random for shuffling (not crypto secure).
-var fastrandState uint64 = 1
+// fastrandMu serializes access to fastrandState to eliminate the data race
+// that existed when multiple goroutines called ShuffleInPlace concurrently.
+var (
+	fastrandMu    sync.Mutex
+	fastrandState uint64 = 1
+)
 
 func fastrand() uint32 {
-	// xorshift64
+	// xorshift64 — read-modify-write cannot be made atomic without a lock
+	fastrandMu.Lock()
 	fastrandState ^= fastrandState << 13
 	fastrandState ^= fastrandState >> 7
 	fastrandState ^= fastrandState << 17
+	state := uint32(fastrandState)
+	fastrandMu.Unlock()
 
-	return uint32(fastrandState)
+	return state
 }
 
 // SeedShuffle sets the seed for ShuffleInPlace. Useful for deterministic tests.
@@ -946,7 +955,9 @@ func SeedShuffle(seed uint64) {
 		seed = 1
 	}
 
+	fastrandMu.Lock()
 	fastrandState = seed
+	fastrandMu.Unlock()
 }
 
 // Compact removes consecutive duplicate elements, similar to Unix uniq.
@@ -1051,4 +1062,34 @@ func AssociateWith[K comparable, V any](s []K, value func(K) V) map[K]V {
 	}
 
 	return result
+}
+
+// MapErr applies fn to each element of s and returns the transformed slice.
+// Returns the first error encountered (with a nil result slice); returns nil
+// result and nil error for a nil input slice.
+//
+// This fills the gap left by Map: when the transform can fail (e.g. parsing,
+// type conversion, validation) you previously had to write a manual loop.
+//
+// Example:
+//
+//	nums, err := MapErr([]string{"1", "2", "three"}, strconv.Atoi)
+//	// err != nil on the third element; nums is nil
+func MapErr[T, U any](s []T, fn func(T) (U, error)) ([]U, error) {
+	if s == nil {
+		return nil, nil
+	}
+
+	result := make([]U, len(s))
+
+	for i, v := range s {
+		u, err := fn(v)
+		if err != nil {
+			return nil, err
+		}
+
+		result[i] = u
+	}
+
+	return result, nil
 }
