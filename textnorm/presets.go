@@ -29,7 +29,7 @@ func SearchPreset(opts ...PresetOption) Pipeline {
 		}
 	}
 
-	pipe := New().NormalizeUnicode()
+	pipe := New().SanitizeUTF8().NormalizeUnicode()
 	if cfg.widthFold {
 		pipe = pipe.FoldWidth()
 	}
@@ -56,7 +56,7 @@ func CanonicalPreset(opts ...PresetOption) Pipeline {
 		}
 	}
 
-	pipe := New().NormalizeUnicode()
+	pipe := New().SanitizeUTF8().NormalizeUnicode()
 	if cfg.widthFold {
 		pipe = pipe.FoldWidth()
 	}
