@@ -111,3 +111,30 @@ func (s *Stack[T]) PopAll() []T {
 
 	return result
 }
+
+// PopN removes and returns up to n elements from the top of the stack in LIFO order.
+// If n > Len(), all elements are returned. If n <= 0 or the stack is empty, returns nil.
+//
+// Example:
+//
+//	s := NewStack[int]()
+//	s.PushAll(1, 2, 3, 4, 5) // top is 5
+//	s.PopN(3)                 // [5, 4, 3]; stack now contains [1, 2]
+func (s *Stack[T]) PopN(n int) []T {
+	if n <= 0 || len(s.items) == 0 {
+		return nil
+	}
+
+	if n > len(s.items) {
+		n = len(s.items)
+	}
+
+	result := make([]T, n)
+	for i := range n {
+		result[i] = s.items[len(s.items)-1-i]
+	}
+
+	s.items = s.items[:len(s.items)-n]
+
+	return result
+}

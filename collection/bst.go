@@ -359,3 +359,48 @@ func (t *BST[T]) forEach(node *bstNode[T], fn func(T)) {
 func (t *BST[T]) Values() []T {
 	return t.InOrder()
 }
+
+// RangeSearch returns all values in the inclusive range [min, max] in sorted order.
+// Uses the BST structure to prune branches outside the range efficiently
+// (O(k + log n) for k results rather than O(n)).
+// Returns nil if the tree is empty, min > max, or no values fall in the range.
+//
+// Example:
+//
+//	tree := NewBSTFrom([]int{1, 3, 5, 7, 9})
+//	tree.RangeSearch(3, 7) // [3, 5, 7]
+func (t *BST[T]) RangeSearch(min, max T) []T {
+	if t.root == nil || min > max {
+		return nil
+	}
+
+	var result []T
+
+	t.rangeSearch(t.root, min, max, &result)
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return result
+}
+
+func (t *BST[T]) rangeSearch(node *bstNode[T], min, max T, result *[]T) {
+	if node == nil {
+		return
+	}
+
+	// Only recurse left if current node value is greater than min
+	if node.value > min {
+		t.rangeSearch(node.left, min, max, result)
+	}
+
+	if node.value >= min && node.value <= max {
+		*result = append(*result, node.value)
+	}
+
+	// Only recurse right if current node value is less than max
+	if node.value < max {
+		t.rangeSearch(node.right, min, max, result)
+	}
+}

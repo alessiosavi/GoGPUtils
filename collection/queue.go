@@ -96,3 +96,27 @@ func (q *Queue[T]) Values() []T {
 func (q *Queue[T]) EnqueueAll(items ...T) {
 	q.items = append(q.items, items...)
 }
+
+// DequeueN removes and returns up to n elements from the front of the queue in FIFO order.
+// If n > Len(), all elements are returned. If n <= 0 or the queue is empty, returns nil.
+//
+// Example:
+//
+//	q := NewQueue[int]()
+//	q.EnqueueAll(1, 2, 3, 4, 5)
+//	q.DequeueN(3) // [1, 2, 3]; queue now contains [4, 5]
+func (q *Queue[T]) DequeueN(n int) []T {
+	if n <= 0 || len(q.items) == 0 {
+		return nil
+	}
+
+	if n > len(q.items) {
+		n = len(q.items)
+	}
+
+	result := make([]T, n)
+	copy(result, q.items[:n])
+	q.items = q.items[n:]
+
+	return result
+}

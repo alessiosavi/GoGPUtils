@@ -979,6 +979,43 @@ func Arange[T Number](start, stop, step T) []T {
 	return result
 }
 
+// MinMaxNormalize scales s to the range [0.0, 1.0] using min-max normalization:
+//
+//	result[i] = (s[i] - min) / (max - min)
+//
+// Returns nil for nil or empty input.
+// Returns a zero-filled slice when all elements are equal (range == 0),
+// rather than dividing by zero.
+//
+// Example:
+//
+//	MinMaxNormalize([]int{0, 5, 10})   // [0.0, 0.5, 1.0]
+//	MinMaxNormalize([]int{3, 3, 3})    // [0.0, 0.0, 0.0]
+func MinMaxNormalize[T Number](s []T) []float64 {
+	if len(s) == 0 {
+		return nil
+	}
+
+	minVal, maxVal, err := MinMax(s)
+	if err != nil {
+		return nil
+	}
+
+	result := make([]float64, len(s))
+
+	r := float64(maxVal) - float64(minVal)
+	if r == 0 {
+		// All elements equal; avoid division by zero — return all zeros.
+		return result
+	}
+
+	for i, v := range s {
+		result[i] = (float64(v) - float64(minVal)) / r
+	}
+
+	return result
+}
+
 // Histogram returns the frequency count of values in bins.
 // bins specifies the bin edges (n+1 edges for n bins).
 func Histogram[T Number](data []T, bins []T) []int {

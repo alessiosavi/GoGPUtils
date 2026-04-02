@@ -637,17 +637,25 @@ func SafeSlice(s string, start, end int) string {
 	return string(runes[start:end])
 }
 
-// NthRune returns the rune at position n (0-indexed).
+// NthRune returns the rune at rune position n (0-indexed).
 // Returns (0, false) if n is out of bounds.
+//
+// The previous implementation compared the byte offset i to n, which silently
+// returned wrong results for multi-byte UTF-8 strings. This version counts
+// runes explicitly.
 func NthRune(s string, n int) (rune, bool) {
 	if n < 0 {
 		return 0, false
 	}
 
-	for i, r := range s {
-		if i == n {
+	count := 0
+
+	for _, r := range s {
+		if count == n {
 			return r, true
 		}
+
+		count++
 	}
 
 	return 0, false
@@ -931,4 +939,36 @@ func SplitAfter(s, sep string) []string {
 // Wrapper around strings.Join for API completeness.
 func Join(elems []string, sep string) string {
 	return strings.Join(elems, sep)
+}
+
+// SplitAndTrim splits s by sep, trims whitespace from each token, and drops
+// any tokens that are empty after trimming.
+//
+// This is the single most common string-processing pattern in Go backends —
+// parsing comma-separated config values, CSV-like user input, and HTTP header
+// lists all require split + trim + discard-blanks.
+//
+// Example:
+//
+//	SplitAndTrim("  a , b ,  ,  c  ", ",") // ["a", "b", "c"]
+//	SplitAndTrim("", ",")                  // nil
+func SplitAndTrim(s, sep string) []string {
+	if s == "" {
+		return nil
+	}
+
+	parts := strings.Split(s, sep)
+	result := make([]string, 0, len(parts))
+
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			result = append(result, t)
+		}
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return result
 }
