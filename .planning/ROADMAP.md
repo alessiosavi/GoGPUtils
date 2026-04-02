@@ -60,7 +60,7 @@
 **Plans:** 1 plan
 
 **Plan List:**
-- [ ] `03-hardening-and-future-adapters-01-PLAN.md` — benchmark, fuzz, and document the hardened `textnorm` surface without introducing framework creep
+- [x] `03-hardening-and-future-adapters-01-PLAN.md` — benchmark, fuzz, and document the hardened `textnorm` surface without introducing framework creep
 
 **Deliverables:**
 - Benchmarks on representative text corpora
