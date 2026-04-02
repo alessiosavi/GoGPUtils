@@ -57,6 +57,11 @@
 
 **Requirements:** none from v1; future adapters only
 
+**Plans:** 1 plan
+
+**Plan List:**
+- [ ] `03-hardening-and-future-adapters-01-PLAN.md` — benchmark, fuzz, and document the hardened `textnorm` surface without introducing framework creep
+
 **Deliverables:**
 - Benchmarks on representative text corpora
 - Fuzz tests for malformed input and idempotence
@@ -123,6 +128,11 @@
 **Goal:** Improve confidence and leave room for later streaming or tracing support.
 
 **Requirements:** future-only
+
+**Plans:** 1 plan
+
+**Plan List:**
+- [ ] `03-hardening-and-future-adapters-01-PLAN.md` — add benchmarks, fuzzing, and docs that keep streaming adapters deferred
 
 **Success Criteria:**
 1. Benchmarks and fuzz tests cover the core pipeline.
