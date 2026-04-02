@@ -99,7 +99,7 @@
 **Plans:** 1 plan
 
 **Plan List:**
-- [ ] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — implement the new top-level `textnorm` package, immutable stage chaining, and Unicode-safe cleanup
+- [x] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — implement the new top-level `textnorm` package, immutable stage chaining, and Unicode-safe cleanup
 
 **Success Criteria:**
 1. Fluent chaining returns a reusable pipeline value.
@@ -132,7 +132,7 @@
 **Plans:** 1 plan
 
 **Plan List:**
-- [ ] `03-hardening-and-future-adapters-01-PLAN.md` — add benchmarks, fuzzing, and docs that keep streaming adapters deferred
+- [x] `03-hardening-and-future-adapters-01-PLAN.md` — add benchmarks, fuzzing, and docs that keep streaming adapters deferred
 
 **Success Criteria:**
 1. Benchmarks and fuzz tests cover the core pipeline.

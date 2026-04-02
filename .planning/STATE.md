@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Turn messy text into consistent, search-friendly output through a fluent, explicit pipeline that is easy to reuse and hard to misuse.
-**Current focus:** Phase 3 complete
+**Current focus:** v1 complete; maintain the package and defer adapters until there is usage evidence
 
 ## Current Snapshot
 
@@ -19,6 +19,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 - Phase 2 commits: `13b9799`, `2fa005b`, `99e3194`, `efa626a`, `f49676a`, `fd3c35b`
 - Phase 3 plan summary: `.planning/phases/03-hardening-and-future-adapters/03-01-SUMMARY.md`
 - Phase 3 commits: `18169e6`, `9bccfc2`, `e297038`
+- v1 requirements are validated in `.planning/REQUIREMENTS.md`
 
 ## Open Questions
 

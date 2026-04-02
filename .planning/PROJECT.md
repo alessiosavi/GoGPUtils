@@ -12,14 +12,14 @@ Turn messy text into consistent, search-friendly output through a fluent, explic
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Build a fluent normalization pipeline API for composing reusable text transforms.
+- [x] Support state-of-the-art Unicode normalization and diacritic removal for search-friendly text.
+- [x] Support token-level cleanup steps such as stripping, filtering, mapping, and joining.
+- [x] Make the package reusable for scraping cleanup, database search, and general text canonicalization.
 
 ### Active
 
-- [ ] Build a fluent normalization pipeline API for composing reusable text transforms.
-- [ ] Support state-of-the-art Unicode normalization and diacritic removal for search-friendly text.
-- [ ] Support token-level cleanup steps such as stripping, filtering, mapping, and joining.
-- [ ] Make the package reusable for scraping cleanup, database search, and general text canonicalization.
+- (None)
 
 ### Out of Scope
 
@@ -32,6 +32,8 @@ Turn messy text into consistent, search-friendly output through a fluent, explic
 The repository already has a `stringutil` package with basic normalization helpers, including Unicode cleanup and diacritic removal. This project should be a dedicated new package with a more composable, fluent pipeline API instead of more ad hoc helpers.
 
 The target implementation should fit the existing repo style: package-oriented Go utilities, explicit errors over panics, zero global state, and colocated tests. The repo already uses Go 1.25.0 and `golang.org/x/text`, which is a good fit for Unicode normalization.
+
+Phase 1 through Phase 3 are complete: `textnorm` now has the fluent core, Unicode-safe cleanup, token pipelines, presets, benchmarks, fuzz coverage, and docs that keep streaming adapters deferred.
 
 ## Constraints
 
@@ -65,4 +67,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after initialization*
+*Last updated: 2026-04-02 after milestone completion*
