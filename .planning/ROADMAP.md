@@ -11,7 +11,7 @@
 **Plans:** 1 plan
 
 **Plan List:**
-- [ ] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — build the immutable `textnorm` pipeline and Unicode-safe cleanup stages
+- [x] `01-core-pipeline-and-unicode-safety-01-PLAN.md` — build the immutable `textnorm` pipeline and Unicode-safe cleanup stages
 
 **Deliverables:**
 - New package scaffold and public docs
@@ -31,6 +31,12 @@
 **Goal:** Add token-level composition and the search/DB-oriented presets that make the library useful in practice.
 
 **Requirements:** UNIC-03, UNIC-04, TOKN-01, TOKN-02, TOKN-03, TOKN-04, PRES-01, PRES-02, PRES-03, PRES-04
+
+**Plans:** 2 plans
+
+**Plan List:**
+- [x] `02-token-pipelines-and-presets-01-PLAN.md` — add token-level stages, case/rune transforms, and width folding
+- [x] `02-token-pipelines-and-presets-02-PLAN.md` — add search, canonical, and DB-safe presets plus docs/tests
 
 **Deliverables:**
 - Split/map/filter/join token stages

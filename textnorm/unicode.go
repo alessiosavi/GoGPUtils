@@ -24,7 +24,7 @@ func normalizeUnicodeStage(s string) (string, error) {
 	}
 
 	t := transform.Chain(
-		norm.NFKD,
+		norm.NFD,
 		runes.Remove(runes.In(unicode.Mn)),
 		norm.NFC,
 	)
