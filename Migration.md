@@ -1,4 +1,7 @@
-# GoGPUtils v2
+# GoGPUtils v2 (historical)
+
+This document is archived migration guidance for the old `v2` import-path story.
+The live module path is `github.com/alessiosavi/GoGPUtils`.
 
 A collection of well-tested, idiomatic Go utilities for common programming tasks.
 

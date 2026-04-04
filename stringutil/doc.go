@@ -31,7 +31,7 @@
 // Algorithms for measuring string similarity:
 //
 //	distance := stringutil.LevenshteinDistance("kitten", "sitting")  // 3
-//	score := stringutil.JaroWinklerSimilarity("martha", "marhta")    // ~0.96
+//	score := stringutil.JaroWinklerSimilarity("martha", "marhta", 0.1) // ~0.96
 //	coefficient := stringutil.DiceCoefficient("night", "nacht")
 //
 // All functions are designed to be nil-safe and handle edge cases gracefully.

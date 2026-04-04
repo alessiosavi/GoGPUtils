@@ -5,7 +5,7 @@
 //   - Item operations: Get, Put, Delete, Update with automatic marshaling
 //   - Batch operations: BatchGet, BatchWrite with automatic chunking
 //   - Scan and Query with pagination support
-//   - Table operations: Create, Delete, WaitForActive
+//   - Table operations: Create, Delete
 //
 // # Client Creation
 //

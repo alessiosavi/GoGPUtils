@@ -11,17 +11,17 @@
 //
 //	bytes, err := randutil.SecureBytes(32)
 //	str, err := randutil.SecureString(16, randutil.AlphaNumeric)
-//	id := randutil.SecureID()
+//	id, err := randutil.SecureID()
 //
 // # Fast Random Generation
 //
 // For non-security purposes like tests, sampling, or simulations:
 //
 //	rng := randutil.NewGenerator()
-//	n := rng.Int(100)           // [0, 100)
-//	f := rng.Float64()          // [0.0, 1.0)
-//	item := rng.Choice(items)   // Random element
-//	rng.Shuffle(items)          // Shuffle in place
+//	n := rng.Int(100)             // [0, 100)
+//	f := rng.Float64()            // [0.0, 1.0)
+//	item := randutil.Choice(rng, items)
+//	randutil.Shuffle(rng, items)  // Shuffle in place
 //
 // # Deterministic Generation
 //

@@ -42,7 +42,7 @@
 // # Thread Safety
 //
 // The data structures in this package are NOT thread-safe by default.
-// For concurrent access, use sync primitives or SafeStack/SafeQueue variants.
+// For concurrent access, use sync primitives around Stack, Queue, Set, and BST.
 //
 // # Design Decisions
 //

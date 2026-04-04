@@ -22,13 +22,13 @@
 //	// Check containment
 //	if sliceutil.Contains(names, "Alice") { ... }
 //
-// # Chunking and Splitting
+// # Chunking and Grouping
 //
 //	// Split into chunks of size 3
 //	chunks := sliceutil.Chunk(items, 3)
 //
-//	// Split at specific indices
-//	parts := sliceutil.SplitAt(items, 5, 10)
+//	// Group items by key
+//	groups := sliceutil.GroupBy([]string{"a", "bb"}, func(item string) int { return len(item) })
 //
 // # Set Operations
 //

@@ -5,7 +5,6 @@
 //   - Get secret values (string or binary)
 //   - Automatic JSON unmarshaling
 //   - List secrets with filtering
-//   - Secret rotation support
 //
 // # Client Creation
 //

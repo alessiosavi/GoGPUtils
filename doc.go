@@ -19,14 +19,14 @@
 //   - stringutil: String manipulation and similarity algorithms
 //   - mathutil: Mathematical and statistical operations
 //   - fileutil: File system operations with proper error handling
-//   - csvutil: CSV parsing with type inference
 //   - cryptoutil: Secure AES-GCM encryption
 //   - randutil: Cryptographically secure random generation
-//   - collection: Generic data structures (Stack, Tree)
+//   - collection: Generic data structures (Stack, Queue, Set, BST)
+//   - textnorm: Deterministic text normalization pipelines
 //
 // # Example Usage
 //
-//	import "github.com/alessiosavi/GoGPUtils/v2/sliceutil"
+//	import "github.com/alessiosavi/GoGPUtils/sliceutil"
 //
 //	numbers := []int{1, 2, 3, 4, 5}
 //	evens := sliceutil.Filter(numbers, func(n int) bool { return n%2 == 0 })

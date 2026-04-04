@@ -29,6 +29,7 @@ go get github.com/alessiosavi/GoGPUtils
 |---------|-------------|
 | [`sliceutil`](#sliceutil) | Generic slice operations (filter, map, reduce, chunk, etc.) |
 | [`stringutil`](#stringutil) | String manipulation and similarity algorithms |
+| [`textnorm`](#textnorm) | Deterministic text normalization pipelines |
 | [`mathutil`](#mathutil) | Mathematical and statistical operations |
 | [`fileutil`](#fileutil) | File system operations with proper error handling |
 | [`cryptoutil`](#cryptoutil) | Secure AES-GCM encryption |
@@ -61,8 +62,8 @@ import "github.com/alessiosavi/GoGPUtils/sliceutil"
 | `Contains[T](slice, value)` | Checks if slice contains value |
 | `IndexOf[T](slice, value)` | Returns index of value (-1 if not found) |
 | `Reverse[T](slice)` | Returns reversed slice |
-| `Sort[T](slice)` | Returns sorted slice (ordered types) |
-| `SortBy[T](slice, less)` | Returns sorted slice with custom comparator |
+| `FlatMap[T, U](slice, transform)` | Maps each element to a slice and flattens the result |
+| `MapErr[T, U](slice, fn)` | Maps elements with error handling |
 | `Intersection[T](a, b)` | Returns common elements |
 | `Difference[T](a, b)` | Returns elements in a but not in b |
 | `Union[T](a, b)` | Returns combined unique elements |
@@ -119,44 +120,79 @@ import "github.com/alessiosavi/GoGPUtils/stringutil"
 | Function | Description |
 |----------|-------------|
 | `Reverse(s)` | Reverses a string (Unicode-safe) |
-| `Truncate(s, maxLen)` | Truncates to max length |
-| `TruncateWithSuffix(s, maxLen, suffix)` | Truncates with custom suffix |
+| `Truncate(s, maxLen, suffix)` | Truncates to max length with suffix |
+| `TruncateWords(s, maxLen, suffix)` | Truncates at a word boundary |
 | `PadLeft(s, length, pad)` | Pads string on the left |
 | `PadRight(s, length, pad)` | Pads string on the right |
+| `PadCenter(s, length, pad)` | Centers string with padding |
 | `IsEmpty(s)` | Checks if string is empty |
 | `IsBlank(s)` | Checks if string is empty or whitespace |
-| `ToSnakeCase(s)` | Converts to snake_case |
-| `ToCamelCase(s)` | Converts to camelCase |
-| `ToPascalCase(s)` | Converts to PascalCase |
-| `ToKebabCase(s)` | Converts to kebab-case |
-| `CountWords(s)` | Counts words in string |
-| `RemoveDuplicateSpaces(s)` | Collapses multiple spaces |
+| `IsAlpha(s)` | Checks if string is alphabetic |
+| `IsNumeric(s)` | Checks if string is numeric |
+| `SnakeCase(s)` | Converts to snake_case |
+| `CamelCase(s)` | Converts to camelCase |
+| `PascalCase(s)` | Converts to PascalCase |
+| `KebabCase(s)` | Converts to kebab-case |
+| `Words(s)` | Splits into words |
+| `SplitAndTrim(s, sep)` | Splits and trims parts |
 
 ### Similarity Algorithms
 
 | Function | Description |
 |----------|-------------|
 | `LevenshteinDistance(a, b)` | Edit distance between strings |
-| `JaroWinklerSimilarity(a, b)` | Similarity score (0.0-1.0) |
-| `DiceSimilarity(a, b)` | Dice coefficient similarity |
+| `LevenshteinSimilarity(a, b)` | Normalized Levenshtein similarity |
+| `DamerauLevenshteinDistance(a, b)` | Edit distance with transpositions |
+| `JaroSimilarity(a, b)` | Jaro similarity score |
+| `JaroWinklerSimilarity(a, b, prefixScale)` | Similarity score (0.0-1.0) |
+| `DiceCoefficient(a, b)` | Dice coefficient similarity |
 | `HammingDistance(a, b)` | Bit-level distance (same length strings) |
 
 ### Example
 
 ```go
 // Case conversions
-stringutil.ToSnakeCase("HelloWorld")     // "hello_world"
-stringutil.ToCamelCase("hello_world")    // "helloWorld"
-stringutil.ToPascalCase("hello_world")   // "HelloWorld"
-stringutil.ToKebabCase("HelloWorld")     // "hello-world"
+stringutil.SnakeCase("HelloWorld")      // "hello_world"
+stringutil.CamelCase("hello_world")     // "helloWorld"
+stringutil.PascalCase("hello_world")    // "HelloWorld"
+stringutil.KebabCase("HelloWorld")      // "hello-world"
 
 // Padding
-stringutil.PadLeft("42", 5, '0')   // "00042"
-stringutil.PadRight("Go", 5, '-')  // "Go---"
+stringutil.PadLeft("42", 5, '0')      // "00042"
+stringutil.PadRight("Go", 5, '-')     // "Go---"
+stringutil.Truncate("Hello World", 8, "...")
 
 // Similarity
-stringutil.LevenshteinDistance("kitten", "sitting")  // 3
-stringutil.JaroWinklerSimilarity("hello", "hallo")   // ~0.88
+stringutil.LevenshteinDistance("kitten", "sitting")     // 3
+stringutil.JaroWinklerSimilarity("hello", "hallo", 0.1) // ~0.88
+```
+
+---
+
+## textnorm
+
+Deterministic text normalization pipelines.
+
+```go
+import "github.com/alessiosavi/GoGPUtils/textnorm"
+```
+
+### Functions
+
+| Function | Description |
+|----------|-------------|
+| `New()` | Creates an empty pipeline |
+| `SearchPreset(opts...)` | Search-oriented normalization |
+| `CanonicalPreset(opts...)` | Canonical normalization |
+| `DBSafePreset(opts...)` | Persistence-safe normalization |
+| `WithWidthFold()` | Option that folds full-width characters |
+
+### Example
+
+```go
+textnorm.SearchPreset().Run("  Café, go!  ")
+textnorm.CanonicalPreset().Run("  Hello, World!  ")
+textnorm.DBSafePreset(textnorm.WithWidthFold()).Run("  Ｇｏ\x00  ")
 ```
 
 ---
@@ -226,18 +262,22 @@ import "github.com/alessiosavi/GoGPUtils/fileutil"
 | `Exists(path)` | Checks if path exists |
 | `IsFile(path)` | Checks if path is a file |
 | `IsDir(path)` | Checks if path is a directory |
-| `ReadFile(path)` | Reads entire file as bytes |
-| `ReadFileString(path)` | Reads entire file as string |
-| `WriteFile(path, data, perm)` | Writes data to file |
-| `AppendFile(path, data)` | Appends data to file |
-| `CopyFile(src, dst)` | Copies a file |
-| `MoveFile(src, dst)` | Moves a file |
-| `DeleteFile(path)` | Deletes a file |
-| `ListFiles(dir)` | Lists files in directory |
-| `ListFilesRecursive(dir)` | Lists files recursively |
-| `EnsureDir(path)` | Creates directory if not exists |
-| `FileSize(path)` | Returns file size |
-| `FileModTime(path)` | Returns modification time |
+| `IsSymlink(path)` | Checks if path is a symlink |
+| `IsExecutable(path)` | Checks if path is executable |
+| `ReadBytes(ctx, path)` | Reads entire file as bytes |
+| `ReadString(ctx, path)` | Reads entire file as string |
+| `ReadLines(ctx, path)` | Reads all lines from a file |
+| `WriteBytes(path, data, perm)` | Writes data to file |
+| `WriteString(path, content, perm)` | Writes string content to file |
+| `AppendString(path, content, perm)` | Appends string content to file |
+| `EnsureDir(path, perm)` | Creates directory if not exists |
+| `List(ctx, dir, opts)` | Lists files in directory |
+| `Find(ctx, dir, pattern)` | Finds files by pattern |
+| `Copy(ctx, src, dst)` | Copies a file |
+| `Move(ctx, src, dst)` | Moves a file |
+| `Touch(path)` | Creates or updates a file timestamp |
+| `Size(path)` | Returns file size |
+| `ModTime(path)` | Returns modification time |
 
 ### Example
 
@@ -248,18 +288,18 @@ if fileutil.Exists("/path/to/file") {
 }
 
 // Read file
-content, err := fileutil.ReadFileString("/path/to/file.txt")
+content, err := fileutil.ReadString(context.Background(), "/path/to/file.txt")
 if err != nil {
     return err
 }
 
 // Write file
-err := fileutil.WriteFile("/path/to/file.txt", []byte("Hello"), 0644)
+err := fileutil.WriteString("/path/to/file.txt", "Hello", 0644)
 
 // List files
-files, err := fileutil.ListFiles("/path/to/dir")
+files, err := fileutil.List(context.Background(), "/path/to/dir", 0)
 for _, f := range files {
-    fmt.Println(f.Name)
+    fmt.Println(f)
 }
 ```
 
@@ -281,14 +321,14 @@ import "github.com/alessiosavi/GoGPUtils/cryptoutil"
 | `Decrypt(ciphertext, key)` | Decrypts AES-GCM encrypted data |
 | `EncryptString(plaintext, key)` | Encrypts string, returns base64 |
 | `DecryptString(ciphertext, key)` | Decrypts base64 encoded ciphertext |
-| `DeriveKey(password, salt)` | Derives key from password using Argon2 |
-| `GenerateKey()` | Generates random 256-bit key |
+| `DeriveKey(password, salt)` | Derives key bytes from password and salt |
+| `GenerateKey(size)` | Generates a random AES key |
 
 ### Example
 
 ```go
 // Generate a key
-key, err := cryptoutil.GenerateKey()
+key, err := cryptoutil.GenerateKey(32)
 if err != nil {
     return err
 }
@@ -308,9 +348,8 @@ if err != nil {
 // decrypted == "Hello, World!"
 
 // Password-based encryption
-salt := make([]byte, 16)
-rand.Read(salt)
-key, err := cryptoutil.DeriveKey("my-password", salt)
+derivedKey := cryptoutil.DeriveKey("my-password", "my-salt")
+_ = derivedKey
 ```
 
 ---
@@ -328,14 +367,13 @@ import "github.com/alessiosavi/GoGPUtils/randutil"
 | Function | Description |
 |----------|-------------|
 | `SecureBytes(n)` | Generates n random bytes |
-| `SecureString(n)` | Generates random alphanumeric string |
-| `SecureHex(n)` | Generates random hex string |
-| `SecureBase64(n)` | Generates random base64 string |
-| `SecureInt(min, max)` | Generates random int in range |
-| `SecureFloat64()` | Generates random float64 [0.0, 1.0) |
+| `SecureString(length, charset)` | Generates random string |
+| `SecureInt(max)` | Generates random int in range |
+| `SecureInt64(max)` | Generates random int64 in range |
+| `SecureID()` | Generates a random identifier |
 | `SecureChoice[T](slice)` | Picks random element from slice |
-| `SecureShuffle[T](slice)` | Shuffles slice in-place |
-| `SecureUUID()` | Generates UUID v4 |
+| `NewGenerator()` | Creates a fast generator |
+| `NewGeneratorWithSeed(seed)` | Creates a deterministic generator |
 
 ### Example
 
@@ -344,19 +382,17 @@ import "github.com/alessiosavi/GoGPUtils/randutil"
 bytes, err := randutil.SecureBytes(32)
 
 // Generate random string
-token, err := randutil.SecureString(32)
-// e.g., "a7Bk9mNpQr2sT5uV8wXy1zA3bC6dE4fG"
+token, err := randutil.SecureString(32, randutil.AlphaNumeric)
 
 // Generate random integer
-n, err := randutil.SecureInt(1, 100)
+n, err := randutil.SecureInt(100)
 
 // Pick random element
 colors := []string{"red", "green", "blue"}
 color, err := randutil.SecureChoice(colors)
 
-// Generate UUID
-uuid, err := randutil.SecureUUID()
-// e.g., "550e8400-e29b-41d4-a716-446655440000"
+// Generate identifier
+id, err := randutil.SecureID()
 ```
 
 ---
@@ -427,7 +463,7 @@ setA.Difference(setB)   // {1}
 
 ### Binary Search Tree (BST)
 
-Self-balancing binary search tree for ordered data.
+Binary search tree for ordered data.
 
 ```go
 bst := collection.NewBST[int]()
@@ -437,10 +473,10 @@ bst.Insert(7)
 bst.Insert(1)
 
 bst.Contains(3)   // true
-bst.Min()         // 1, true
-bst.Max()         // 7, true
+min, _ := bst.Min()
+max, _ := bst.Max()
 bst.InOrder()     // [1, 3, 5, 7]
-bst.Delete(3)
+bst.Remove(3)
 ```
 
 ---
