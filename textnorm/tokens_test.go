@@ -82,3 +82,46 @@ func TestDedupTokensEmptyInput(t *testing.T) {
 		t.Fatalf("Run() = %#v, want []", tokens)
 	}
 }
+
+func TestRemoveStopwordsDropsListedTokens(t *testing.T) {
+	stop := map[string]struct{}{"the": {}, "a": {}, "of": {}}
+	got, err := New().SplitTokens().RemoveStopwords(stop).JoinTokens(" ").Run("the cat sat on the mat of doom")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if got != "cat sat on mat doom" {
+		t.Fatalf("Run() = %q, want %q", got, "cat sat on mat doom")
+	}
+}
+
+func TestRemoveStopwordsNilSetIsNoOp(t *testing.T) {
+	got, err := New().SplitTokens().RemoveStopwords(nil).JoinTokens(" ").Run("a b c")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if got != "a b c" {
+		t.Fatalf("Run() = %q, want %q", got, "a b c")
+	}
+}
+
+func TestRemoveStopwordsCaseSensitive(t *testing.T) {
+	stop := map[string]struct{}{"the": {}}
+	got, err := New().SplitTokens().RemoveStopwords(stop).JoinTokens(" ").Run("The the THE the")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if got != "The THE" {
+		t.Fatalf("Run() = %q, want %q", got, "The THE")
+	}
+}
+
+func TestRemoveStopwordsEmptyInput(t *testing.T) {
+	stop := map[string]struct{}{"the": {}}
+	tokens, err := New().SplitTokens().RemoveStopwords(stop).Run("")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if len(tokens) != 0 {
+		t.Fatalf("Run() = %#v, want []", tokens)
+	}
+}

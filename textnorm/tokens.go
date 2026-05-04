@@ -110,3 +110,24 @@ func (tp TokenPipeline) DedupTokens() TokenPipeline {
 		return out, nil
 	})
 }
+
+// RemoveStopwords returns a new token pipeline that drops tokens present
+// in set. A nil set is a no-op (the pipeline is returned unchanged), which
+// lets callers wire a stopword set from configuration without branching.
+// Comparison is plain string equality (case-sensitive). Pair with FoldCase
+// upstream and a lowercase set for case-insensitive filtering.
+func (tp TokenPipeline) RemoveStopwords(set map[string]struct{}) TokenPipeline {
+	if set == nil {
+		return tp
+	}
+	return tp.Then(func(tokens []string) ([]string, error) {
+		out := make([]string, 0, len(tokens))
+		for _, token := range tokens {
+			if _, drop := set[token]; drop {
+				continue
+			}
+			out = append(out, token)
+		}
+		return out, nil
+	})
+}
