@@ -40,3 +40,45 @@ func TestTokenPipelineReturnsTokens(t *testing.T) {
 		t.Fatalf("Run() = %#v, want %#v", tokens, want)
 	}
 }
+
+func TestDedupTokensPreservesFirstSeenOrder(t *testing.T) {
+	tokens, err := New().SplitTokens().DedupTokens().Run("alpha beta alpha gamma beta")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	want := []string{"alpha", "beta", "gamma"}
+	if !reflect.DeepEqual(tokens, want) {
+		t.Fatalf("Run() = %#v, want %#v", tokens, want)
+	}
+}
+
+func TestDedupTokensIsCaseSensitive(t *testing.T) {
+	tokens, err := New().SplitTokens().DedupTokens().Run("Red red RED Red")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	want := []string{"Red", "red", "RED"}
+	if !reflect.DeepEqual(tokens, want) {
+		t.Fatalf("Run() = %#v, want %#v", tokens, want)
+	}
+}
+
+func TestDedupTokensWithFoldCaseUpstream(t *testing.T) {
+	got, err := New().FoldCase().SplitTokens().DedupTokens().JoinTokens(" ").Run("Red red RED")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if got != "red" {
+		t.Fatalf("Run() = %q, want %q", got, "red")
+	}
+}
+
+func TestDedupTokensEmptyInput(t *testing.T) {
+	tokens, err := New().SplitTokens().DedupTokens().Run("")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if len(tokens) != 0 {
+		t.Fatalf("Run() = %#v, want []", tokens)
+	}
+}

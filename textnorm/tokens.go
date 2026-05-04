@@ -92,3 +92,21 @@ func (tp TokenPipeline) JoinTokens(sep string) Pipeline {
 		return strings.Join(tokens, sep), nil
 	})
 }
+
+// DedupTokens returns a new token pipeline that drops duplicate tokens,
+// preserving the first occurrence. Comparison is plain string equality
+// (case-sensitive). Pair with FoldCase upstream for case-insensitive dedup.
+func (tp TokenPipeline) DedupTokens() TokenPipeline {
+	return tp.Then(func(tokens []string) ([]string, error) {
+		seen := make(map[string]struct{}, len(tokens))
+		out := make([]string, 0, len(tokens))
+		for _, token := range tokens {
+			if _, ok := seen[token]; ok {
+				continue
+			}
+			seen[token] = struct{}{}
+			out = append(out, token)
+		}
+		return out, nil
+	})
+}
