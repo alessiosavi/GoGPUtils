@@ -28,7 +28,7 @@ func WithWidthFold() PresetOption {
 //	textnorm.SearchPreset().
 //	    SplitTokens().
 //	    DedupTokens().
-//	    RemoveStopwords(stopwords.English).
+//	    RemoveStopwords(stopwords.English()).
 //	    JoinTokens(" ")
 func SearchPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
