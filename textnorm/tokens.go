@@ -92,3 +92,42 @@ func (tp TokenPipeline) JoinTokens(sep string) Pipeline {
 		return strings.Join(tokens, sep), nil
 	})
 }
+
+// DedupTokens returns a new token pipeline that drops duplicate tokens,
+// preserving the first occurrence. Comparison is plain string equality
+// (case-sensitive). Pair with FoldCase upstream for case-insensitive dedup.
+func (tp TokenPipeline) DedupTokens() TokenPipeline {
+	return tp.Then(func(tokens []string) ([]string, error) {
+		seen := make(map[string]struct{}, len(tokens))
+		out := make([]string, 0, len(tokens))
+		for _, token := range tokens {
+			if _, ok := seen[token]; ok {
+				continue
+			}
+			seen[token] = struct{}{}
+			out = append(out, token)
+		}
+		return out, nil
+	})
+}
+
+// RemoveStopwords returns a new token pipeline that drops tokens present
+// in set. A nil set is a no-op (the pipeline is returned unchanged), which
+// lets callers wire a stopword set from configuration without branching.
+// Comparison is plain string equality (case-sensitive). Pair with FoldCase
+// upstream and a lowercase set for case-insensitive filtering.
+func (tp TokenPipeline) RemoveStopwords(set map[string]struct{}) TokenPipeline {
+	if set == nil {
+		return tp
+	}
+	return tp.Then(func(tokens []string) ([]string, error) {
+		out := make([]string, 0, len(tokens))
+		for _, token := range tokens {
+			if _, drop := set[token]; drop {
+				continue
+			}
+			out = append(out, token)
+		}
+		return out, nil
+	})
+}

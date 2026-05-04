@@ -20,7 +20,16 @@ func WithWidthFold() PresetOption {
 	}
 }
 
-// SearchPreset builds a search-key pipeline.
+// SearchPreset builds a search-key pipeline (UTF-8 sanitize, Unicode
+// normalize, fold case, keep letters/numbers/spaces, trim, collapse).
+//
+// To dedup repeated tokens or strip stopwords, compose on top:
+//
+//	textnorm.SearchPreset().
+//	    SplitTokens().
+//	    DedupTokens().
+//	    RemoveStopwords(stopwords.English()).
+//	    JoinTokens(" ")
 func SearchPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
 	for _, opt := range opts {
