@@ -53,8 +53,16 @@ func TestUnionWithZeroInputsReturnsEmptyMap(t *testing.T) {
 func TestUnionDoesNotMutateInputs(t *testing.T) {
 	a := map[string]struct{}{"x": {}}
 	b := map[string]struct{}{"y": {}}
-	_ = Union(a, b)
+	out := Union(a, b)
+	// Mutating the output must not bleed into the inputs.
+	out["z"] = struct{}{}
 	if len(a) != 1 || len(b) != 1 {
-		t.Fatalf("Union mutated inputs: a=%v b=%v", a, b)
+		t.Fatalf("Union mutated inputs after output mutation: a=%v b=%v", a, b)
+	}
+	if _, ok := a["z"]; ok {
+		t.Fatal("output mutation leaked into input a")
+	}
+	if _, ok := b["z"]; ok {
+		t.Fatal("output mutation leaked into input b")
 	}
 }

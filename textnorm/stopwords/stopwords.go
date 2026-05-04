@@ -4,12 +4,21 @@
 // RemoveStopwords stage.
 //
 // The variables are documented as read-only — Go has no const map, but
-// callers MUST NOT mutate them. Use Union to combine sets safely.
+// callers MUST NOT mutate them. Use Union to combine sets safely; Union
+// always returns a new independent map and never aliases an input, so it
+// also serves as a "copy" function when called with a single set.
+//
+// Unicode normalization precondition: the non-ASCII entries in French
+// (e.g. "à") and Italian (e.g. "è", "più") are stored in composed (NFC)
+// form. Tokens fed to RemoveStopwords must be in the same normalization
+// form or the lookup will silently miss those entries. The recommended
+// upstream stage is textnorm.NormalizeUnicode, which the textnorm presets
+// (SearchPreset, CanonicalPreset, DBSafePreset) already include.
 package stopwords
 
-// English is a default English stopword set covering ~150 common function
-// words. Suitable for search-key filtering, embeddings hygiene, and slug
-// generation.
+// English is a default English stopword set covering common function
+// words (the, a, an, is, are, of, etc., ~115 entries). Suitable for
+// search-key filtering, embeddings hygiene, and slug generation.
 var English = map[string]struct{}{
 	"a": {}, "about": {}, "above": {}, "after": {}, "again": {}, "against": {},
 	"all": {}, "am": {}, "an": {}, "and": {}, "any": {}, "are": {}, "as": {},
