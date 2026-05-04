@@ -125,3 +125,35 @@ func TestRemoveStopwordsEmptyInput(t *testing.T) {
 		t.Fatalf("Run() = %#v, want []", tokens)
 	}
 }
+
+func TestDedupTokensSingleToken(t *testing.T) {
+	tokens, err := New().SplitTokens().DedupTokens().Run("only")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	want := []string{"only"}
+	if !reflect.DeepEqual(tokens, want) {
+		t.Fatalf("Run() = %#v, want %#v", tokens, want)
+	}
+}
+
+func TestDedupTokensAllDuplicates(t *testing.T) {
+	tokens, err := New().SplitTokens().DedupTokens().Run("go go go")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	want := []string{"go"}
+	if !reflect.DeepEqual(tokens, want) {
+		t.Fatalf("Run() = %#v, want %#v", tokens, want)
+	}
+}
+
+func TestRemoveStopwordsEmptySetIsNoOp(t *testing.T) {
+	got, err := New().SplitTokens().RemoveStopwords(map[string]struct{}{}).JoinTokens(" ").Run("a b c")
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	if got != "a b c" {
+		t.Fatalf("Run() = %q, want %q", got, "a b c")
+	}
+}
