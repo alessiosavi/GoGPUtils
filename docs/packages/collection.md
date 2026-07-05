@@ -1,5 +1,4 @@
 ---
-layout: default
 title: collection
 parent: Packages
 nav_order: 8

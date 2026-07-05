@@ -1,5 +1,4 @@
 ---
-layout: default
 title: mathutil
 parent: Packages
 nav_order: 3

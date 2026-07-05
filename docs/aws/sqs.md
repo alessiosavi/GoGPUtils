@@ -1,5 +1,4 @@
 ---
-layout: default
 title: SQS
 parent: AWS Services
 nav_order: 3

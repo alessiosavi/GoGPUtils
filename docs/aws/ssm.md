@@ -1,5 +1,4 @@
 ---
-layout: default
 title: SSM Parameter Store
 parent: AWS Services
 nav_order: 4

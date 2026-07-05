@@ -1,5 +1,4 @@
 ---
-layout: default
 title: cryptoutil
 parent: Packages
 nav_order: 6

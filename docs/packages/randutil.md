@@ -1,5 +1,4 @@
 ---
-layout: default
 title: randutil
 parent: Packages
 nav_order: 7

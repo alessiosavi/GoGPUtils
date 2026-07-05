@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Secrets Manager
 parent: AWS Services
 nav_order: 5

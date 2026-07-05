@@ -1,5 +1,4 @@
 ---
-layout: default
 title: stringutil
 parent: Packages
 nav_order: 2

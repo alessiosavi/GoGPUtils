@@ -1,5 +1,4 @@
 ---
-layout: default
 title: sliceutil
 parent: Packages
 nav_order: 1

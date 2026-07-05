@@ -1,5 +1,4 @@
 ---
-layout: default
 title: DynamoDB
 parent: AWS Services
 nav_order: 2

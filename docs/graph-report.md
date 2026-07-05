@@ -1,7 +1,6 @@
 ---
-layout: default
 title: Codebase Analysis
-nav_order: 99
+nav_order: 5
 ---
 
 # Codebase Analysis

@@ -1,4 +1,6 @@
-# https://jekyllrb.com/docs/configuration/options/
+# Jekyll configuration for just-the-docs theme
+# https://just-the-docs.github.io/just-the-docs/
+
 title: GoGPUtils
 description: >-
   A collection of well-tested, idiomatic Go utilities for common programming tasks.
@@ -7,10 +9,10 @@ description: >-
 baseurl: "/GoGPUtils"
 url: "https://alessiosavi.github.io"
 
-# Jekyll theme for GitHub Pages
-# Using the default minima theme via remote_theme
-remote_theme: pages-themes/primer@v0.6.0
+# Use just-the-docs theme
+theme: just-the-docs
 
+# Plugins
 plugins:
   - jekyll-remote-theme
   - jekyll-relative-links
@@ -18,18 +20,53 @@ plugins:
   - jekyll-default-layout
   - jekyll-titles-from-headings
 
-# Enable Mermaid diagrams
-markdown: kramdown
-kramdown:
-  math_engine: mathjax
-  syntax_highlighter: rouge
+# Color scheme
+color_scheme: light
 
-# Navigation (used by just-the-docs if switched)
+# Enable search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+  preview_words_before: 3
+  preview_words_after: 3
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Navigation in the sidebar
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/alessiosavi/GoGPUtils
+  - title: GoDoc
+    url: https://godoc.org/github.com/alessiosavi/GoGPUtils
+
+# Auxiliary links (top right)
 aux_links:
-  "GitHub":
+  "View on GitHub":
     - "https://github.com/alessiosavi/GoGPUtils"
-  "GoDoc":
-    - "https://godoc.org/github.com/alessiosavi/GoGPUtils"
+
+# Footer content
+footer_content: "Copyright &copy; 2024 Alessio Savi. Distributed under an MIT license."
+
+# Mermaid support
+mermaid:
+  version: "10.9.0"
+
+# Callouts support (just-the-docs >= 0.7.0)
+callouts:
+  warning:
+    title: Warning
+    color: yellow
+  note:
+    title: Note
+    color: blue
+  important:
+    title: Important
+    color: green
+  danger:
+    title: Danger
+    color: red
 
 # Exclude from processing
 exclude:
@@ -42,16 +79,3 @@ exclude:
   - ".sass-cache"
   - ".jekyll-cache"
   - "graphify-out"
-
-# Defaults for layout
-defaults:
-  - scope:
-      path: ""
-      type: "pages"
-    values:
-      layout: "default"
-
-# Mermaid support for diagrams
-mermaid:
-  enabled: true
-  version: "10.9.0"

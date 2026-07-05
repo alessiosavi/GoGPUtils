@@ -1,5 +1,4 @@
 ---
-layout: default
 title: textnorm
 parent: Packages
 nav_order: 4
