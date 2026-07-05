@@ -1,0 +1,57 @@
+# https://jekyllrb.com/docs/configuration/options/
+title: GoGPUtils
+description: >-
+  A collection of well-tested, idiomatic Go utilities for common programming tasks.
+  Zero external dependencies for core utilities.
+
+baseurl: "/GoGPUtils"
+url: "https://alessiosavi.github.io"
+
+# Jekyll theme for GitHub Pages
+# Using the default minima theme via remote_theme
+remote_theme: pages-themes/primer@v0.6.0
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+  - jekyll-readme-index
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+
+# Enable Mermaid diagrams
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
+  syntax_highlighter: rouge
+
+# Navigation (used by just-the-docs if switched)
+aux_links:
+  "GitHub":
+    - "https://github.com/alessiosavi/GoGPUtils"
+  "GoDoc":
+    - "https://godoc.org/github.com/alessiosavi/GoGPUtils"
+
+# Exclude from processing
+exclude:
+  - "*.gemspec"
+  - "Gemfile"
+  - "Gemfile.lock"
+  - "node_modules"
+  - "vendor"
+  - "_site"
+  - ".sass-cache"
+  - ".jekyll-cache"
+  - "graphify-out"
+
+# Defaults for layout
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+
+# Mermaid support for diagrams
+mermaid:
+  enabled: true
+  version: "10.9.0"
