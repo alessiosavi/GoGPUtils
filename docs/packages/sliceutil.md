@@ -263,7 +263,7 @@ func UniqueFunc[T any, K comparable](s []T, key func(T) K) []T
 
 ```go
 type User struct { ID int; Name string }
-users := []User{{1, "Alice"}, {2, "Bob"}, {1, "Alice2"}}
+users := []User{ {1, "Alice"}, {2, "Bob"}, {1, "Alice2"} }
 unique := sliceutil.UniqueFunc(users, func(u User) int { return u.ID })
 // unique = [{1, "Alice"}, {2, "Bob"}]
 ```
@@ -321,7 +321,7 @@ func Flatten[T any](s [][]T) []T
 **Example:**
 
 ```go
-flat := sliceutil.Flatten([][]int{{1, 2}, {3}, {4, 5}})
+flat := sliceutil.Flatten([][]int{ {1, 2}, {3}, {4, 5} })
 // flat = [1, 2, 3, 4, 5]
 ```
 
@@ -820,7 +820,7 @@ func Associate[T any, K comparable](s []T, key func(T) K) map[K]T
 **Example:**
 
 ```go
-users := []User{{ID: 1, Name: "Alice"}, {ID: 2, Name: "Bob"}}
+users := []User{ {ID: 1, Name: "Alice"}, {ID: 2, Name: "Bob"} }
 byID := sliceutil.Associate(users, func(u User) int { return u.ID })
 // byID = map[1:{1, "Alice"} 2:{2, "Bob"}]
 ```
