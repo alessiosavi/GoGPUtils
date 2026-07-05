@@ -220,7 +220,7 @@ func (c *Client) BatchDeleteItems(ctx context.Context, tableName string, keys []
 **Example:**
 
 ```go
-keys := []dynamodb.Key{{"pk": "user-1"}, {"pk": "user-2"}}
+keys := []dynamodb.Key{ {"pk": "user-1"}, {"pk": "user-2"} }
 unprocessed, err := client.BatchDeleteItems(ctx, "users", keys)
 ```
 

@@ -728,8 +728,8 @@ func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error)
 **Complexity:** O(m × n × p) time, O(m × p) space
 
 ```go
-a := mathutil.Matrix[int]{{1, 2}, {3, 4}}
-b := mathutil.Matrix[int]{{5, 6}, {7, 8}}
+a := mathutil.Matrix[int]{ {1, 2}, {3, 4} }
+b := mathutil.Matrix[int]{ {5, 6}, {7, 8} }
 result, err := MatrixMultiply(a, b)
 // result = [[19, 22], [43, 50]]
 ```
@@ -747,7 +747,7 @@ func MatrixTranspose[T Number](m Matrix[T]) Matrix[T]
 **Complexity:** O(m × n) time, O(m × n) space
 
 ```go
-m := mathutil.Matrix[int]{{1, 2, 3}, {4, 5, 6}}
+m := mathutil.Matrix[int]{ {1, 2, 3}, {4, 5, 6} }
 result := MatrixTranspose(m)
 // result = [[1, 4], [2, 5], [3, 6]]
 ```
@@ -765,8 +765,8 @@ func MatrixAdd[T Number](a, b Matrix[T]) (Matrix[T], error)
 **Complexity:** O(m × n) time, O(m × n) space
 
 ```go
-a := mathutil.Matrix[int]{{1, 2}, {3, 4}}
-b := mathutil.Matrix[int]{{5, 6}, {7, 8}}
+a := mathutil.Matrix[int]{ {1, 2}, {3, 4} }
+b := mathutil.Matrix[int]{ {5, 6}, {7, 8} }
 result, err := MatrixAdd(a, b)
 // result = [[6, 8], [10, 12]]
 ```
@@ -784,7 +784,7 @@ func MatrixScalar[T Number](m Matrix[T], scalar T) Matrix[T]
 **Complexity:** O(m × n) time, O(m × n) space
 
 ```go
-m := mathutil.Matrix[int]{{1, 2}, {3, 4}}
+m := mathutil.Matrix[int]{ {1, 2}, {3, 4} }
 result := MatrixScalar(m, 2)
 // result = [[2, 4], [6, 8]]
 ```
