@@ -9,8 +9,8 @@ description: >-
 baseurl: "/GoGPUtils"
 url: "https://alessiosavi.github.io"
 
-# Use just-the-docs theme
-theme: just-the-docs
+# Use just-the-docs theme via remote_theme (GitHub Pages-compatible)
+remote_theme: just-the-docs/just-the-docs@v0.8.2
 
 # Plugins
 plugins:
