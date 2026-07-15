@@ -1,4 +1,14 @@
-// Package textnorm — meaning.go implements meaning-preserving punctuation
+// meaning.go implements meaning-preserving punctuation filtering: instead
+// of deleting non-alphanumeric runes (which merges tokens, e.g. "2.5"→"25"),
+// every rejected rune becomes a single space, and the small set of
+// punctuation that carries meaning in product/search text is kept:
+//
+//   - '.' and ',' when BOTH neighbours are digits ("4.5", "1,000").
+//     Separators are NOT unified: "1,000" and "1.000" stay distinct because
+//     the same string means different numbers in different locales.
+//   - '+' when it terminates an alphanumeric token ("s22+", "c++").
+//   - '%' immediately after a digit ("100%").
+package textnorm
 // filtering: instead of deleting non-alphanumeric runes (which merges tokens,
 // e.g. "2.5"→"25"), every rejected rune becomes a single space, and the small
 // set of punctuation that carries meaning in product/search text is kept:

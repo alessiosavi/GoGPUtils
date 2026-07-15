@@ -103,6 +103,28 @@ func FuzzMeaningPreset(f *testing.F) {
 			t.Fatalf("uncollapsed whitespace in %q", out)
 		}
 	})
+func FuzzHygienePreset(f *testing.F) {
+	for _, seed := range []string{
+		"Café \u200bCrème!",
+		"A &amp; B",
+		"  spaced\n\nout\t ",
+	} {
+		f.Add(seed)
+	}
+	f.Fuzz(func(t *testing.T, in string) {
+		pipe := HygienePreset()
+		out1, err := pipe.Run(in)
+		if err != nil {
+			t.Fatalf("Run() error = %v", err)
+		}
+		out2, err := pipe.Run(out1)
+		if err != nil {
+			t.Fatalf("second Run() error = %v", err)
+		}
+		if out1 != out2 {
+			t.Fatalf("HygienePreset not idempotent: %q != %q", out1, out2)
+		}
+	})
 }
 
 func FuzzDBSafePreset(f *testing.F) {

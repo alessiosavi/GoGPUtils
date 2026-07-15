@@ -1,4 +1,7 @@
-// Package textnorm — hygiene.go: byte-hygiene stages for text that will be
+// hygiene.go: byte-hygiene stages for text that will be
+// sent to an external model or stored verbatim. These stages never touch
+// case, punctuation, or diacritics.
+package textnorm
 // sent to an external model or stored verbatim. These stages never touch
 // case, punctuation, or diacritics.
 package textnorm
