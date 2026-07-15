@@ -18,6 +18,8 @@ func TestPreserveMeaningPunct(t *testing.T) {
 		{"comma not between digits dropped", "red, blue", "red  blue"},
 		{"other punct to space not deleted", "2.5-GHz", "2.5 GHz"},
 		{"pipe to space", "a | b", "a   b"},
+		{"combining marks kept", "किताब", "किताब"},
+		{"arabic harakat kept", "مَكتَب", "مَكتَب"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

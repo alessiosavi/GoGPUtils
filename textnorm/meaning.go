@@ -29,7 +29,10 @@ func preserveMeaningPunct(s string) (string, error) {
 	b.Grow(len(s))
 	for i, r := range rs {
 		switch {
-		case unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r):
+		case unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) || unicode.IsMark(r):
+			// IsMark keeps combining marks (Devanagari matras, Arabic
+			// harakat) — they are vowels, not punctuation; Latin accents
+			// never reach here in MeaningPreset (stripped upstream).
 			b.WriteRune(r)
 		case r == '.' || r == ',':
 			if i > 0 && i < len(rs)-1 && unicode.IsDigit(rs[i-1]) && unicode.IsDigit(rs[i+1]) {
