@@ -105,6 +105,33 @@ func FuzzMeaningPreset(f *testing.F) {
 	})
 }
 
+func FuzzHygienePreset(f *testing.F) {
+	f.Add("Café \u200bCrème &amp; Co!")
+	f.Add("a\n\tb\x00c &#8203; &amp;amp;")
+	f.Fuzz(func(t *testing.T, in string) {
+		// No idempotency check: HTML-entity decoding is legitimately
+		// non-idempotent ("&amp;amp;" → "&amp;" → "&").
+		out, err := HygienePreset().Run(in)
+		if err != nil {
+			t.Fatalf("HygienePreset(%q): %v", in, err)
+		}
+		if !utf8.ValidString(out) {
+			t.Fatalf("invalid UTF-8 in output %q for input %q", out, in)
+		}
+		for _, r := range out {
+			if unicode.Is(unicode.Cf, r) || unicode.Is(unicode.Cc, r) {
+				t.Fatalf("format/control rune %U in output %q for input %q", r, out, in)
+			}
+			if unicode.IsSpace(r) && r != ' ' {
+				t.Fatalf("non-collapsed whitespace %U in output %q for input %q", r, out, in)
+			}
+		}
+		if strings.Contains(out, "  ") || out != strings.TrimSpace(out) {
+			t.Fatalf("whitespace not collapsed/trimmed in %q", out)
+		}
+	})
+}
+
 func FuzzDBSafePreset(f *testing.F) {
 	for _, seed := range []string{
 		string([]byte{'g', 'o', 0x00, 0xff, '!', 0xfe}),
