@@ -1,7 +1,9 @@
 package textnorm
 
 import (
+	"strings"
 	"testing"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -77,6 +79,55 @@ func FuzzCanonicalPreset(f *testing.F) {
 		}
 		if out1 != out2 {
 			t.Fatalf("CanonicalPreset not idempotent: %q != %q", out1, out2)
+		}
+	})
+}
+
+func FuzzMeaningPreset(f *testing.F) {
+	f.Add("Galaxy S22+ 4.5\" 1,000 100%")
+	f.Add("c++ a+b % off 1.000")
+	f.Add("Café किताब مَكتَب")
+	f.Fuzz(func(t *testing.T, in string) {
+		out, err := MeaningPreset().Run(in)
+		if err != nil {
+			t.Fatalf("MeaningPreset(%q): %v", in, err)
+		}
+		for _, r := range out {
+			ok := unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsMark(r) || r == ' ' ||
+				r == '.' || r == ',' || r == '+' || r == '%'
+			if !ok {
+				t.Fatalf("illegal rune %q in output %q for input %q", r, out, in)
+			}
+		}
+		if strings.Contains(out, "  ") {
+			t.Fatalf("uncollapsed whitespace in %q", out)
+		}
+	})
+}
+
+func FuzzHygienePreset(f *testing.F) {
+	f.Add("Café \u200bCrème &amp; Co!")
+	f.Add("a\n\tb\x00c &#8203; &amp;amp;")
+	f.Fuzz(func(t *testing.T, in string) {
+		// No idempotency check: HTML-entity decoding is legitimately
+		// non-idempotent ("&amp;amp;" → "&amp;" → "&").
+		out, err := HygienePreset().Run(in)
+		if err != nil {
+			t.Fatalf("HygienePreset(%q): %v", in, err)
+		}
+		if !utf8.ValidString(out) {
+			t.Fatalf("invalid UTF-8 in output %q for input %q", out, in)
+		}
+		for _, r := range out {
+			if unicode.Is(unicode.Cf, r) || unicode.Is(unicode.Cc, r) {
+				t.Fatalf("format/control rune %U in output %q for input %q", r, out, in)
+			}
+			if unicode.IsSpace(r) && r != ' ' {
+				t.Fatalf("non-collapsed whitespace %U in output %q for input %q", r, out, in)
+			}
+		}
+		if strings.Contains(out, "  ") || out != strings.TrimSpace(out) {
+			t.Fatalf("whitespace not collapsed/trimmed in %q", out)
 		}
 	})
 }

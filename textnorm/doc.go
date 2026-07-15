@@ -4,8 +4,13 @@
 // DedupTokens(), RemoveStopwords(), and JoinTokens() helpers for explicit
 // normalization flows. SearchPreset(), CanonicalPreset(), DBSafePreset(),
 // and WithWidthFold() provide thin reusable presets for the common search,
-// canonical, and persistence-safe cases. The textnorm/stopwords subpackage
-// ships English/French/Italian stopword sets for use with RemoveStopwords.
+// canonical, and persistence-safe cases. MeaningPreset() builds fingerprints
+// that must preserve meaning ("s22+" ≠ "s22", "4.5" ≠ "45"; no token merging
+// or dedup, Latin-only diacritic stripping). HygienePreset() is payload-grade
+// byte hygiene (UTF-8, HTML entities, zero-width/control runes, whitespace)
+// that leaves case, punctuation, and diacritics untouched. The
+// textnorm/stopwords subpackage ships English/French/Italian stopword sets
+// for use with RemoveStopwords.
 //
 // Benchmarks and fuzz targets live in this package so you can measure and harden
 // the current implementation before any optimization work begins.
