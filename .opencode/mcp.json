@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gputils-graphify": {
+      "command": "python3",
+      "args": ["-m", "graphify.serve", "graphify-out/graph.json"],
+      "description": "GoGPUtils knowledge graph for semantic function discovery via Graphify",
+      "tools": [
+        "query_graph",
+        "get_node",
+        "get_neighbors",
+        "get_community",
+        "god_nodes",
+        "graph_stats",
+        "shortest_path"
+      ]
+    }
+  }
+}
