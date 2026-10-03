@@ -3,3 +3,4 @@
 # Only presentation methods on error and enum types (Error, Unwrap, String)
 # or transparent delegation (the reason names the delegate) qualify. At most
 # 5% of the in-scope API may be exempt. internal/benchcov enforces this file.
+fileutil LineTerminator.String # presentation method on an enum (constant switch)
