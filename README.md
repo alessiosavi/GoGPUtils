@@ -1,13 +1,13 @@
 # GoGPUtils
 
-[![Go](https://github.com/alessiosavi/GoGPUtils/actions/workflows/go.yml/badge.svg)](https://github.com/alessiosavi/GoGPUtils/actions/workflows/go.yml)
+[![CI](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alessiosavi/GoGPUtils)](https://goreportcard.com/report/github.com/alessiosavi/GoGPUtils)
 [![GoDoc](https://godoc.org/github.com/alessiosavi/GoGPUtils?status.svg)](https://godoc.org/github.com/alessiosavi/GoGPUtils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **v1 - Experimental**: This library is in its initial release phase. APIs may change in future versions.
 
-A collection of well-tested, idiomatic Go utilities for common programming tasks. Zero external dependencies for core utilities.
+A collection of well-tested, idiomatic Go utilities for common programming tasks. Most utility packages use only the standard library; `stringutil` and `textnorm` also use `golang.org/x/text` for Unicode text processing, and `aws` packages use the AWS SDK v2.
 
 ## Installation
 
@@ -20,7 +20,7 @@ go get github.com/alessiosavi/GoGPUtils
 - **Errors over panics**: All functions return errors instead of panicking
 - **Zero global state**: No singletons; all state is explicit
 - **Generic when useful**: Uses generics to reduce duplication without over-abstraction
-- **Minimal dependencies**: Core library has zero external dependencies
+- **Minimal dependencies**: Utilities use the standard library, with `golang.org/x/text` for Unicode text processing; AWS helpers use the AWS SDK v2
 - **Context-aware**: Blocking operations accept `context.Context`
 
 ## Packages
@@ -64,7 +64,7 @@ import "github.com/alessiosavi/GoGPUtils/sliceutil"
 | `Reverse[T](slice)` | Returns reversed slice |
 | `FlatMap[T, U](slice, transform)` | Maps each element to a slice and flattens the result |
 | `MapErr[T, U](slice, fn)` | Maps elements with error handling |
-| `Intersection[T](a, b)` | Returns common elements |
+| `Intersect[T](a, b)` | Returns common elements |
 | `Difference[T](a, b)` | Returns elements in a but not in b |
 | `Union[T](a, b)` | Returns combined unique elements |
 
@@ -146,7 +146,7 @@ import "github.com/alessiosavi/GoGPUtils/stringutil"
 | `JaroSimilarity(a, b)` | Jaro similarity score |
 | `JaroWinklerSimilarity(a, b, prefixScale)` | Similarity score (0.0-1.0) |
 | `DiceCoefficient(a, b)` | Dice coefficient similarity |
-| `HammingDistance(a, b)` | Bit-level distance (same length strings) |
+| `HammingDistance(a, b)` | Rune-level distance (strings with equal rune counts) |
 
 ### Example
 

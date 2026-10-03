@@ -1,3 +1,31 @@
-linters:
-  default: all
 version: "2"
+
+linters:
+  default: standard
+  enable:
+    # Resource handling, error propagation, and security.
+    - bodyclose
+    - errorlint
+    - gosec
+    - nilerr
+    # Correctness, simplification, and maintainability.
+    - copyloopvar
+    - gocritic
+    - intrange
+    - misspell
+    - modernize
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+  exclusions:
+    rules:
+      # Migration to s3/transfermanager is deliberately deferred to a separate PR.
+      - path: ^aws/s3/client\.go$
+        linters:
+          - staticcheck
+        text: 'SA1019: github\.com/aws/aws-sdk-go-v2/feature/s3/manager\.'
+      # Tests intentionally use fixture paths, permissive modes, and dummy secrets.
+      - path: _test\.go$
+        linters:
+          - gosec

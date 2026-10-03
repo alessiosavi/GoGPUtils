@@ -10,7 +10,7 @@ GoGPUtils provides focused utility packages for common programming tasks. Each p
 
 ## Core Utilities
 
-These packages have **zero external dependencies** and work with pure Go:
+Most of these packages use only the standard library; `stringutil` also uses `golang.org/x/text` for Unicode text processing:
 
 | Package                     | Description                        | Coverage                                                              |
 | --------------------------- | ---------------------------------- | --------------------------------------------------------------------- |
@@ -54,7 +54,7 @@ These packages wrap AWS SDK v2 for easier use:
 
 ```mermaid
 graph TB
-    subgraph Core["Core Utilities (stdlib only)"]
+    subgraph Core["Core Utilities"]
         SL[sliceutil]
         STR[stringutil]
         M[mathutil]
