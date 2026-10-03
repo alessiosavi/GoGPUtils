@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -79,6 +80,7 @@ var (
 	ErrNotDir       = errors.New("path is not a directory")
 	ErrNotExist     = errors.New("path does not exist")
 	ErrReadCanceled = errors.New("read operation canceled")
+	ErrSameFile     = errors.New("source and destination are the same file")
 )
 
 // ============================================================================
@@ -205,6 +207,7 @@ func BaseName(path string) string {
 
 // ReadBytes reads the entire file and returns its contents as bytes.
 // Respects context cancellation before starting the read.
+// The read itself is not interruptible by context cancellation.
 func ReadBytes(ctx context.Context, path string) ([]byte, error) {
 	select {
 	case <-ctx.Done():
@@ -226,8 +229,25 @@ func ReadString(ctx context.Context, path string) (string, error) {
 }
 
 // ReadLines reads the file and returns its contents as a slice of lines.
-// Line terminators are stripped from each line.
+// Lines have no fixed length limit. The ending newline and one trailing carriage
+// return are stripped; a final unterminated line is included.
+// Checks context cancellation before opening and between reads.
 func ReadLines(ctx context.Context, path string) ([]string, error) {
+	return readLines(ctx, path, 0)
+}
+
+// ReadLinesN reads the first n lines from a file.
+// If n <= 0, reads all lines.
+// Line lengths, terminators, and cancellation behave as in ReadLines.
+func ReadLinesN(ctx context.Context, path string, n int) ([]string, error) {
+	return readLines(ctx, path, n)
+}
+
+func readLines(ctx context.Context, path string, n int) ([]string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -235,53 +255,33 @@ func ReadLines(ctx context.Context, path string) ([]string, error) {
 	defer f.Close()
 
 	var lines []string
+	if n > 0 {
+		lines = make([]string, 0, n)
+	}
 
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
+	reader := bufio.NewReader(contextReader{ctx: ctx, reader: f})
+	for n <= 0 || len(lines) < n {
+		if err := ctx.Err(); err != nil {
+			return nil, err
 		}
 
-		lines = append(lines, scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return lines, nil
-}
-
-// ReadLinesN reads the first n lines from a file.
-// If n <= 0, reads all lines.
-func ReadLinesN(ctx context.Context, path string, n int) ([]string, error) {
-	if n <= 0 {
-		return ReadLines(ctx, path)
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	lines := make([]string, 0, n)
-
-	scanner := bufio.NewScanner(f)
-	for i := 0; i < n && scanner.Scan(); i++ {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
+		line, err := reader.ReadString('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			return nil, err
 		}
 
-		lines = append(lines, scanner.Text())
-	}
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
+		}
 
-	if err := scanner.Err(); err != nil {
-		return nil, err
+		if len(line) > 0 {
+			line = strings.TrimSuffix(line, "\n")
+			lines = append(lines, strings.TrimSuffix(line, "\r"))
+		}
+
+		if errors.Is(err, io.EOF) {
+			break
+		}
 	}
 
 	return lines, nil
@@ -289,7 +289,12 @@ func ReadLinesN(ctx context.Context, path string, n int) ([]string, error) {
 
 // CountLines counts the number of lines in a file.
 // More memory-efficient than ReadLines for large files.
+// Includes a final unterminated line, so the count equals len(ReadLines(...)).
 func CountLines(ctx context.Context, path string) (int, error) {
+	if err := ctx.Err(); err != nil {
+		return 0, err
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		return 0, err
@@ -299,6 +304,7 @@ func CountLines(ctx context.Context, path string) (int, error) {
 	count := 0
 	buf := make([]byte, 32*1024) // 32KB buffer
 	lineSep := []byte{'\n'}
+	last := byte('\n')
 
 	for {
 		select {
@@ -309,6 +315,9 @@ func CountLines(ctx context.Context, path string) (int, error) {
 
 		n, err := f.Read(buf)
 		count += bytes.Count(buf[:n], lineSep)
+		if n > 0 {
+			last = buf[n-1]
+		}
 
 		if err == io.EOF {
 			break
@@ -319,7 +328,26 @@ func CountLines(ctx context.Context, path string) (int, error) {
 		}
 	}
 
+	if last != '\n' {
+		count++
+	}
+
 	return count, nil
+}
+
+// contextReader checks cancellation between reads; it cannot interrupt a read
+// already blocked in the underlying reader.
+type contextReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r contextReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+
+	return r.reader.Read(p)
 }
 
 // ============================================================================
@@ -351,14 +379,22 @@ func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.
 }
 
 // AppendBytes appends data to a file, creating it if necessary.
+// Returns a close error if the write succeeded.
 func AppendBytes(path string, data []byte, perm fs.FileMode) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	_, err = f.Write(data)
+
+	return finishWrite(f, err)
+}
+
+func finishWrite(f io.Closer, err error) error {
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
 
 	return err
 }
@@ -549,27 +585,25 @@ func FindByExtension(ctx context.Context, dir, ext string) ([]string, error) {
 // ============================================================================
 
 // Copy copies a file from src to dst.
-// Creates destination directory if needed.
+// Creates the destination directory if needed and preserves the source mode.
+// Returns ErrSameFile without changing either file if the paths refer to the
+// same file, including through hard links or symbolic links.
+// Copies to a temporary file in the destination directory and closes it before
+// renaming it over dst. Errors before the rename leave any existing dst intact.
+// Replacement changes dst's file identity: a destination symlink is replaced,
+// and other hard links to the previous destination keep their original contents.
+// Checks context cancellation between reads and before the final rename, but
+// cannot interrupt a read or write already blocked in the operating system.
+// Rename atomicity follows os.Rename's platform guarantees.
+//
+// Example:
+//
+//	err := Copy(ctx, "source.txt", "backup/source.txt")
 func Copy(ctx context.Context, src, dst string) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-	}
-
-	srcInfo, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-
-	if srcInfo.IsDir() {
-		return ErrNotFile
-	}
-
-	// Ensure destination directory exists
-	dstDir := filepath.Dir(dst)
-	if err := EnsureDir(dstDir, 0755); err != nil {
-		return err
 	}
 
 	srcFile, err := os.Open(src)
@@ -578,26 +612,89 @@ func Copy(ctx context.Context, src, dst string) error {
 	}
 	defer srcFile.Close()
 
-	dstFile, err := os.Create(dst)
+	srcInfo, err := srcFile.Stat()
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
 
-	if _, err := io.Copy(dstFile, srcFile); err != nil {
+	if srcInfo.IsDir() {
+		return ErrNotFile
+	}
+
+	dstInfo, err := os.Stat(dst)
+	if err == nil && os.SameFile(srcInfo, dstInfo) {
+		return ErrSameFile
+	}
+
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
-	return os.Chmod(dst, srcInfo.Mode())
+	// Ensure destination directory exists
+	dstDir := filepath.Dir(dst)
+	if err := EnsureDir(dstDir, 0755); err != nil {
+		return err
+	}
+
+	dstFile, err := os.CreateTemp(dstDir, ".fileutil-copy-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(dstFile.Name())
+
+	_, err = io.Copy(dstFile, contextReader{ctx: ctx, reader: srcFile})
+	if err == nil {
+		err = dstFile.Chmod(srcInfo.Mode())
+	}
+
+	if err := finishWrite(dstFile, err); err != nil {
+		return err
+	}
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	return os.Rename(dstFile.Name(), dst)
 }
 
 // Move moves a file from src to dst.
-// Attempts rename first, falls back to copy+delete.
+// Checks context cancellation before any side effect and creates the destination
+// directory if needed. Falls back to Copy followed by removal only when rename
+// fails across filesystems. Other rename errors are returned unchanged.
+// On Plan 9, every rename error triggers the fallback because rename cannot
+// move files across directories, even within a filesystem.
+// If source removal fails after a successful copy, both files remain and the
+// returned error wraps the removal error and describes the completed copy.
+//
+// Example:
+//
+//	err := Move(ctx, "source.txt", "archive/source.txt")
 func Move(ctx context.Context, src, dst string) error {
+	return moveFile(ctx, src, dst, os.Rename, os.Remove)
+}
+
+func moveFile(ctx context.Context, src, dst string, rename func(string, string) error, remove func(string) error) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	if err := EnsureDir(filepath.Dir(dst), 0755); err != nil {
+		return err
+	}
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	// Try rename first (fast path for same filesystem)
-	err := os.Rename(src, dst)
+	err := rename(src, dst)
 	if err == nil {
 		return nil
+	}
+
+	if !isCrossDeviceError(err) {
+		return err
 	}
 
 	// Fall back to copy + delete
@@ -605,7 +702,11 @@ func Move(ctx context.Context, src, dst string) error {
 		return err
 	}
 
-	return os.Remove(src)
+	if err := remove(src); err != nil {
+		return fmt.Errorf("copied %q to %q, but failed to remove source: %w", src, dst, err)
+	}
+
+	return nil
 }
 
 // Touch creates an empty file or updates its modification time.
@@ -705,7 +806,12 @@ func NormalizeLineTerminators(data []byte, target LineTerminator) []byte {
 
 // DetectFileLineTerminator detects line terminator style in a file.
 // Reads only the beginning of the file for efficiency.
+// Checks context cancellation before opening the file.
 func DetectFileLineTerminator(ctx context.Context, path string) (LineTerminator, error) {
+	if err := ctx.Err(); err != nil {
+		return Unknown, err
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		return Unknown, err
@@ -774,6 +880,7 @@ func Split(path string) (dir, file string) {
 
 // TempFile creates a temporary file and returns its path.
 // The caller is responsible for removing the file.
+// If closing the file fails, removes it and returns the close error.
 func TempFile(dir, pattern string) (string, error) {
 	f, err := os.CreateTemp(dir, pattern)
 	if err != nil {
@@ -781,7 +888,11 @@ func TempFile(dir, pattern string) (string, error) {
 	}
 
 	name := f.Name()
-	f.Close()
+	if err := finishWrite(f, nil); err != nil {
+		os.Remove(name)
+
+		return "", err
+	}
 
 	return name, nil
 }
