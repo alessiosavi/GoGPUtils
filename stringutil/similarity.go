@@ -1,6 +1,7 @@
 package stringutil
 
 import (
+	"math"
 	"strings"
 )
 
@@ -496,7 +497,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 		return 0.0
 	}
 
-	return dotProduct / (sqrt(mag1) * sqrt(mag2))
+	return dotProduct / (math.Sqrt(mag1) * math.Sqrt(mag2))
 }
 
 // ngrams generates a map of n-grams and their counts.
@@ -514,31 +515,4 @@ func ngrams(s string, n int) map[string]int {
 	}
 
 	return result
-}
-
-// Simple square root using Newton's method (to avoid math package import).
-func sqrt(x float64) float64 {
-	if x == 0 || x == 1 {
-		return x
-	}
-
-	guess := x / 2
-	for range 50 { // 50 iterations for precision
-		newGuess := (guess + x/guess) / 2
-		if abs(newGuess-guess) < 1e-15 {
-			break
-		}
-
-		guess = newGuess
-	}
-
-	return guess
-}
-
-func abs(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-
-	return x
 }

@@ -232,6 +232,8 @@ func UniqueFunc[T any, K comparable](s []T, key func(T) K) []T {
 // Chunk splits a slice into chunks of the specified size.
 // The last chunk may be smaller if len(s) is not divisible by size.
 // Returns nil if size <= 0 or s is nil.
+// Chunks share element storage with s, but each has capacity equal to its length.
+// Appending to a chunk therefore does not overwrite s or another chunk.
 //
 // Example:
 //
@@ -246,13 +248,15 @@ func Chunk[T any](s []T, size int) [][]T {
 		return [][]T{}
 	}
 
-	numChunks := (len(s) + size - 1) / size
+	numChunks := (len(s)-1)/size + 1
 	result := make([][]T, 0, numChunks)
 
-	for i := 0; i < len(s); i += size {
-		end := min(i+size, len(s))
+	for i := 0; i < len(s); {
+		end := i + min(size, len(s)-i)
 
-		result = append(result, s[i:end])
+		result = append(result, s[i:end:end])
+
+		i = end
 	}
 
 	return result

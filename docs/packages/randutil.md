@@ -92,7 +92,7 @@ if err != nil {
 func SecureString(length int, charset string) (string, error)
 ```
 
-Returns a cryptographically secure random string of the specified length using characters from the given charset.
+Returns a cryptographically secure random string of the specified byte length. The charset is treated as a set of bytes; use ASCII charsets. Every byte position is selected with equal probability using rejection sampling, including for charsets of 256 or more bytes. Repeated bytes have proportionally greater probability.
 
 **Example:**
 
@@ -120,7 +120,7 @@ if err != nil {
 func SecureInt(max int) (int, error)
 ```
 
-Returns a cryptographically secure random integer in the range `[0, max)`.
+Returns a uniformly distributed cryptographically secure random integer in the range `[0, max)`. Returns `ErrInvalidLength` if `max <= 0`.
 
 **Example:**
 
@@ -140,7 +140,7 @@ if err != nil {
 func SecureInt64(max int64) (int64, error)
 ```
 
-Returns a cryptographically secure random int64 in the range `[0, max)`.
+Returns a uniformly distributed cryptographically secure random int64 in the range `[0, max)`. Returns `ErrInvalidLength` if `max <= 0`.
 
 **Example:**
 
@@ -551,7 +551,7 @@ randutil.Range(3, 7)   // [3, 4, 5, 6]
 func RangeStep(start, end, step int) []int
 ```
 
-Returns a slice of integers from `start` to `end` with the given step.
+Returns a slice of integers from `start` to `end` (exclusive) with the given step. Stops before an addition would overflow `int`.
 
 ```go
 randutil.RangeStep(0, 10, 2)   // [0, 2, 4, 6, 8]

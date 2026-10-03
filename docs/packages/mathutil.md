@@ -546,7 +546,7 @@ Clamp(5, 0, 10)    // 5
 
 ### Sqrt
 
-Returns the square root using Newton's method. Returns `0` for negative numbers.
+Returns the square root using `math.Sqrt`. Returns `0` for negative numbers, `+Inf` for positive infinity, and `NaN` for `NaN`.
 
 ```go
 func Sqrt(x float64) float64
@@ -909,6 +909,8 @@ LinSpace(0, 10, 1)    // [0]
 ### Arange
 
 Returns values from `start` to `stop` (exclusive) with given `step`.
+Stops before an addition would overflow the numeric type or fail to advance because of floating-point rounding.
+Integer ranges preallocate the result when the count fits in an `int`.
 
 ```go
 func Arange[T Number](start, stop, step T) []T

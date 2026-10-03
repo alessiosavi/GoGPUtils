@@ -2,6 +2,7 @@ package mathutil
 
 import (
 	"errors"
+	"math"
 	"slices"
 )
 
@@ -562,36 +563,14 @@ func Clamp[T Number](x, min, max T) T {
 	return x
 }
 
-// Sqrt returns the square root using Newton's method.
+// Sqrt returns the square root using math.Sqrt.
 // Returns 0 for negative numbers.
 func Sqrt(x float64) float64 {
 	if x < 0 {
 		return 0
 	}
 
-	if x == 0 || x == 1 {
-		return x
-	}
-
-	guess := x / 2
-	for range 100 { // Sufficient iterations for precision
-		newGuess := (guess + x/guess) / 2
-		if absFloat(newGuess-guess) < 1e-15 {
-			break
-		}
-
-		guess = newGuess
-	}
-
-	return guess
-}
-
-func absFloat(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-
-	return x
+	return math.Sqrt(x)
 }
 
 // Pow returns x raised to the power of n.
@@ -962,18 +941,41 @@ func LinSpace(start, end float64, n int) []float64 {
 }
 
 // Arange returns values from start to stop (exclusive) with given step.
+// Stops before an addition would overflow or fail to advance the value.
 func Arange[T Number](start, stop, step T) []T {
-	if step == 0 {
-		return nil
-	}
-
-	if (step > 0 && start >= stop) || (step < 0 && start <= stop) {
+	if !(step > 0 && start < stop) && !(step < 0 && start > stop) {
 		return nil
 	}
 
 	var result []T
-	for v := start; (step > 0 && v < stop) || (step < 0 && v > stop); v += step {
+
+	// Integer division identifies integer types, including defined types.
+	// Float counts cannot be predicted exactly because each addition rounds.
+	if one := T(1); one/2 == 0 {
+		// Unsigned subtraction preserves the distance across zero without
+		// overflowing signed arithmetic, even for the full int64 range.
+		distance := uint64(stop) - uint64(start)
+		stride := uint64(step)
+		if step < 0 {
+			distance = uint64(start) - uint64(stop)
+			stride = -stride
+		}
+
+		count := (distance-1)/stride + 1
+		if count <= uint64(math.MaxInt) {
+			result = make([]T, 0, int(count))
+		}
+	}
+
+	for v := start; (step > 0 && v < stop) || (step < 0 && v > stop); {
 		result = append(result, v)
+
+		next := v + step
+		if (step > 0 && next <= v) || (step < 0 && next >= v) {
+			break
+		}
+
+		v = next
 	}
 
 	return result
