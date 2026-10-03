@@ -297,6 +297,7 @@ func CompactFunc[T any](s []T, eq func(T, T) bool) []T
 #### Chunk
 
 Splits a slice into chunks of the specified size. The last chunk may be smaller if `len(s)` is not divisible by size. Returns nil if size <= 0 or s is nil.
+Chunks share element storage with the input, but their capacity is capped at their length. Element assignments affect the input; appending to a chunk does not overwrite the input or other chunks. Sizes larger than the input length return a single chunk for nonempty input, including `math.MaxInt`.
 
 ```go
 func Chunk[T any](s []T, size int) [][]T

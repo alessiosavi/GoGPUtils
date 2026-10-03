@@ -115,13 +115,16 @@ content, ok := stringutil.Between("[hello]", "[", "]")
 func BetweenAll(s, start, end string) []string
 ```
 
-Extracts all substrings between `start` and `end` markers.
+Extracts all substrings between `start` and `end` markers. Returns `nil` if both markers are empty or no pair of markers is found. A single empty marker is allowed: an empty `start` begins each match at the current search position, and an empty `end` produces an empty match after each `start`. Each successful match consumes at least one byte, so the search always makes progress.
 
 **Example:**
 
 ```go
 results := stringutil.BetweenAll("a[1]b[2]c[3]", "[", "]")
 // results = ["1", "2", "3"]
+
+parts := stringutil.BetweenAll("a,b,c", "", ",")
+// parts = ["a", "b"]
 ```
 
 ### CommonPrefix

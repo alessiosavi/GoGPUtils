@@ -756,11 +756,18 @@ func Between(s, start, end string) (string, bool) {
 }
 
 // BetweenAll extracts all substrings between start and end markers.
+// Returns nil if both markers are empty or no pair of markers is found.
+// A single empty marker is allowed. Each match consumes at least one byte,
+// so the search always makes progress.
 //
 // Example:
 //
 //	BetweenAll("a[1]b[2]c[3]", "[", "]")  // ["1", "2", "3"]
 func BetweenAll(s, start, end string) []string {
+	if start == "" && end == "" {
+		return nil
+	}
+
 	var results []string
 
 	remaining := s
@@ -773,7 +780,8 @@ func BetweenAll(s, start, end string) []string {
 
 		results = append(results, result)
 
-		// Find the end marker and move past it
+		// Consume through both markers. At least one is nonempty, so this
+		// strictly shortens remaining after each match.
 		idx := strings.Index(remaining, start)
 		remaining = remaining[idx+len(start):]
 		idx = strings.Index(remaining, end)

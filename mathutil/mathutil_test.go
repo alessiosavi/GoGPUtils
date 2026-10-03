@@ -2,6 +2,7 @@ package mathutil
 
 import (
 	"errors"
+	"math"
 	"slices"
 	"testing"
 )
@@ -485,7 +486,7 @@ func TestSqrt(t *testing.T) {
 
 	for _, tt := range tests {
 		got := Sqrt(tt.input)
-		if absFloat(got-tt.want) > 0.00001 {
+		if math.Abs(got-tt.want) > 0.00001 {
 			t.Errorf("Sqrt(%v) = %v, want %v", tt.input, got, tt.want)
 		}
 	}
@@ -524,7 +525,7 @@ func TestPowFloat(t *testing.T) {
 
 	for _, tt := range tests {
 		got := PowFloat(tt.x, tt.n)
-		if absFloat(got-tt.want) > 0.00001 {
+		if math.Abs(got-tt.want) > 0.00001 {
 			t.Errorf("PowFloat(%v, %d) = %v, want %v", tt.x, tt.n, got, tt.want)
 		}
 	}
@@ -566,7 +567,7 @@ func TestNormalize(t *testing.T) {
 	v := []float64{3, 4}
 	got := Normalize(v)
 	// Should be [0.6, 0.8]
-	if absFloat(got[0]-0.6) > 0.00001 || absFloat(got[1]-0.8) > 0.00001 {
+	if math.Abs(got[0]-0.6) > 0.00001 || math.Abs(got[1]-0.8) > 0.00001 {
 		t.Errorf("Normalize() = %v, want [0.6, 0.8]", got)
 	}
 
@@ -775,7 +776,7 @@ func TestLinSpace(t *testing.T) {
 	}
 
 	for i := range got {
-		if absFloat(got[i]-want[i]) > 0.00001 {
+		if math.Abs(got[i]-want[i]) > 0.00001 {
 			t.Errorf("LinSpace()[%d] = %v, want %v", i, got[i], want[i])
 		}
 	}

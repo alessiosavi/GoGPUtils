@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"math/big"
 	"math/rand/v2"
 )
 
@@ -51,7 +52,9 @@ func SecureBytes(n int) ([]byte, error) {
 }
 
 // SecureString returns a cryptographically secure random string
-// of the specified length using characters from the charset.
+// of the specified byte length. The charset is treated as a set of bytes;
+// use ASCII charsets. Every byte position is selected with equal probability,
+// so repeated bytes in charset have proportionally greater probability.
 //
 // Example:
 //
@@ -67,51 +70,49 @@ func SecureString(length int, charset string) (string, error) {
 	}
 
 	result := make([]byte, length)
-	charsetLen := byte(len(charset))
+	charsetLen := big.NewInt(int64(len(charset)))
 
-	// Generate random bytes and map to charset
-	randomBytes := make([]byte, length)
-	if _, err := io.ReadFull(cryptorand.Reader, randomBytes); err != nil {
-		return "", err
-	}
+	for i := range result {
+		// crypto/rand.Int uses rejection sampling to avoid modulo bias.
+		index, err := cryptorand.Int(cryptorand.Reader, charsetLen)
+		if err != nil {
+			return "", err
+		}
 
-	for i, b := range randomBytes {
-		result[i] = charset[b%charsetLen]
+		result[i] = charset[index.Int64()]
 	}
 
 	return string(result), nil
 }
 
-// SecureInt returns a cryptographically secure random int in [0, max).
+// SecureInt returns a uniformly distributed cryptographically secure random int in [0, max).
+// Returns ErrInvalidLength if max <= 0.
 func SecureInt(max int) (int, error) {
 	if max <= 0 {
 		return 0, ErrInvalidLength
 	}
 
-	var b [8]byte
-	if _, err := io.ReadFull(cryptorand.Reader, b[:]); err != nil {
+	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(max)))
+	if err != nil {
 		return 0, err
 	}
 
-	n := binary.BigEndian.Uint64(b[:])
-
-	return int(n % uint64(max)), nil
+	return int(n.Int64()), nil
 }
 
-// SecureInt64 returns a cryptographically secure random int64 in [0, max).
+// SecureInt64 returns a uniformly distributed cryptographically secure random int64 in [0, max).
+// Returns ErrInvalidLength if max <= 0.
 func SecureInt64(max int64) (int64, error) {
 	if max <= 0 {
 		return 0, ErrInvalidLength
 	}
 
-	var b [8]byte
-	if _, err := io.ReadFull(cryptorand.Reader, b[:]); err != nil {
+	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(max))
+	if err != nil {
 		return 0, err
 	}
 
-	n := binary.BigEndian.Uint64(b[:])
-
-	return int64(n % uint64(max)), nil
+	return n.Int64(), nil
 }
 
 // SecureID generates a cryptographically secure random ID.
@@ -433,7 +434,8 @@ func Range(start, end int) []int {
 	return Sequence(start, end-start)
 }
 
-// RangeStep returns a slice of integers from start to end with step.
+// RangeStep returns a slice of integers from start to end (exclusive) with step.
+// Stops before an addition would overflow.
 func RangeStep(start, end, step int) []int {
 	if step == 0 || (step > 0 && start >= end) || (step < 0 && start <= end) {
 		return nil
@@ -441,14 +443,15 @@ func RangeStep(start, end, step int) []int {
 
 	var result []int
 
-	if step > 0 {
-		for i := start; i < end; i += step {
-			result = append(result, i)
+	for i := start; (step > 0 && i < end) || (step < 0 && i > end); {
+		result = append(result, i)
+
+		next := i + step
+		if (step > 0 && next <= i) || (step < 0 && next >= i) {
+			break
 		}
-	} else {
-		for i := start; i > end; i += step {
-			result = append(result, i)
-		}
+
+		i = next
 	}
 
 	return result
