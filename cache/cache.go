@@ -193,7 +193,16 @@ func newCache[K comparable, V any](cfg Config[K, V], now func() int64, hooks tes
 		in.shards[i] = newShard[K, V](capacity)
 	}
 
-	return &Cache[K, V]{in: in}, nil
+	c := &Cache[K, V]{in: in}
+	if cfg.JanitorInterval > 0 {
+		in.startJanitor(cfg.JanitorInterval)
+		// Best-effort safety net if Close is never called. The cleanup
+		// function must not capture c.
+		c.cleanup = runtime.AddCleanup(c, func(in *inner[K, V]) { in.requestStop() }, in)
+		c.hasCleanup = true
+	}
+
+	return c, nil
 }
 
 // shardCount returns the number of shards (a power of two) for the config.
