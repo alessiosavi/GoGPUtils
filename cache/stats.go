@@ -30,3 +30,17 @@ func (s Stats) HitRatio() float64 {
 type shardStats struct {
 	hits, misses, loads, loadErrors, evictions, expirations atomic.Uint64
 }
+
+func (c *inner[K, V]) stats() Stats {
+	var st Stats
+	for _, s := range c.shards {
+		st.Hits += s.stats.hits.Load()
+		st.Misses += s.stats.misses.Load()
+		st.Loads += s.stats.loads.Load()
+		st.LoadErrors += s.stats.loadErrors.Load()
+		st.Evictions += s.stats.evictions.Load()
+		st.Expirations += s.stats.expirations.Load()
+	}
+
+	return st
+}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/maphash"
+	"iter"
 	"math"
 	"math/bits"
 	"runtime"
@@ -368,3 +369,19 @@ func (c *Cache[K, V]) TTL(key K) (time.Duration, bool) { return c.in.ttlOf(key) 
 // DeleteExpired removes every expired entry and returns how many were
 // removed. It processes one shard at a time.
 func (c *Cache[K, V]) DeleteExpired() int { return c.in.deleteExpired() }
+
+// All returns an iterator over live entries. Each shard is copied under its
+// read lock and yielded outside it, so the result is a per-shard snapshot;
+// entries may expire between copy and yield. Order is unspecified. It does
+// not mark entries used or update stats, and the cache may be modified while
+// iterating. Each invocation of the iterator takes a fresh pass.
+//
+// Example:
+//
+//	for key, value := range c.All() {
+//	    fmt.Println(key, value)
+//	}
+func (c *Cache[K, V]) All() iter.Seq2[K, V] { return c.in.all() }
+
+// Stats returns the cache counters summed across shards.
+func (c *Cache[K, V]) Stats() Stats { return c.in.stats() }

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"iter"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -324,4 +325,32 @@ func (c *inner[K, V]) deleteExpired() int {
 	}
 
 	return removed
+}
+
+func (c *inner[K, V]) all() iter.Seq2[K, V] {
+	type pair struct {
+		key   K
+		value V
+	}
+
+	return func(yield func(K, V) bool) {
+		var buf []pair
+		for _, s := range c.shards {
+			buf = buf[:0]
+			s.mu.RLock()
+			now := c.now()
+			for e := s.tail; e != nil; e = e.next {
+				if !e.expired(now) {
+					buf = append(buf, pair{e.key, e.value})
+				}
+			}
+			s.mu.RUnlock()
+
+			for _, p := range buf {
+				if !yield(p.key, p.value) {
+					return
+				}
+			}
+		}
+	}
 }
