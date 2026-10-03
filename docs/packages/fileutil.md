@@ -344,6 +344,8 @@ func Copy(ctx context.Context, src, dst string) error
 
 Moves a file from src to dst. Checks context cancellation before any side effect, creates the destination directory if needed, then attempts rename. Falls back to `Copy` followed by source removal only for a cross-device (`EXDEV`, or `ERROR_NOT_SAME_DEVICE` on Windows) rename error. Other rename errors are returned unchanged without overwriting the destination. On Plan 9, rename cannot move files across directories, so every rename error triggers the legacy copy fallback, including unrelated errors.
 
+On Windows, renaming over a destination held open by another process can fail with an access-denied error. `Move` returns that error without copying; callers should retry or close the destination first.
+
 If copying succeeds but source removal fails, both files remain. The returned error describes the successful copy and wraps the removal error for inspection with `errors.Is` or `errors.As`.
 
 ```go

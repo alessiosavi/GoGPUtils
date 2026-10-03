@@ -664,6 +664,9 @@ func Copy(ctx context.Context, src, dst string) error {
 // fails across filesystems. Other rename errors are returned unchanged.
 // On Plan 9, every rename error triggers the fallback because rename cannot
 // move files across directories, even within a filesystem.
+// On Windows, renaming over a destination held open by another process can fail
+// with an access-denied error. Move returns that error without copying; callers
+// should retry or close the destination first.
 // If source removal fails after a successful copy, both files remain and the
 // returned error wraps the removal error and describes the completed copy.
 //
