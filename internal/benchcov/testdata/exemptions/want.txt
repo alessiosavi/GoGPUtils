@@ -1,0 +1,9 @@
+- -: malformed exemption: want "<pkgdir> <Symbol> # <reason>"
+- -: too many exemptions: 4 > 0 (5% of 2 APIs)
+p *: exemption is not canonical
+p Four: stale exemption: no such exported symbol
+p Gone: stale exemption: no such exported symbol
+p One: stale exemption: now benchmarked by BenchmarkOne
+p Three: exemption has no reason
+p Two: duplicate exemption (first at line 3)
+p/ One: exemption is not canonical

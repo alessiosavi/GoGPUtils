@@ -1,0 +1,7 @@
+a Bar
+a Foo
+a G.Get
+a S.Len
+a T.M
+a T.N
+a T.P

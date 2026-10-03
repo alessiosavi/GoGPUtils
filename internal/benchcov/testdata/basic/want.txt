@@ -1,0 +1,3 @@
+- -: too many exemptions: 1 > 0 (5% of 7 APIs)
+a Bar: missing benchmark BenchmarkBar
+a S.Len: missing benchmark BenchmarkS_Len

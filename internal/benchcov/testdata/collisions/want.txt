@@ -1,0 +1,2 @@
+k BenchmarkFoo: duplicate benchmark in internal and external test packages
+k BenchmarkT_M: ambiguous benchmark identity: T.M, T_M

@@ -1,0 +1,11 @@
+# comment line
+
+p Two # transparent delegate of One
+p One # now benchmarked
+p Gone # symbol removed
+p Two # duplicate
+p Three
+p * # wildcard
+p/ One # trailing slash
+malformed
+p Four # x
