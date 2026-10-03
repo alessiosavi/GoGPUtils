@@ -171,6 +171,12 @@ func (c *Client) ListObjectsCallback(ctx context.Context, bucket string, callbac
 		input.StartAfter = awssdk.String(options.startAfter)
 	}
 
+	if options.maxKeys > 0 {
+		input.MaxKeys = awssdk.Int32(options.maxKeys)
+	}
+
+	var count int32
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -206,6 +212,11 @@ func (c *Client) ListObjectsCallback(ctx context.Context, bucket string, callbac
 			err := callback(info)
 			if err != nil {
 				return err
+			}
+
+			count++
+			if options.maxKeys > 0 && count >= options.maxKeys {
+				return nil
 			}
 		}
 

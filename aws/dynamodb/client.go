@@ -42,7 +42,10 @@ type Client struct {
 //	if err != nil {
 //	    return err
 //	}
-//	client := dynamodb.NewClient(cfg)
+//	client, err := dynamodb.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig

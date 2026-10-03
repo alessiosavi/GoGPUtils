@@ -8,6 +8,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/aws"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
+	"github.com/aws/smithy-go"
 )
 
 const serviceName = "secretsmanager"
@@ -37,7 +38,10 @@ type Client struct {
 //	if err != nil {
 //	    return err
 //	}
-//	client := secretsmanager.NewClient(cfg)
+//	client, err := secretsmanager.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig
@@ -95,16 +99,14 @@ func isResourceNotFound(err error) bool {
 	return strings.Contains(err.Error(), "ResourceNotFoundException")
 }
 
-// isInvalidRequest checks if the error indicates an invalid request.
-func isInvalidRequest(err error) bool {
-	if err == nil {
+// isSecretDeleted checks for an invalid request caused by pending deletion.
+func isSecretDeleted(err error) bool {
+	var apiErr smithy.APIError
+	if !errors.As(err, &apiErr) || apiErr.ErrorCode() != "InvalidRequestException" {
 		return false
 	}
 
-	var ir *types.InvalidRequestException
-	if errors.As(err, &ir) {
-		return true
-	}
+	message := strings.ToLower(apiErr.ErrorMessage())
 
-	return strings.Contains(err.Error(), "InvalidRequestException")
+	return strings.Contains(message, "marked for deletion") || strings.Contains(message, "scheduled for deletion")
 }

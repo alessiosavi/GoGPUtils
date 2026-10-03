@@ -254,129 +254,146 @@ func (c *Client) DeleteItemIfExists(ctx context.Context, tableName string, key K
 	return nil
 }
 
-// BatchWriteItems writes multiple items to one or more tables.
-// Automatically handles the 25-item limit per batch.
+// BatchWriteItems writes multiple items to a table in batches of up to 25.
+// It returns unprocessed items reported by successful batches. If a later batch
+// fails to marshal or execute, or an unprocessed item fails to decode, it returns
+// the items decoded so far together with the error. The failed batch and unsent
+// items are not included; an execution error may leave the batch's outcome unknown.
+// Numbers are decoded as float64, so integers above 2^53 can lose precision.
+// Use BatchWriteItemsRaw for lossless retries without decoding.
 //
 // Example:
 //
-//	items := []User{user1, user2, user3}
+//	items := []any{user1, user2, user3}
 //	unprocessed, err := client.BatchWriteItems(ctx, "users", items)
 func (c *Client) BatchWriteItems(ctx context.Context, tableName string, items []any) ([]any, error) {
-	if tableName == "" {
-		return nil, aws.ErrEmptyTable
-	}
+	return batchItems(ctx, c, tableName, items, false, attributevalue.MarshalMap,
+		func(av map[string]types.AttributeValue) (any, error) {
+			var item any
+			err := attributevalue.UnmarshalMap(av, &item)
 
-	if len(items) == 0 {
-		return nil, nil
-	}
-
-	const maxBatchSize = 25
-
-	var unprocessed []any
-
-	for i := 0; i < len(items); i += maxBatchSize {
-		end := min(i+maxBatchSize, len(items))
-
-		batch := items[i:end]
-		writeRequests := make([]types.WriteRequest, 0, len(batch))
-
-		for _, item := range batch {
-			av, err := attributevalue.MarshalMap(item)
-			if err != nil {
-				return nil, aws.WrapError(serviceName, "BatchWriteItem", err)
-			}
-
-			writeRequests = append(writeRequests, types.WriteRequest{
-				PutRequest: &types.PutRequest{Item: av},
-			})
-		}
-
-		requestItems := map[string][]types.WriteRequest{tableName: writeRequests}
-
-		output, err := c.api.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: requestItems,
+			return item, err
 		})
-		if err != nil {
-			return nil, aws.WrapError(serviceName, "BatchWriteItem", err)
-		}
-
-		// Handle unprocessed items
-		if len(output.UnprocessedItems) > 0 {
-			for _, reqs := range output.UnprocessedItems {
-				for _, req := range reqs {
-					if req.PutRequest != nil {
-						var item any
-						err := attributevalue.UnmarshalMap(req.PutRequest.Item, &item)
-						if err == nil {
-							unprocessed = append(unprocessed, item)
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return unprocessed, nil
 }
 
-// BatchDeleteItems deletes multiple items from a table.
-// Automatically handles the 25-item limit per batch.
+// BatchDeleteItems deletes multiple items from a table in batches of up to 25.
+// It returns unprocessed keys reported by successful batches. If a later batch
+// fails to marshal or execute, or an unprocessed key fails to decode, it returns
+// the keys decoded so far together with the error. The failed batch and unsent
+// keys are not included; an execution error may leave the batch's outcome unknown.
+// Numbers are decoded as float64, so integers above 2^53 can lose precision.
+// Use BatchDeleteItemsRaw for lossless retries without decoding.
 //
 // Example:
 //
 //	keys := []dynamodb.Key{{"pk": "user-1"}, {"pk": "user-2"}}
 //	unprocessed, err := client.BatchDeleteItems(ctx, "users", keys)
 func (c *Client) BatchDeleteItems(ctx context.Context, tableName string, keys []Key) ([]Key, error) {
+	return batchItems(ctx, c, tableName, keys, true,
+		func(key Key) (map[string]types.AttributeValue, error) {
+			return attributevalue.MarshalMap(key)
+		},
+		func(av map[string]types.AttributeValue) (Key, error) {
+			var key Key
+			err := attributevalue.UnmarshalMap(av, &key)
+
+			return key, err
+		})
+}
+
+// BatchWriteItemsRaw writes raw DynamoDB items in batches of up to 25.
+// It returns unprocessed items without marshaling or decoding, preserving number
+// precision and all attribute types. Returned maps may alias the SDK response.
+// If a later batch fails, it returns previously accumulated unprocessed items
+// together with the error. The failed batch and unsent items are not included;
+// an execution error may leave the failed batch's outcome unknown.
+//
+// Example:
+//
+//	items := []map[string]types.AttributeValue{
+//	    {"pk": &types.AttributeValueMemberN{Value: "9007199254740993"}},
+//	}
+//	unprocessed, err := client.BatchWriteItemsRaw(ctx, "users", items)
+func (c *Client) BatchWriteItemsRaw(ctx context.Context, tableName string, items []map[string]types.AttributeValue) ([]map[string]types.AttributeValue, error) {
+	return batchItems(ctx, c, tableName, items, false, rawAttributes, rawAttributes)
+}
+
+// BatchDeleteItemsRaw deletes raw DynamoDB keys in batches of up to 25.
+// It returns unprocessed keys without marshaling or decoding, preserving number
+// precision and all attribute types. Returned maps may alias the SDK response.
+// If a later batch fails, it returns previously accumulated unprocessed keys
+// together with the error. The failed batch and unsent keys are not included;
+// an execution error may leave the failed batch's outcome unknown.
+//
+// Example:
+//
+//	keys := []map[string]types.AttributeValue{
+//	    {"pk": &types.AttributeValueMemberN{Value: "9007199254740993"}},
+//	}
+//	unprocessed, err := client.BatchDeleteItemsRaw(ctx, "users", keys)
+func (c *Client) BatchDeleteItemsRaw(ctx context.Context, tableName string, keys []map[string]types.AttributeValue) ([]map[string]types.AttributeValue, error) {
+	return batchItems(ctx, c, tableName, keys, true, rawAttributes, rawAttributes)
+}
+
+func rawAttributes(av map[string]types.AttributeValue) (map[string]types.AttributeValue, error) {
+	return av, nil
+}
+
+// batchItems shares chunking and partial-result handling across batch APIs.
+func batchItems[T any](ctx context.Context, c *Client, tableName string, items []T, deleteItems bool,
+	marshal func(T) (map[string]types.AttributeValue, error),
+	unmarshal func(map[string]types.AttributeValue) (T, error),
+) ([]T, error) {
 	if tableName == "" {
 		return nil, aws.ErrEmptyTable
 	}
 
-	if len(keys) == 0 {
-		return nil, nil
-	}
-
 	const maxBatchSize = 25
 
-	var unprocessed []Key
+	var unprocessed []T
 
-	for i := 0; i < len(keys); i += maxBatchSize {
-		end := min(i+maxBatchSize, len(keys))
+	for i := 0; i < len(items); i += maxBatchSize {
+		end := min(i+maxBatchSize, len(items))
+		writeRequests := make([]types.WriteRequest, 0, end-i)
 
-		batch := keys[i:end]
-		writeRequests := make([]types.WriteRequest, 0, len(batch))
-
-		for _, key := range batch {
-			keyAV, err := marshalKey(key)
+		for _, item := range items[i:end] {
+			av, err := marshal(item)
 			if err != nil {
-				return nil, err
+				return unprocessed, aws.WrapError(serviceName, "BatchWriteItem", err)
 			}
 
-			writeRequests = append(writeRequests, types.WriteRequest{
-				DeleteRequest: &types.DeleteRequest{Key: keyAV},
-			})
-		}
+			req := types.WriteRequest{}
+			if deleteItems {
+				req.DeleteRequest = &types.DeleteRequest{Key: av}
+			} else {
+				req.PutRequest = &types.PutRequest{Item: av}
+			}
 
-		requestItems := map[string][]types.WriteRequest{tableName: writeRequests}
+			writeRequests = append(writeRequests, req)
+		}
 
 		output, err := c.api.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-			RequestItems: requestItems,
+			RequestItems: map[string][]types.WriteRequest{tableName: writeRequests},
 		})
 		if err != nil {
-			return nil, aws.WrapError(serviceName, "BatchWriteItem", err)
+			return unprocessed, aws.WrapError(serviceName, "BatchWriteItem", err)
 		}
 
-		// Handle unprocessed items
-		if len(output.UnprocessedItems) > 0 {
-			for _, reqs := range output.UnprocessedItems {
-				for _, req := range reqs {
-					if req.DeleteRequest != nil {
-						key := make(Key)
-						err := attributevalue.UnmarshalMap(req.DeleteRequest.Key, &key)
-						if err == nil {
-							unprocessed = append(unprocessed, key)
-						}
-					}
+		for _, requests := range output.UnprocessedItems {
+			for _, req := range requests {
+				var av map[string]types.AttributeValue
+				if req.PutRequest != nil {
+					av = req.PutRequest.Item
+				} else if req.DeleteRequest != nil {
+					av = req.DeleteRequest.Key
 				}
+
+				item, err := unmarshal(av)
+				if err != nil {
+					return unprocessed, aws.WrapError(serviceName, "BatchWriteItem", err)
+				}
+
+				unprocessed = append(unprocessed, item)
 			}
 		}
 	}

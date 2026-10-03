@@ -414,6 +414,75 @@ func TestMoveObject(t *testing.T) {
 	}
 }
 
+func TestCopyAndMoveObjectLiteralKeys(t *testing.T) {
+	tc := setupTest(t)
+
+	tests := []struct {
+		name string
+		key  string
+	}{
+		{name: "dot-segments", key: "a/../b"},
+		{name: "repeated-slashes", key: "dir//x"},
+		{name: "reserved-characters", key: "sp ace?#&+.txt"},
+		{name: "unicode", key: "日本/é.txt"},
+		{name: "literal-percent-encoding", key: "/a%2Fb/"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := testContext(t)
+			data := []byte("literal key: " + tt.key)
+			copyKey := "copied/" + tt.name
+			moveKey := "moved/" + tt.name
+
+			if err := tc.client.PutObject(ctx, tc.bucket, tt.key, data); err != nil {
+				t.Fatalf("PutObject for %q failed: %v", tt.key, err)
+			}
+
+			if err := tc.client.CopyObject(ctx, tc.bucket, tt.key, tc.bucket, copyKey); err != nil {
+				t.Fatalf("CopyObject for %q failed: %v", tt.key, err)
+			}
+
+			got, err := tc.client.GetObject(ctx, tc.bucket, copyKey)
+			if err != nil {
+				t.Fatalf("GetObject for copy destination failed: %v", err)
+			}
+			if !bytes.Equal(got, data) {
+				t.Errorf("copied data mismatch: got %v, want %v", got, data)
+			}
+
+			exists, err := tc.client.ObjectExists(ctx, tc.bucket, tt.key)
+			if err != nil {
+				t.Fatalf("ObjectExists after copy failed: %v", err)
+			}
+			if !exists {
+				t.Fatal("source object should still exist after copy")
+			}
+
+			// Move the original literal key so CopySource is exercised again.
+			if err := tc.client.MoveObject(ctx, tc.bucket, tt.key, tc.bucket, moveKey); err != nil {
+				t.Fatalf("MoveObject for %q failed: %v", tt.key, err)
+			}
+
+			got, err = tc.client.GetObject(ctx, tc.bucket, moveKey)
+			if err != nil {
+				t.Fatalf("GetObject for move destination failed: %v", err)
+			}
+			if !bytes.Equal(got, data) {
+				t.Errorf("moved data mismatch: got %v, want %v", got, data)
+			}
+
+			exists, err = tc.client.ObjectExists(ctx, tc.bucket, tt.key)
+			if err != nil {
+				t.Fatalf("ObjectExists after move failed: %v", err)
+			}
+			if exists {
+				t.Error("source object should not exist after move")
+			}
+		})
+	}
+}
+
 func TestObjectExists(t *testing.T) {
 	tc := setupTest(t)
 	ctx := testContext(t)

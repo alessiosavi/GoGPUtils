@@ -16,7 +16,10 @@
 //	    return err
 //	}
 //
-//	client := sqs.NewClient(cfg)
+//	client, err := sqs.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
@@ -27,7 +30,7 @@
 //	messages, err := client.ReceiveMessages(ctx, queueURL, sqs.WithMaxMessages(10))
 //
 //	// Delete a message
-//	err := client.DeleteMessage(ctx, queueURL, receiptHandle)
+//	err = client.DeleteMessage(ctx, queueURL, receiptHandle)
 //
 // # Testing
 //

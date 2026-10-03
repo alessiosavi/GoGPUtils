@@ -5,13 +5,13 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"path"
 	"strings"
 
 	"github.com/alessiosavi/GoGPUtils/aws"
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/encoding/httpbinding"
 )
 
 // GetObject downloads an object from S3 and returns its contents.
@@ -81,6 +81,8 @@ func (c *Client) GetObjectReader(ctx context.Context, bucket, key string) (io.Re
 		ContentLength: awssdk.ToInt64(output.ContentLength),
 		ETag:          strings.Trim(awssdk.ToString(output.ETag), "\""),
 		LastModified:  awssdk.ToTime(output.LastModified),
+		StorageClass:  string(output.StorageClass),
+		Metadata:      output.Metadata,
 	}
 
 	return output.Body, metadata, nil
@@ -108,33 +110,11 @@ func (c *Client) PutObject(ctx context.Context, bucket, key string, data []byte,
 		opt(options)
 	}
 
-	contentType := options.contentType
-	if contentType == "" {
-		contentType = http.DetectContentType(data)
+	if options.contentType == "" {
+		options.contentType = http.DetectContentType(data)
 	}
 
-	input := &s3.PutObjectInput{
-		Bucket:      awssdk.String(bucket),
-		Key:         awssdk.String(key),
-		Body:        bytes.NewReader(data),
-		ContentType: awssdk.String(contentType),
-	}
-
-	if options.storageClass != "" {
-		input.StorageClass = options.storageClass
-	}
-
-	if options.serverSideEncryption != "" {
-		input.ServerSideEncryption = options.serverSideEncryption
-	}
-
-	if options.metadata != nil {
-		input.Metadata = options.metadata
-	}
-
-	if options.cacheControl != "" {
-		input.CacheControl = awssdk.String(options.cacheControl)
-	}
+	input := newPutObjectInput(bucket, key, bytes.NewReader(data), options)
 
 	_, err := c.uploader.Upload(ctx, input)
 	if err != nil {
@@ -164,27 +144,7 @@ func (c *Client) PutObjectReader(ctx context.Context, bucket, key string, reader
 		opt(options)
 	}
 
-	input := &s3.PutObjectInput{
-		Bucket: awssdk.String(bucket),
-		Key:    awssdk.String(key),
-		Body:   reader,
-	}
-
-	if options.contentType != "" {
-		input.ContentType = awssdk.String(options.contentType)
-	}
-
-	if options.storageClass != "" {
-		input.StorageClass = options.storageClass
-	}
-
-	if options.serverSideEncryption != "" {
-		input.ServerSideEncryption = options.serverSideEncryption
-	}
-
-	if options.metadata != nil {
-		input.Metadata = options.metadata
-	}
+	input := newPutObjectInput(bucket, key, reader, options)
 
 	_, err := c.uploader.Upload(ctx, input)
 	if err != nil {
@@ -192,6 +152,28 @@ func (c *Client) PutObjectReader(ctx context.Context, bucket, key string, reader
 	}
 
 	return nil
+}
+
+// newPutObjectInput maps upload options for both byte and reader uploads.
+func newPutObjectInput(bucket, key string, body io.Reader, options *putOptions) *s3.PutObjectInput {
+	input := &s3.PutObjectInput{
+		Bucket:               awssdk.String(bucket),
+		Key:                  awssdk.String(key),
+		Body:                 body,
+		StorageClass:         options.storageClass,
+		ServerSideEncryption: options.serverSideEncryption,
+		Metadata:             options.metadata,
+	}
+
+	if options.contentType != "" {
+		input.ContentType = awssdk.String(options.contentType)
+	}
+
+	if options.cacheControl != "" {
+		input.CacheControl = awssdk.String(options.cacheControl)
+	}
+
+	return input
 }
 
 // DeleteObject deletes an object from S3.
@@ -299,7 +281,9 @@ func (c *Client) CopyObject(ctx context.Context, srcBucket, srcKey, dstBucket, d
 		return aws.ErrEmptyKey
 	}
 
-	copySource := path.Join(srcBucket, srcKey)
+	// S3 keys are opaque: preserve separators and dot segments while encoding
+	// the CopySource header, which the SDK transmits without further escaping.
+	copySource := httpbinding.EscapePath(srcBucket+"/"+srcKey, false)
 
 	_, err := c.api.CopyObject(ctx, &s3.CopyObjectInput{
 		Bucket:     awssdk.String(dstBucket),

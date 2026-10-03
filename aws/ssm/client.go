@@ -37,7 +37,10 @@ type Client struct {
 //	if err != nil {
 //	    return err
 //	}
-//	client := ssm.NewClient(cfg)
+//	client, err := ssm.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig

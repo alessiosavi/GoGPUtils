@@ -2,7 +2,6 @@ package sqs
 
 import (
 	"context"
-	"html"
 
 	"github.com/alessiosavi/GoGPUtils/aws"
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
@@ -17,6 +16,9 @@ type Message struct {
 	ReceiptHandle string
 	Attributes    map[string]string
 	MD5OfBody     string
+
+	// MessageAttributes contains custom attributes in the same format accepted by WithMessageAttributes.
+	MessageAttributes map[string]types.MessageAttributeValue
 }
 
 // SendOption configures SendMessage operations.
@@ -198,12 +200,11 @@ type BatchError struct {
 type ReceiveOption func(*receiveOptions)
 
 type receiveOptions struct {
-	maxMessages             int32
-	visibilityTimeout       int32
-	waitTimeSeconds         int32
-	attributeNames          []types.QueueAttributeName
-	messageAttrNames        []string
-	receiveRequestAttemptID string
+	maxMessages       int32
+	visibilityTimeout int32
+	waitTimeSeconds   int32
+	attributeNames    []types.QueueAttributeName
+	messageAttrNames  []string
 }
 
 // WithMaxMessages sets the maximum number of messages to receive.
@@ -265,7 +266,8 @@ func WithMessageAttributeNames(names ...string) ReceiveOption {
 }
 
 // ReceiveMessages receives messages from an SQS queue.
-// Messages are automatically HTML unescaped.
+// Message bodies are returned unchanged. To decode HTML entities explicitly,
+// use html.UnescapeString(message.Body).
 //
 // Example:
 //
@@ -304,7 +306,10 @@ func (c *Client) ReceiveMessages(ctx context.Context, queueURL string, opts ...R
 	}
 
 	if len(options.attributeNames) > 0 {
-		input.AttributeNames = options.attributeNames
+		input.MessageSystemAttributeNames = make([]types.MessageSystemAttributeName, len(options.attributeNames))
+		for i, name := range options.attributeNames {
+			input.MessageSystemAttributeNames[i] = types.MessageSystemAttributeName(name)
+		}
 	}
 
 	if len(options.messageAttrNames) > 0 {
@@ -322,21 +327,18 @@ func (c *Client) ReceiveMessages(ctx context.Context, queueURL string, opts ...R
 
 	messages := make([]Message, len(output.Messages))
 	for i, msg := range output.Messages {
-		// Unescape HTML entities in the body
-		body := awssdk.ToString(msg.Body)
-		body = html.UnescapeString(body)
-
 		attrs := make(map[string]string)
 		for k, v := range msg.Attributes {
 			attrs[string(k)] = v
 		}
 
 		messages[i] = Message{
-			ID:            awssdk.ToString(msg.MessageId),
-			Body:          body,
-			ReceiptHandle: awssdk.ToString(msg.ReceiptHandle),
-			Attributes:    attrs,
-			MD5OfBody:     awssdk.ToString(msg.MD5OfBody),
+			ID:                awssdk.ToString(msg.MessageId),
+			Body:              awssdk.ToString(msg.Body),
+			ReceiptHandle:     awssdk.ToString(msg.ReceiptHandle),
+			Attributes:        attrs,
+			MD5OfBody:         awssdk.ToString(msg.MD5OfBody),
+			MessageAttributes: msg.MessageAttributes,
 		}
 	}
 

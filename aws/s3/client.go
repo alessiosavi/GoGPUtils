@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"io"
-	"strings"
 
 	"github.com/alessiosavi/GoGPUtils/aws"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 )
 
 const serviceName = "s3"
@@ -85,7 +86,10 @@ func WithPartSize(size int64) ClientOption {
 //	if err != nil {
 //	    return err
 //	}
-//	client := s3.NewClient(cfg)
+//	client, err := s3.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config, opts ...ClientOption) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig
@@ -137,7 +141,7 @@ func NewClientWithAPI(api API, uploader UploaderAPI, downloader DownloaderAPI) *
 }
 
 // API returns the underlying S3 API for direct SDK access.
-// Returns nil if the client was created with NewClientWithAPI.
+// For clients created with NewClientWithAPI, it returns the injected API.
 func (c *Client) API() API {
 	return c.api
 }
@@ -170,8 +174,21 @@ func isNotFoundError(err error) bool {
 		return true
 	}
 
-	// Check for "NoSuchKey" or "NotFound" in error message as fallback
-	errStr := err.Error()
+	var nsb *types.NoSuchBucket
+	if errors.As(err, &nsb) {
+		return true
+	}
 
-	return strings.Contains(errStr, "NoSuchKey") || strings.Contains(errStr, "NotFound") || strings.Contains(errStr, "404")
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		switch apiErr.ErrorCode() {
+		case "NoSuchKey", "NotFound", "NoSuchBucket", "404":
+			return true
+		}
+	}
+
+	// HeadObject can return a status without a modeled error body.
+	var responseErr *awshttp.ResponseError
+
+	return errors.As(err, &responseErr) && responseErr.HTTPStatusCode() == 404
 }

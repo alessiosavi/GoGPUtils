@@ -16,7 +16,10 @@
 //	    return err
 //	}
 //
-//	client := ssm.NewClient(cfg)
+//	client, err := ssm.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
@@ -24,7 +27,7 @@
 //	value, err := client.GetParameter(ctx, "/app/config/database_url")
 //
 //	// Get multiple parameters
-//	values, err := client.GetParameters(ctx, []string{"/app/config/a", "/app/config/b"})
+//	values, invalid, err := client.GetParameters(ctx, []string{"/app/config/a", "/app/config/b"})
 //
 //	// List parameters by path
 //	params, err := client.ListParametersByPath(ctx, "/app/config/")
