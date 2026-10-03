@@ -35,6 +35,7 @@ go get github.com/alessiosavi/GoGPUtils
 | [`cryptoutil`](#cryptoutil) | Secure AES-GCM encryption |
 | [`randutil`](#randutil) | Cryptographically secure random generation |
 | [`collection`](#collection) | Generic data structures (Stack, Queue, Set, BST) |
+| [`cache`](#cache) | Generic in-memory cache (SIEVE eviction, TTL, deduplicated loading) |
 | [`aws`](./aws/README.md) | AWS SDK v2 helpers (S3, DynamoDB, SQS, SSM, Secrets Manager, Lambda) |
 
 ---
@@ -477,6 +478,27 @@ min, _ := bst.Min()
 max, _ := bst.Max()
 bst.InOrder()     // [1, 3, 5, 7]
 bst.Remove(3)
+```
+
+---
+
+## cache
+
+Generic, concurrency-safe in-memory cache with SIEVE eviction, TTL, and deduplicated loading. See [docs/packages/cache.md](docs/packages/cache.md).
+
+```go
+import "github.com/alessiosavi/GoGPUtils/cache"
+
+c, err := cache.New(cache.Config[string, int]{MaxEntries: 10_000, TTL: time.Minute})
+if err != nil {
+    return err
+}
+c.Set("a", 1)
+v, ok := c.Get("a")
+
+n, err := c.GetOrLoad(ctx, "b", func(ctx context.Context) (int, error) {
+    return expensive(ctx)
+})
 ```
 
 ---
