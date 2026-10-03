@@ -40,7 +40,10 @@ type Client struct {
 //	if err != nil {
 //	    return err
 //	}
-//	client := sqs.NewClient(cfg)
+//	client, err := sqs.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig

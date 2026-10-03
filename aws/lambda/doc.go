@@ -5,7 +5,7 @@
 //   - Invoke functions (sync and async)
 //   - List and describe functions
 //   - Deploy code from S3 or ZIP
-//   - Manage function configuration
+//   - Delete functions and retrieve tags
 //
 // # Client Creation
 //
@@ -16,7 +16,10 @@
 //	    return err
 //	}
 //
-//	client := lambda.NewClient(cfg)
+//	client, err := lambda.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
@@ -24,7 +27,7 @@
 //	response, err := client.Invoke(ctx, "my-function", []byte(`{"key": "value"}`))
 //
 //	// Invoke asynchronously (fire and forget)
-//	err := client.InvokeAsync(ctx, "my-function", payload)
+//	err = client.InvokeAsync(ctx, "my-function", payload)
 //
 //	// List all functions
 //	functions, err := client.ListFunctions(ctx)

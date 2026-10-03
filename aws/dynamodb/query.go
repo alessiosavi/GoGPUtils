@@ -151,6 +151,10 @@ func (c *Client) Query(ctx context.Context, tableName string, keyCondition expre
 		opt(options)
 	}
 
+	return c.query(ctx, tableName, keyCondition, options)
+}
+
+func (c *Client) query(ctx context.Context, tableName string, keyCondition expression.KeyConditionBuilder, options *queryOptions) (*QueryResult, error) {
 	// Build expression
 	builder := expression.NewBuilder().WithKeyCondition(keyCondition)
 
@@ -235,6 +239,15 @@ func (c *Client) Query(ctx context.Context, tableName string, keyCondition expre
 //	var users []User
 //	err := client.QueryAll(ctx, "users", keyExpr, &users)
 func (c *Client) QueryAll(ctx context.Context, tableName string, keyCondition expression.KeyConditionBuilder, dest any, opts ...QueryOption) error {
+	if tableName == "" {
+		return aws.ErrEmptyTable
+	}
+
+	options := &queryOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	var allItems []map[string]types.AttributeValue
 
 	for {
@@ -244,7 +257,7 @@ func (c *Client) QueryAll(ctx context.Context, tableName string, keyCondition ex
 		default:
 		}
 
-		result, err := c.Query(ctx, tableName, keyCondition, opts...)
+		result, err := c.query(ctx, tableName, keyCondition, options)
 		if err != nil {
 			return err
 		}
@@ -255,8 +268,7 @@ func (c *Client) QueryAll(ctx context.Context, tableName string, keyCondition ex
 			break
 		}
 
-		// Add start key option for next iteration
-		opts = append(opts, WithStartKey(result.LastEvaluatedKey))
+		options.exclusiveStartKey = result.LastEvaluatedKey
 	}
 
 	return attributevalue.UnmarshalListOfMaps(allItems, dest)
@@ -352,6 +364,10 @@ func (c *Client) Scan(ctx context.Context, tableName string, opts ...ScanOption)
 		opt(options)
 	}
 
+	return c.scan(ctx, tableName, options)
+}
+
+func (c *Client) scan(ctx context.Context, tableName string, options *scanOptions) (*ScanResult, error) {
 	input := &dynamodb.ScanInput{
 		TableName:      awssdk.String(tableName),
 		ConsistentRead: awssdk.Bool(options.consistentRead),
@@ -434,6 +450,15 @@ func (c *Client) Scan(ctx context.Context, tableName string, opts ...ScanOption)
 //	var users []User
 //	err := client.ScanAll(ctx, "users", &users)
 func (c *Client) ScanAll(ctx context.Context, tableName string, dest any, opts ...ScanOption) error {
+	if tableName == "" {
+		return aws.ErrEmptyTable
+	}
+
+	options := &scanOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	var allItems []map[string]types.AttributeValue
 
 	for {
@@ -443,7 +468,7 @@ func (c *Client) ScanAll(ctx context.Context, tableName string, dest any, opts .
 		default:
 		}
 
-		result, err := c.Scan(ctx, tableName, opts...)
+		result, err := c.scan(ctx, tableName, options)
 		if err != nil {
 			return err
 		}
@@ -454,8 +479,7 @@ func (c *Client) ScanAll(ctx context.Context, tableName string, dest any, opts .
 			break
 		}
 
-		// Add start key option for next iteration
-		opts = append(opts, WithScanStartKey(result.LastEvaluatedKey))
+		options.exclusiveStartKey = result.LastEvaluatedKey
 	}
 
 	return attributevalue.UnmarshalListOfMaps(allItems, dest)
@@ -475,6 +499,15 @@ func (c *Client) ScanAll(ctx context.Context, tableName string, dest any, opts .
 //	    return nil
 //	})
 func (c *Client) ScanCallback(ctx context.Context, tableName string, callback func([]map[string]types.AttributeValue) error, opts ...ScanOption) error {
+	if tableName == "" {
+		return aws.ErrEmptyTable
+	}
+
+	options := &scanOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -482,7 +515,7 @@ func (c *Client) ScanCallback(ctx context.Context, tableName string, callback fu
 		default:
 		}
 
-		result, err := c.Scan(ctx, tableName, opts...)
+		result, err := c.scan(ctx, tableName, options)
 		if err != nil {
 			return err
 		}
@@ -498,7 +531,7 @@ func (c *Client) ScanCallback(ctx context.Context, tableName string, callback fu
 			break
 		}
 
-		opts = append(opts, WithScanStartKey(result.LastEvaluatedKey))
+		options.exclusiveStartKey = result.LastEvaluatedKey
 	}
 
 	return nil

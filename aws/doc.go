@@ -8,7 +8,7 @@
 //   - Context-aware: All operations accept context.Context for cancellation
 //   - Testable: Interfaces enable mocking without real AWS calls
 //   - Explicit configuration: No magic; all settings are visible
-//   - Safe defaults: Sensible retry policies and timeouts out of the box
+//   - Safe defaults: Sensible retry policies; timeouts use caller-created contexts
 //   - Minimal abstraction: Helpers augment the SDK, not replace it
 //
 // # Package Structure
@@ -17,7 +17,7 @@
 //
 //   - aws: Core configuration and common utilities
 //   - aws/s3: S3 object and bucket operations
-//   - aws/dynamodb: DynamoDB item and table operations
+//   - aws/dynamodb: DynamoDB item, query, scan, and batch operations
 //   - aws/sqs: SQS message operations
 //   - aws/secretsmanager: Secrets Manager operations
 //   - aws/ssm: SSM Parameter Store operations
@@ -32,7 +32,10 @@
 //	    return err
 //	}
 //
-//	s3Client := s3.NewClient(cfg)
+//	s3Client, err := s3.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Error Handling
 //
@@ -48,6 +51,6 @@
 // Each client accepts interfaces that can be mocked:
 //
 //	mock := &MockS3API{}
-//	client := s3.NewClientWithAPI(mock)
+//	client := s3.NewClientWithAPI(mock, nil, nil)
 //	// Use client in tests
 package aws

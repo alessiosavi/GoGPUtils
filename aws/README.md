@@ -50,7 +50,8 @@ import (
 )
 
 func main() {
-    ctx := context.Background()
+    ctx, cancel := context.WithTimeout(context.Background(), aws.DefaultTimeout)
+    defer cancel()
 
     // Load AWS configuration
     cfg, err := aws.LoadConfig(ctx,
@@ -242,10 +243,13 @@ All clients accept interfaces that can be mocked for testing:
 package mypackage_test
 
 import (
+    "bytes"
     "context"
+    "io"
     "testing"
 
     "github.com/alessiosavi/GoGPUtils/aws/s3"
+    s3sdk "github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type mockS3API struct {
@@ -278,12 +282,14 @@ func TestMyFunction(t *testing.T) {
 
 ### AWS Config
 
+Alias `github.com/aws/aws-sdk-go-v2/aws` as `awssdk` for SDK retry-mode constants.
+
 ```go
 cfg, err := aws.LoadConfig(ctx,
     aws.WithRegion("us-west-2"),           // Set region
     aws.WithProfile("production"),         // Use named profile
     aws.WithRetryMaxAttempts(5),           // Set retry attempts
-    aws.WithRetryMode(aws.RetryModeAdaptive), // Set retry mode
+    aws.WithRetryMode(awssdk.RetryModeAdaptive), // Set retry mode
     aws.WithEndpoint("http://localhost:4566"), // Custom endpoint (LocalStack)
     aws.WithCredentials(credsProvider),    // Custom credentials
 )
@@ -321,6 +327,33 @@ if err != nil {
     }
 }
 ```
+
+## AWS correctness behavior changes
+
+- `sqs.ReceiveMessages` now returns the exact message body from SQS. It no longer
+  HTML-decodes entities, which could corrupt JSON or other payloads. To retain
+  the old decoding behavior, import `html` and use `html.UnescapeString(m.Body)`.
+  Custom attributes are available in `m.MessageAttributes`, using the same
+  `map[string]types.MessageAttributeValue` type accepted by `WithMessageAttributes`.
+  Request them with `WithMessageAttributeNames("All")`; `Attributes` still holds
+  system attributes.
+- `aws.WithEndpoint` now sets the SDK base endpoint, and `WithRetryMode` selects
+  standard or adaptive retries. The default remains adaptive.
+- S3 copy/move operations preserve exact keys and URL-encode the copy source.
+  Not-found classification uses typed service errors or an HTTP 404 response.
+  Callback listings (including `CountObjects` and `TotalSize`) honor `WithMaxKeys`
+  across all pages after filtering. Streaming uploads forward all put options;
+  streaming downloads include custom metadata and storage class.
+- DynamoDB batch writes and deletes return accumulated unprocessed items together
+  with a later error, and report decoding failures instead of silently dropping
+  items. The failed batch and unsent items are not included in those results;
+  an execution error may leave the failed batch's outcome unknown.
+  The legacy APIs decode numbers as `float64`, so integers above 2^53 can lose
+  precision. Use `BatchWriteItemsRaw` and `BatchDeleteItemsRaw` to retry raw
+  `map[string]types.AttributeValue` values without conversion. For example,
+  `types.AttributeValueMemberN{Value: "9007199254740993"}` retains its exact value.
+- Secrets Manager reports `ErrSecretDeleted` only when an invalid-request error
+  indicates pending deletion. Other invalid requests retain their original error.
 
 ## Migration from Old Implementation
 
@@ -361,7 +394,7 @@ data, err := client.GetObject(ctx, "bucket", "key")
 3. **Errors over panics**: All failures return errors
 4. **Interfaces for testing**: Every client can be mocked
 5. **Context everywhere**: Cancellation and timeouts are first-class
-6. **Safe defaults**: Sensible retry and timeout configurations
+6. **Safe defaults**: Sensible retries; callers set timeouts on their contexts
 7. **Minimal surface**: Only expose what's necessary
 
 ## Contributing

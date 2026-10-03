@@ -6,7 +6,7 @@
 //   - Bucket operations: List objects with filtering
 //   - Streaming uploads and downloads
 //   - Automatic content type detection
-//   - Parallel operations for batch processing
+//   - Concurrent multipart uploads and downloads
 //
 // # Client Creation
 //
@@ -17,18 +17,21 @@
 //	    return err
 //	}
 //
-//	client := s3.NewClient(cfg)
+//	client, err := s3.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
 //	// Upload an object
-//	err := client.PutObject(ctx, "my-bucket", "path/to/file.txt", data)
+//	err = client.PutObject(ctx, "my-bucket", "path/to/file.txt", data)
 //
 //	// Download an object
 //	data, err := client.GetObject(ctx, "my-bucket", "path/to/file.txt")
 //
 //	// Delete an object
-//	err := client.DeleteObject(ctx, "my-bucket", "path/to/file.txt")
+//	err = client.DeleteObject(ctx, "my-bucket", "path/to/file.txt")
 //
 //	// List objects
 //	objects, err := client.ListObjects(ctx, "my-bucket", s3.WithPrefix("path/"))
@@ -37,13 +40,21 @@
 //
 // For testing, use the interface-based client:
 //
+// Implement s3.API with a mock and pass it to the constructor. For example,
+// this mock supports GetObject; it embeds s3.API for the unused operations.
+// Import bytes, context, and io, and alias the SDK service package as s3sdk.
+//
 //	type mockS3API struct {
 //	    s3.API
-//	    getObjectFunc func(...) (...)
+//	    data []byte
 //	}
 //
-//	mock := &mockS3API{
-//	    getObjectFunc: func(...) (...) { ... },
+//	func (m *mockS3API) GetObject(ctx context.Context, input *s3sdk.GetObjectInput, opts ...func(*s3sdk.Options)) (*s3sdk.GetObjectOutput, error) {
+//	    return &s3sdk.GetObjectOutput{Body: io.NopCloser(bytes.NewReader(m.data))}, nil
 //	}
-//	client := s3.NewClientWithAPI(mock)
+//
+// In a test function:
+//
+//	mock := &mockS3API{data: []byte("content")}
+//	client := s3.NewClientWithAPI(mock, nil, nil)
 package s3

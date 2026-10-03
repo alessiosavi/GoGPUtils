@@ -89,7 +89,7 @@ func (c *Client) GetSecretString(ctx context.Context, secretName string, opts ..
 			return "", ErrSecretNotFound
 		}
 
-		if isInvalidRequest(err) {
+		if isSecretDeleted(err) {
 			return "", ErrSecretDeleted
 		}
 
@@ -132,7 +132,7 @@ func (c *Client) GetSecretBinary(ctx context.Context, secretName string, opts ..
 			return nil, ErrSecretNotFound
 		}
 
-		if isInvalidRequest(err) {
+		if isSecretDeleted(err) {
 			return nil, ErrSecretDeleted
 		}
 

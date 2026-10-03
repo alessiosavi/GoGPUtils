@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/alessiosavi/GoGPUtils/aws"
-	awssdk "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 // TestConfig holds configuration for integration tests.
@@ -93,18 +93,6 @@ func MustLoadConfig(t *testing.T) *TestConfig {
 func LoadConfig(ctx context.Context) (*aws.Config, error) {
 	endpoint := LocalStackEndpoint()
 
-	// Use custom endpoint resolver for LocalStack
-	customResolver := awssdk.EndpointResolverWithOptionsFunc(
-		func(service, region string, options ...interface{}) (awssdk.Endpoint, error) {
-			return awssdk.Endpoint{
-				URL:               endpoint,
-				HostnameImmutable: true,
-				PartitionID:       "aws",
-				SigningRegion:     DefaultRegion,
-			}, nil
-		},
-	)
-
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(DefaultRegion),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
@@ -112,7 +100,15 @@ func LoadConfig(ctx context.Context) (*aws.Config, error) {
 			TestSecretAccessKey,
 			"",
 		)),
-		config.WithEndpointResolverWithOptions(customResolver),
+		config.WithBaseEndpoint(endpoint),
+		config.WithServiceOptions(func(serviceID string, options any) {
+			// Keep S3 requests on the configured LocalStack host, including localhost.
+			if serviceID == s3.ServiceID {
+				if opts, ok := options.(*s3.Options); ok {
+					opts.UsePathStyle = true
+				}
+			}
+		}),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)

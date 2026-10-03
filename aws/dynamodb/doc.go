@@ -2,10 +2,10 @@
 //
 // # Features
 //
-//   - Item operations: Get, Put, Delete, Update with automatic marshaling
-//   - Batch operations: BatchGet, BatchWrite with automatic chunking
+//   - Item operations: Get, Put, Delete with automatic marshaling
+//   - Batch writes and deletes with automatic chunking and lossless raw APIs
 //   - Scan and Query with pagination support
-//   - Table operations: Create, Delete
+//   - Additional SDK operations through API(), including BatchGet, Update, and table operations
 //
 // # Client Creation
 //
@@ -16,7 +16,10 @@
 //	    return err
 //	}
 //
-//	client := dynamodb.NewClient(cfg)
+//	client, err := dynamodb.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
@@ -29,14 +32,14 @@
 //
 //	// Put an item
 //	user := User{ID: "user-123", Email: "alice@example.com", Name: "Alice"}
-//	err := client.PutItem(ctx, "users", user)
+//	err = client.PutItem(ctx, "users", user)
 //
 //	// Get an item
 //	var result User
-//	err := client.GetItem(ctx, "users", dynamodb.Key{"pk": "user-123"}, &result)
+//	err = client.GetItem(ctx, "users", dynamodb.Key{"pk": "user-123"}, &result)
 //
 //	// Delete an item
-//	err := client.DeleteItem(ctx, "users", dynamodb.Key{"pk": "user-123"})
+//	err = client.DeleteItem(ctx, "users", dynamodb.Key{"pk": "user-123"})
 //
 // # Testing
 //

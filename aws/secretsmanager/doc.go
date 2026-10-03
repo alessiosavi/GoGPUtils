@@ -15,7 +15,10 @@
 //	    return err
 //	}
 //
-//	client := secretsmanager.NewClient(cfg)
+//	client, err := secretsmanager.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 //
 // # Basic Operations
 //
@@ -24,7 +27,7 @@
 //
 //	// Get and unmarshal a JSON secret
 //	var config DBConfig
-//	err := client.GetSecretJSON(ctx, "db-credentials", &config)
+//	err = client.GetSecretJSON(ctx, "db-credentials", &config)
 //
 //	// List all secrets
 //	secrets, err := client.ListSecrets(ctx)

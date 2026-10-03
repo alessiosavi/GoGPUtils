@@ -39,7 +39,10 @@ type Client struct {
 //	if err != nil {
 //	    return err
 //	}
-//	client := lambda.NewClient(cfg)
+//	client, err := lambda.NewClient(cfg)
+//	if err != nil {
+//	    return err
+//	}
 func NewClient(cfg *aws.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, aws.ErrNilConfig

@@ -12,7 +12,8 @@ import (
 // DefaultRetryMaxAttempts is the default number of retry attempts for AWS operations.
 const DefaultRetryMaxAttempts = 3
 
-// DefaultTimeout is the default timeout for AWS operations.
+// DefaultTimeout is a suggested timeout for caller-created contexts.
+// Operations use the caller's context and do not apply this timeout automatically.
 const DefaultTimeout = 30 * time.Second
 
 // Config wraps aws.Config with additional helper methods.
@@ -68,11 +69,12 @@ func WithRetryMaxAttempts(attempts int) ConfigOption {
 }
 
 // WithRetryMode sets the retry mode (standard or adaptive).
-// Default is adaptive retry mode.
+// Default is adaptive retry mode. RetryMode constants come from the SDK aws
+// package (aliased as awssdk in the example).
 //
 // Example:
 //
-//	cfg, err := aws.LoadConfig(ctx, aws.WithRetryMode(aws.RetryModeAdaptive))
+//	cfg, err := aws.LoadConfig(ctx, aws.WithRetryMode(awssdk.RetryModeAdaptive))
 func WithRetryMode(mode aws.RetryMode) ConfigOption {
 	return func(o *configOptions) {
 		o.retryMode = mode
@@ -149,15 +151,22 @@ func LoadConfig(ctx context.Context, opts ...ConfigOption) (*Config, error) {
 		loadOpts = append(loadOpts, config.WithCredentialsProvider(options.credentials))
 	}
 
+	if options.endpoint != "" {
+		loadOpts = append(loadOpts, config.WithBaseEndpoint(options.endpoint))
+	}
+
 	// Configure retry behavior
 	loadOpts = append(loadOpts, config.WithRetryer(func() aws.Retryer {
+		standardOptions := func(o *retry.StandardOptions) {
+			o.MaxAttempts = options.retryMaxAttempts
+		}
+		if options.retryMode == aws.RetryModeStandard {
+			return retry.NewStandard(standardOptions)
+		}
+
 		return retry.NewAdaptiveMode(
 			func(o *retry.AdaptiveModeOptions) {
-				o.StandardOptions = append(o.StandardOptions,
-					func(so *retry.StandardOptions) {
-						so.MaxAttempts = options.retryMaxAttempts
-					},
-				)
+				o.StandardOptions = append(o.StandardOptions, standardOptions)
 			},
 		)
 	}))
