@@ -279,3 +279,49 @@ func (c *inner[K, V]) length() int {
 
 	return n
 }
+
+func (c *inner[K, V]) ttlOf(key K) (time.Duration, bool) {
+	if !reflexive(key) {
+		return 0, false
+	}
+
+	s := c.shardFor(key)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	e, ok := s.items[key]
+	if !ok {
+		return 0, false
+	}
+	if e.expiresAt == 0 {
+		return NoExpiration, true
+	}
+
+	now := c.now()
+	if e.expired(now) {
+		return 0, false
+	}
+
+	return time.Duration(e.expiresAt - now), true
+}
+
+func (c *inner[K, V]) deleteExpired() int {
+	removed := 0
+	for _, s := range c.shards {
+		var rec []removal[K, V]
+		s.mu.Lock()
+		now := c.now()
+		for e := s.tail; e != nil; {
+			next := e.next
+			if e.expired(now) {
+				s.remove(e, ReasonExpired, c.recorder(&rec))
+				removed++
+			}
+			e = next
+		}
+		s.mu.Unlock()
+		c.dispatch(rec)
+	}
+
+	return removed
+}

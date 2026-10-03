@@ -349,3 +349,22 @@ func (c *Cache[K, V]) Len() int { return c.in.length() }
 // Clear removes every entry (reported with ReasonDeleted). It is not atomic
 // across shards. Stats are kept.
 func (c *Cache[K, V]) Clear() { c.in.clear() }
+
+// SetWithTTL stores value under key. ttl == 0 uses the default TTL, ttl < 0
+// (e.g. NoExpiration) never expires, and ttl > 0 expires after ttl.
+//
+// Example:
+//
+//	c.SetWithTTL("session", token, 15*time.Minute)
+func (c *Cache[K, V]) SetWithTTL(key K, value V, ttl time.Duration) {
+	c.in.setWithTTL(key, value, ttl)
+}
+
+// TTL returns the remaining lifetime of key: NoExpiration for entries without
+// a deadline, and (0, false) for missing or expired keys. It never removes
+// entries.
+func (c *Cache[K, V]) TTL(key K) (time.Duration, bool) { return c.in.ttlOf(key) }
+
+// DeleteExpired removes every expired entry and returns how many were
+// removed. It processes one shard at a time.
+func (c *Cache[K, V]) DeleteExpired() int { return c.in.deleteExpired() }
