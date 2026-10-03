@@ -11,7 +11,7 @@ File system operations with proper error handling.
 
 ## Overview
 
-The `fileutil` package provides a comprehensive set of file system operations that follow Go best practices. All functions return errors instead of panicking, accept `context.Context` for cancellable operations, and close resources properly using `defer`.
+The `fileutil` package provides file system operations with error returns for fallible operations, `context.Context` support for reads and transfers, and automatic file handle cleanup. Writers report close errors when writing succeeds.
 
 ```go
 import "github.com/alessiosavi/GoGPUtils/fileutil"
@@ -23,7 +23,7 @@ This package adheres to the following principles:
 
 - **Errors over panics**: All functions return errors instead of panicking, allowing callers to handle failures gracefully
 - **Context-aware**: Long-running operations accept `context.Context` for cancellation and timeout support
-- **Resource safety**: All file handles are closed properly using `defer`
+- **Resource safety**: File handles are closed, and writers check close errors
 - **Zero external dependencies**: Uses only the Go standard library
 
 ---
@@ -82,6 +82,7 @@ var (
     ErrNotDir       = errors.New("path is not a directory")
     ErrNotExist     = errors.New("path does not exist")
     ErrReadCanceled = errors.New("read operation canceled")
+    ErrSameFile     = errors.New("source and destination are the same file")
 )
 ```
 
@@ -187,7 +188,7 @@ func BaseName(path string) string
 
 ### ReadBytes
 
-Reads the entire file and returns its contents as bytes. Respects context cancellation before starting the read.
+Reads the entire file and returns its contents as bytes. Respects context cancellation before starting the read. The read itself is not interruptible by context cancellation; this also applies to `ReadString`.
 
 ```go
 func ReadBytes(ctx context.Context, path string) ([]byte, error)
@@ -203,7 +204,7 @@ func ReadString(ctx context.Context, path string) (string, error)
 
 ### ReadLines
 
-Reads the file and returns its contents as a slice of lines. Line terminators are stripped from each line.
+Reads the file and returns its contents as a slice of lines, with no fixed line length limit. Strips the ending newline and one trailing carriage return. Includes a final unterminated line; an empty file returns a nil slice. Checks context cancellation before opening and between reads, including while reading a long line. An operating-system read already in progress cannot be interrupted by the context.
 
 ```go
 func ReadLines(ctx context.Context, path string) ([]string, error)
@@ -211,7 +212,7 @@ func ReadLines(ctx context.Context, path string) ([]string, error)
 
 ### ReadLinesN
 
-Reads the first n lines from a file. If n <= 0, reads all lines.
+Reads the first n lines from a file. If n <= 0, reads all lines. Line lengths, terminators, and cancellation behave as in `ReadLines`. For an empty file, a positive limit returns an empty non-nil slice.
 
 ```go
 func ReadLinesN(ctx context.Context, path string, n int) ([]string, error)
@@ -219,7 +220,7 @@ func ReadLinesN(ctx context.Context, path string, n int) ([]string, error)
 
 ### CountLines
 
-Counts the number of lines in a file. More memory-efficient than `ReadLines` for large files.
+Counts the number of lines in a file, including a final unterminated line. Returns the same count as `len(ReadLines(...))`: `"a"` has one line, `"a\nb"` has two, `"a\n"` has one, and an empty file has zero. Uses a fixed-size buffer for better memory efficiency than `ReadLines` on large files.
 
 ```go
 func CountLines(ctx context.Context, path string) (int, error)
@@ -255,7 +256,7 @@ func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.
 
 ### AppendBytes
 
-Appends data to a file, creating it if necessary.
+Appends data to a file, creating it if necessary. Returns a close error when the write succeeded; if writing fails, that error takes precedence. This also applies to `AppendString` and `AppendLine`.
 
 ```go
 func AppendBytes(path string, data []byte, perm fs.FileMode) error
@@ -327,7 +328,13 @@ func DirSize(ctx context.Context, dir string) (int64, error)
 
 ### Copy
 
-Copies a file from src to dst. Creates destination directory if needed.
+Copies a file from src to dst, creating the destination directory if needed. Returns `ErrSameFile` without changing the file when the paths refer to the same file, including hard links and symbolic links.
+
+Writes to a temporary file in the destination directory, applies the source mode, checks the close error, and renames the completed file over dst. Errors before the rename leave any existing destination intact and clean up the temporary file. The rename has the platform guarantees of `os.Rename`; no crash-durability guarantee is made.
+
+Replacement changes the destination's file identity: a destination symbolic link is replaced, and other hard links to the old destination retain their contents. Replacement requires write permission on the destination directory, and existing destination metadata is replaced by the new file's metadata, with mode copied from the source.
+
+Checks context cancellation before starting, between reads, and before the final rename. Cancellation cannot interrupt a read or write already blocked in the operating system, or undo a rename already in progress. A destination directory created before cancellation can remain.
 
 ```go
 func Copy(ctx context.Context, src, dst string) error
@@ -335,7 +342,11 @@ func Copy(ctx context.Context, src, dst string) error
 
 ### Move
 
-Moves a file from src to dst. Attempts rename first, falls back to copy+delete.
+Moves a file from src to dst. Checks context cancellation before any side effect, creates the destination directory if needed, then attempts rename. Falls back to `Copy` followed by source removal only for a cross-device (`EXDEV`, or `ERROR_NOT_SAME_DEVICE` on Windows) rename error. Other rename errors are returned unchanged without overwriting the destination. On Plan 9, rename cannot move files across directories, so every rename error triggers the legacy copy fallback, including unrelated errors.
+
+On Windows, renaming over a destination held open by another process can fail with an access-denied error. `Move` returns that error without copying; callers should retry or close the destination first.
+
+If copying succeeds but source removal fails, both files remain. The returned error describes the successful copy and wraps the removal error for inspection with `errors.Is` or `errors.As`.
 
 ```go
 func Move(ctx context.Context, src, dst string) error
@@ -371,7 +382,7 @@ func NormalizeLineTerminators(data []byte, target LineTerminator) []byte
 
 ### DetectFileLineTerminator
 
-Detects line terminator style in a file. Reads only the beginning of the file for efficiency.
+Detects line terminator style in a file. Checks context cancellation before opening and reads only the beginning of the file for efficiency.
 
 ```go
 func DetectFileLineTerminator(ctx context.Context, path string) (LineTerminator, error)
@@ -443,7 +454,7 @@ func Split(path string) (dir, file string)
 
 ### TempFile
 
-Creates a temporary file and returns its path. The caller is responsible for removing the file.
+Creates a temporary file and returns its path. The caller is responsible for removing the file. If closing fails, removes the temporary file and returns the close error.
 
 ```go
 func TempFile(dir, pattern string) (string, error)
@@ -471,7 +482,7 @@ func SameFile(path1, path2 string) bool
 
 ### Context-Aware File Reading
 
-All read operations support context cancellation for graceful timeout and shutdown handling:
+Read operations check context cancellation before opening. Line readers also check between reads; `ReadBytes` and `ReadString` cannot interrupt a read once started:
 
 ```go
 package main
@@ -709,6 +720,7 @@ The `fileutil` package follows the Go idiom of **errors over panics**. Every fun
 | `ErrNotFile`               | Operation expects a file but path is a directory |
 | `ErrNotDir`                | Operation expects a directory but path is a file |
 | `ErrNotExist`              | Path does not exist (where applicable)           |
+| `ErrSameFile`              | Copy source and destination identify the same file |
 | `context.Canceled`         | Operation was canceled via context               |
 | `context.DeadlineExceeded` | Operation timed out via context                  |
 
@@ -742,4 +754,4 @@ if err := fileutil.Copy(ctx, src, dst); err != nil {
 - `ReadLinesN` is efficient for reading just the beginning of large files
 - `List` with `Recursive` uses `filepath.WalkDir` which is efficient for deep directory trees
 - `Copy` preserves file permissions from the source file
-- `Move` attempts a fast rename first before falling back to copy+delete
+- `Move` attempts a fast rename first and falls back to copy+delete only across filesystems (or after any rename error on Plan 9)
