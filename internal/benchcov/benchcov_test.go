@@ -12,7 +12,7 @@ import (
 
 // enforce turns TestRepository from a progress report into the coverage gate.
 // The final rollout task sets it to true.
-const enforce = false
+const enforce = true
 
 const repoModule = "github.com/alessiosavi/GoGPUtils"
 
