@@ -9,3 +9,4 @@ coverage.out
 integration-coverage.out
 benchmark.txt
 *.prof
+bench-out/
