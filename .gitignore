@@ -1,0 +1,11 @@
+.worktrees/
+.omo/
+.playwright-mcp/
+.ruff_cache/
+graphify-out/cache/
+.DS_Store
+*.test
+coverage.out
+integration-coverage.out
+benchmark.txt
+*.prof

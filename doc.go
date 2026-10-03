@@ -8,7 +8,8 @@
 //   - Errors over panics: All functions return errors instead of panicking
 //   - Zero global state: No singletons; all state is explicit
 //   - Generic when useful: Uses generics to reduce duplication without over-abstraction
-//   - Minimal dependencies: Core library has zero external dependencies
+//   - Minimal dependencies: Utilities use the standard library, with golang.org/x/text
+//     for Unicode text processing in stringutil and textnorm; AWS helpers use the AWS SDK v2
 //   - Context-aware: Blocking operations accept context.Context
 //
 // # Packages

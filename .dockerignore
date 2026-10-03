@@ -1,0 +1,12 @@
+.git
+.worktrees/
+.omo/
+.playwright-mcp/
+.serena/
+graphify-out/
+docs/
+*.test
+coverage.out
+integration-coverage.out
+benchmark.txt
+*.prof

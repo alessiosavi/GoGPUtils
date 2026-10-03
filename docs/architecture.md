@@ -9,13 +9,12 @@ This page describes the structure, design patterns, and relationships between Go
 
 ## Package Overview
 
-GoGPUtils is organized into three layers: **Core utilities** (stdlib only), **Text processing** (one external dep), and **AWS SDK wrappers** (many external deps).
+GoGPUtils is organized into three layers: **Core utilities** (no external dependencies), **Text processing** (`stringutil` and `textnorm`, using `golang.org/x/text`), and **AWS SDK wrappers** (many external dependencies).
 
 ```mermaid
 graph TB
     subgraph Core["Core Utilities (stdlib only)"]
         SL[sliceutil]
-        STR[stringutil]
         M[mathutil]
         F[fileutil]
         RD[randutil]
@@ -24,6 +23,7 @@ graph TB
     end
 
     subgraph Text["Text Processing (+1 dep)"]
+        STR[stringutil]
         TN[textnorm]
         SW[textnorm/stopwords]
     end
@@ -37,8 +37,6 @@ graph TB
         L[aws/lambda]
     end
 
-    TN --> STR
-    S3 --> DDB
     style Core fill:#e8f5e9
     style Text fill:#fff3e0
     style AWS fill:#fce4ec
@@ -73,48 +71,35 @@ graph TB
 
 ### Core Layer (stdlib only)
 
-These packages import **only** the Go standard library:
+The `collection`, `sliceutil`, `mathutil`, `fileutil`, `cryptoutil`, and `randutil`
+packages import only the Go standard library (excluding tests).
 
-```
-collection  → cmp, slices
-sliceutil   → internal/constraints
-stringutil  → internal/constraints
-mathutil    → internal/constraints
-fileutil    → (stdlib only)
-cryptoutil  → crypto/aes, crypto/cipher, crypto/rand
-randutil    → crypto/rand, math/rand
-```
-
-The `internal/constraints` package is a shared type-bound package:
-
-```go
-// Used by sliceutil, stringutil, mathutil
-type Number interface { ~int | ~int8 | ... | ~float32 | ~float64 }
-type Integer interface { ~int | ~int8 | ... | ~uint64 }
-type Ordered interface { ~int | ~int8 | ... | ~string }
-```
+`internal/constraints` defines numeric and ordered type constraints but currently has no importers.
+`mathutil` declares its own `Number`, `Integer`, and `Float` constraints;
+`sliceutil` and `collection` use `cmp.Ordered` for ordered types.
 
 ### Text Layer
 
+Non-standard-library imports are summarized below:
+
 ```
-textnorm  → stringutil (for case folding)
-          → textnorm/stopwords (embedded word lists)
-          → golang.org/x/text (Unicode normalization)
+stringutil → golang.org/x/text (Unicode normalization and accent removal)
+textnorm   → golang.org/x/text (Unicode normalization, case folding, and width folding)
 ```
 
-This is the only non-AWS package with an external dependency (`x/text`).
+`stringutil` and `textnorm` share one external dependency (`golang.org/x/text`).
+`textnorm/stopwords` uses only the standard library.
 
 ### AWS Layer
 
-All AWS service packages import from `aws/config` and `aws/errors`:
+All AWS service packages import the shared `aws` package, which contains
+`config.go` and `errors.go`, plus the corresponding AWS SDK v2 service packages.
+The diagram shows dependencies between local packages, excluding tests:
 
 ```mermaid
 graph LR
     subgraph Base["Base Packages"]
-        CFG[aws/config]
-        ERR[aws/errors]
-        PAG[aws/internal/pagination]
-        TST[aws/internal/testutil]
+        AWS[aws]
     end
 
     subgraph Services["Service Packages"]
@@ -126,34 +111,20 @@ graph LR
         L[aws/lambda]
     end
 
-    S3 --> CFG
-    S3 --> ERR
-    S3 --> PAG
-    DDB --> CFG
-    DDB --> ERR
-    DDB --> PAG
-    SQS --> CFG
-    SQS --> ERR
-    SQS --> PAG
-    SSM --> CFG
-    SSM --> ERR
-    SM --> CFG
-    SM --> ERR
-    L --> CFG
-    L --> ERR
+    S3 --> AWS
+    DDB --> AWS
+    SQS --> AWS
+    SSM --> AWS
+    SM --> AWS
+    L --> AWS
 ```
 
-**Key insight:** Every AWS service constructor follows the same pattern:
+The service packages do not import one another. `aws/internal/pagination` currently
+has no importers. `aws/internal/testutil` imports `aws` and is used by the S3,
+DynamoDB, SQS, SSM, and Secrets Manager integration tests.
 
-```go
-func NewClient(ctx context.Context, region string) (*Client, error) {
-    cfg, err := awsconfig.Load(ctx, region)
-    if err != nil {
-        return nil, errors.WrapError(err, "failed to load AWS config")
-    }
-    return NewClientWithConfig(cfg), nil
-}
-```
+All service constructors accept a `*aws.Config`, loaded separately with
+`aws.LoadConfig`; the S3 constructor also accepts client options.
 
 ## Design Patterns
 
@@ -279,6 +250,7 @@ Based on lines of code per function, these are the most complex areas:
 
 | Package  | External Dependencies   | Why                   |
 | -------- | ----------------------- | --------------------- |
-| Core (7) | 0                       | Pure stdlib           |
-| textnorm | 1 (`golang.org/x/text`) | Unicode normalization |
+| Core (6) | 0                       | Standard library only |
+| stringutil, textnorm | 1 shared (`golang.org/x/text`) | Unicode text processing |
+| textnorm/stopwords | 0              | Embedded word lists   |
 | aws/*    | 15 (`aws-sdk-go-v2/*`)  | AWS service clients   |
