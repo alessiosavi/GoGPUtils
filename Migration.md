@@ -221,7 +221,7 @@ odds := randutil.RangeStep(1, 10, 2) // [1, 3, 5, 7, 9]
 2. **No global state** - All state is explicit; no singletons or hidden dependencies
 3. **Context-aware** - I/O operations accept `context.Context` for cancellation
 4. **Generic where useful** - Uses generics to reduce duplication without over-abstraction
-5. **Zero external dependencies** - Core library has no external dependencies
+5. **Minimal dependencies** - Utilities use the standard library, with `golang.org/x/text` for Unicode text processing; AWS helpers use the AWS SDK v2
 6. **Nil-safe** - Functions handle nil inputs gracefully
 
 ## Testing
