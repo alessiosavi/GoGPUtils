@@ -60,7 +60,7 @@ u, err := c.GetOrLoad(ctx, "bob", func(ctx context.Context) (User, error) {
 
 ## Eviction (SIEVE)
 
-When a shard is full, a hand walks from the oldest entry toward the newest: recently used entries get a second chance, and the first unused (or expired) entry is removed. Hits only set an atomic bit, so `Get` runs under a read lock and scales with readers. `MaxEntries` is split exactly across shards, so `Len()` never exceeds it when `MaxEntries > 0`; zero means unbounded.
+When a shard is full, a hand walks from the oldest entry toward the newest: recently used entries get a second chance, and the first unused (or expired) entry is removed. Hits take only the shard's read lock and set an atomic bit, so reads on different shards do not contend. `MaxEntries` is split exactly across shards, so `Len()` never exceeds it when `MaxEntries > 0`; zero means unbounded. Capacity is enforced per shard, so evictions can begin slightly before `Len()` reaches `MaxEntries`. A cache bounded below 2048 entries gets one shard by default (exact global SIEVE order), where parallel readers contend on one lock; set `Shards` explicitly for read-heavy parallel workloads on small caches.
 
 ## Expiration
 
@@ -89,7 +89,7 @@ When a shard is full, a hand walks from the oldest entry toward the newest: rece
 | `ReasonDeleted` | `Delete`, `Clear` | — |
 | `ReasonReplaced` | `Set` over a live key | — |
 
-`OnEvict` runs outside internal locks in the goroutine that caused the removal and may call any method except `Close`. Callbacks from different goroutines may run concurrently; within an operation they follow removal order. Callback panics are not recovered and skip the rest of the batch; a panic in a janitor or load goroutine terminates the process. `Stats()` also reports `Hits`, `Misses`, `Loads`, `LoadErrors`, and `HitRatio()`. `All()` iterates live entries (per-shard snapshot, unspecified order) without affecting stats or eviction order.
+`OnEvict` runs outside internal locks in the goroutine that caused the removal and may call any method except `Close`. Callbacks from different goroutines may run concurrently; within an operation they follow removal order. Callback panics are not recovered and skip the rest of the batch (Clear and DeleteExpired still finish every shard, without callbacks, before the panic propagates); a panic in a janitor or load goroutine terminates the process. `Stats()` also reports `Hits`, `Misses`, `Loads`, `LoadErrors`, and `HitRatio()`. `All()` iterates live entries (per-shard snapshot, unspecified order) without affecting stats or eviction order.
 
 ## Keys and values
 

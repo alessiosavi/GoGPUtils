@@ -299,7 +299,9 @@ Non-reflexive key → §3.1.
   callback running on the janitor would wait for itself). Documented.
 - A panicking callback panics its goroutine and skips the rest of that batch;
   in the janitor or a load goroutine this terminates the process (documented,
-  not recovered).
+  not recovered). Clear and DeleteExpired still finish every remaining shard
+  (removals, counters, and for Clear load invalidation) without callbacks before
+  the panic propagates.
 
 ### 4.6 Janitor and lifecycle
 
@@ -462,3 +464,4 @@ this spec.
 - **Codex round 3 (2026-10-03): N1–N3, F12 resolved; F2/F3/F12 fully resolved;
   N4 accepted as prescribed** — post-invalidation callers do a normal lookup
   (live value after `Set` is a hit; new generation only on a miss) (§4.4, §6).
+- **Final whole-branch review (2026-10-03): 1 Important accepted** — a panicking callback during a multi-shard Clear/DeleteExpired no longer leaves later shards unprocessed (§4.5); docs corrected for single-shard read contention and per-shard capacity.

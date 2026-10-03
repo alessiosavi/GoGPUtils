@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"maps"
 	"sync/atomic"
 	"testing"
@@ -158,6 +159,125 @@ func TestOnEvict_PanicLeavesCacheUsable(t *testing.T) {
 		}()
 		if v, ok := c.Get(2); !ok || v != 2 {
 			t.Fatal("cache unusable after a callback panic")
+		}
+		checkInvariants(t, c)
+	})
+}
+
+func TestClear_PanickingOnEvictStillClearsEveryShard(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		const panicValue = "callback failed"
+		var armed atomic.Bool
+		var callbacks atomic.Int64
+		c, _ := newTestCache(t, Config[int, int]{Shards: 4, OnEvict: func(int, int, EvictionReason) {
+			callbacks.Add(1)
+			if armed.CompareAndSwap(true, false) {
+				panic(panicValue)
+			}
+		}})
+		// Two entries per shard also exercise skipping the current shard's
+		// remaining callbacks. Choose keys by their actual shard mapping.
+		key := 0
+		for _, s := range c.in.shards {
+			for n := 0; n < 2; key++ {
+				if c.in.shardFor(key) == s {
+					c.Set(key, key)
+					n++
+				}
+			}
+		}
+		for c.in.shardFor(key) != c.in.shards[len(c.in.shards)-1] {
+			key++
+		}
+		load, started, release := blockingLoader(777)
+		defer release()
+		waiter := loadAsync(context.Background(), c, key, load)
+		await(t, "last-shard loader started", started)
+		before := c.Stats()
+
+		armed.Store(true)
+		func() {
+			defer func() {
+				if got := recover(); got != panicValue {
+					t.Errorf("Clear panic = %v, want %q", got, panicValue)
+				}
+			}()
+			c.Clear()
+		}()
+		if got := c.Len(); got != 0 {
+			t.Errorf("Len after Clear = %d, want 0", got)
+		}
+		if got := callbacks.Load(); got != 1 {
+			t.Errorf("OnEvict calls = %d, want 1", got)
+		}
+		if got := c.Stats(); got != before {
+			t.Errorf("Clear changed Stats from %+v to %+v", before, got)
+		}
+
+		release()
+		if r := recv(t, waiter); r.err != nil || r.v != 777 {
+			t.Fatalf("existing waiter got %v, %v; want 777, nil", r.v, r.err)
+		}
+		if _, ok := c.Peek(key); ok {
+			t.Error("a load that finished after Clear resurrected the last-shard key")
+		}
+		if got := c.Len(); got != 0 {
+			t.Errorf("Len after load completed = %d, want 0", got)
+		}
+		checkInvariants(t, c)
+	})
+}
+
+func TestDeleteExpired_PanickingOnEvictStillProcessesEveryShard(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		const panicValue = "callback failed"
+		var armed atomic.Bool
+		var callbacks atomic.Int64
+		c, clk := newTestCache(t, Config[int, int]{Shards: 4, OnEvict: func(int, int, EvictionReason) {
+			callbacks.Add(1)
+			if armed.CompareAndSwap(true, false) {
+				panic(panicValue)
+			}
+		}})
+		// Put two expiring entries and one non-expiring entry in every shard.
+		retained := make(map[int]int)
+		key := 0
+		for _, s := range c.in.shards {
+			for n := 0; n < 3; key++ {
+				if c.in.shardFor(key) != s {
+					continue
+				}
+				if n < 2 {
+					c.SetWithTTL(key, key, time.Second)
+				} else {
+					c.SetWithTTL(key, key, NoExpiration)
+					retained[key] = key
+				}
+				n++
+			}
+		}
+		clk.advance(2 * time.Second)
+
+		armed.Store(true)
+		func() {
+			defer func() {
+				if got := recover(); got != panicValue {
+					t.Errorf("DeleteExpired panic = %v, want %q", got, panicValue)
+				}
+			}()
+			c.DeleteExpired()
+		}()
+		if got := c.Len(); got != len(retained) {
+			t.Errorf("Len after DeleteExpired = %d, want %d", got, len(retained))
+		}
+		if got := maps.Collect(c.All()); !maps.Equal(got, retained) {
+			t.Errorf("remaining live entries = %v, want %v", got, retained)
+		}
+		if got := c.Stats(); got != (Stats{Expirations: 8}) {
+			t.Errorf("Stats = %+v, want only 8 expirations", got)
+		}
+		if got := callbacks.Load(); got != 1 {
+			t.Errorf("OnEvict calls = %d, want 1", got)
 		}
 		checkInvariants(t, c)
 	})

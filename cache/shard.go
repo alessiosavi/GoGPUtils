@@ -261,21 +261,34 @@ func (c *inner[K, V]) delete(key K) bool {
 }
 
 func (c *inner[K, V]) clear() {
+	processed := 0
+	defer func() {
+		// A callback panic skips callbacks, but not the remaining shards.
+		for _, s := range c.shards[processed:] {
+			c.clearShard(s, nil)
+		}
+	}()
+
 	for _, s := range c.shards {
 		var rec []removal[K, V]
-		s.mu.Lock()
-		for key, cl := range s.inflight {
-			cl.invalidated = true
-			delete(s.inflight, key)
-		}
-		for e := s.tail; e != nil; {
-			next := e.next
-			s.remove(e, ReasonDeleted, c.recorder(&rec))
-			e = next
-		}
-		s.mu.Unlock()
+		c.clearShard(s, c.recorder(&rec))
+		processed++ // The shard is complete before its callbacks run.
 		c.dispatch(rec)
 	}
+}
+
+func (c *inner[K, V]) clearShard(s *shard[K, V], rec *[]removal[K, V]) {
+	s.mu.Lock()
+	for key, cl := range s.inflight {
+		cl.invalidated = true
+		delete(s.inflight, key)
+	}
+	for e := s.tail; e != nil; {
+		next := e.next
+		s.remove(e, ReasonDeleted, rec)
+		e = next
+	}
+	s.mu.Unlock()
 }
 
 func (c *inner[K, V]) length() int {
@@ -315,22 +328,38 @@ func (c *inner[K, V]) ttlOf(key K) (time.Duration, bool) {
 }
 
 func (c *inner[K, V]) deleteExpired() int {
+	processed := 0
+	defer func() {
+		// A callback panic skips callbacks, but not the remaining shards.
+		for _, s := range c.shards[processed:] {
+			c.deleteExpiredShard(s, nil)
+		}
+	}()
+
 	removed := 0
 	for _, s := range c.shards {
 		var rec []removal[K, V]
-		s.mu.Lock()
-		now := c.now()
-		for e := s.tail; e != nil; {
-			next := e.next
-			if e.expired(now) {
-				s.remove(e, ReasonExpired, c.recorder(&rec))
-				removed++
-			}
-			e = next
-		}
-		s.mu.Unlock()
+		removed += c.deleteExpiredShard(s, c.recorder(&rec))
+		processed++ // The shard is complete before its callbacks run.
 		c.dispatch(rec)
 	}
+
+	return removed
+}
+
+func (c *inner[K, V]) deleteExpiredShard(s *shard[K, V], rec *[]removal[K, V]) int {
+	removed := 0
+	s.mu.Lock()
+	now := c.now()
+	for e := s.tail; e != nil; {
+		next := e.next
+		if e.expired(now) {
+			s.remove(e, ReasonExpired, rec)
+			removed++
+		}
+		e = next
+	}
+	s.mu.Unlock()
 
 	return removed
 }

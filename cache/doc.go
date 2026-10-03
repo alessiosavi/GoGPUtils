@@ -21,10 +21,14 @@
 //
 // When a shard is full, SIEVE (NSDI'24) picks the victim: a hand walks from
 // the oldest entry toward the newest, giving recently used entries a second
-// chance. Hits only set an atomic bit, so Get scales under a read lock.
-// Expired entries the hand reaches are removed first. The cache is split into
+// chance. Expired entries the hand reaches are removed first. Hits take only
+// the shard's read lock and set an atomic bit. The cache is split into
 // power-of-two shards; MaxEntries is divided exactly across them, so Len never
-// exceeds it when MaxEntries > 0 (0 means unbounded).
+// exceeds it when MaxEntries > 0 (0 means unbounded). Capacity is enforced per
+// shard, so evictions can begin slightly before Len reaches MaxEntries. The
+// automatic shard count gives a cache bounded below 2048 entries a single
+// shard (exact global SIEVE order), where parallel readers contend on one
+// lock; set Config.Shards for read-heavy parallel workloads on small caches.
 //
 // # Expiration
 //
@@ -55,8 +59,9 @@
 // Config.OnEvict runs outside internal locks in the goroutine that caused the
 // removal; it may call any method except Close. Callbacks from different
 // goroutines may run concurrently; each operation reports removals in removal
-// order. Callback panics are not recovered and skip the rest of the batch;
-// a panic in a janitor or load goroutine terminates the process.
+// order. Callback panics are not recovered and skip the rest of the batch (Clear
+// and DeleteExpired still finish every shard, without callbacks, before the panic
+// propagates); a panic in a janitor or load goroutine terminates the process.
 // Values are stored as-is (shallow), so
 // mutable values need their own synchronization. Keys must equal themselves:
 // NaN keys (or keys containing NaN) are never stored.
