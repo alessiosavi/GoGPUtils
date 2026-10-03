@@ -26,6 +26,13 @@ func benchCache(b *testing.B, values []int, shards int) (*Cache[int, int], []int
 	if err != nil {
 		b.Fatal(err)
 	}
+
+	return c, benchFillCache(b, c, values)
+}
+
+// benchFillCache returns keys distributed to fill the supplied cache's shards.
+func benchFillCache(b *testing.B, c *Cache[int, int], values []int) []int {
+	b.Helper()
 	keys := make([]int, 0, len(values))
 	filled := make(map[*shard[int, int]]int, len(c.in.shards))
 	for key := 0; len(keys) < len(values); key++ {
@@ -46,7 +53,7 @@ func benchCache(b *testing.B, values []int, shards int) (*Cache[int, int], []int
 		}
 	}
 
-	return c, keys
+	return keys
 }
 
 // BenchmarkNew measures empty cache construction. n is configured capacity
@@ -89,7 +96,9 @@ func BenchmarkNew(b *testing.B) {
 // removal. n is capacity and, except for expired, the initial entry count. Hit cases cycle through
 // all resident keys with one or automatic shards, serially and in parallel.
 // case=expired starts with n-1 resident entries and includes re-SetWithTTL(1ns)
-// and a Len check that verifies removal each iteration.
+// and a Len check that verifies removal each iteration. Its clock reads the real
+// monotonic clock plus an atomic offset; a measured 1us advance after SetWithTTL
+// guarantees expiry even when consecutive real clock reads return the same tick.
 func BenchmarkCache_Get(b *testing.B) {
 	benchkit.Run(b, benchkit.Sizes, func(b *testing.B, n int) {
 		values := benchkit.Ints(n)
@@ -143,13 +152,22 @@ func BenchmarkCache_Get(b *testing.B) {
 			}
 		})
 		b.Run("case=expired", func(b *testing.B) {
-			c, keys := benchCache(b, values, 0)
+			now := monotonicClock()
+			var offset atomic.Int64
+			c, err := newCache(Config[int, int]{MaxEntries: n}, func() int64 {
+				return now() + offset.Load()
+			}, testHooks{})
+			if err != nil {
+				b.Fatal(err)
+			}
+			keys := benchFillCache(b, c, values)
 			if !c.Delete(keys[0]) {
 				b.Fatal("expired setup did not remove the target key")
 			}
 			b.ReportAllocs()
 			for b.Loop() {
 				c.SetWithTTL(keys[0], values[0], time.Nanosecond)
+				offset.Add(int64(time.Microsecond))
 				if _, ok := c.Get(keys[0]); ok {
 					b.Fatal("Get returned an expired key")
 				}
@@ -327,18 +345,29 @@ func BenchmarkCache_TTL(b *testing.B) {
 
 // BenchmarkCache_DeleteExpired measures refilling n entries with a 1ns TTL
 // and deleting all of them. The refill and precondition Len check are measured;
-// each iteration requires exactly n expired removals.
+// each iteration requires exactly n expired removals. The clock reads the real
+// monotonic clock plus an atomic offset; a measured 1us advance after the refill
+// guarantees expiry even when consecutive real clock reads return the same tick.
 func BenchmarkCache_DeleteExpired(b *testing.B) {
 	benchkit.Run(b, benchkit.Sizes, func(b *testing.B, n int) {
 		b.Run("case=refill-and-expire", func(b *testing.B) {
 			values := benchkit.Ints(n)
-			c, keys := benchCache(b, values, 0)
+			now := monotonicClock()
+			var offset atomic.Int64
+			c, err := newCache(Config[int, int]{MaxEntries: n}, func() int64 {
+				return now() + offset.Load()
+			}, testHooks{})
+			if err != nil {
+				b.Fatal(err)
+			}
+			keys := benchFillCache(b, c, values)
 			c.Clear()
 			b.ReportAllocs()
 			for b.Loop() {
 				for i, key := range keys {
 					c.SetWithTTL(key, values[i], time.Nanosecond)
 				}
+				offset.Add(int64(time.Microsecond))
 				if c.Len() != n {
 					b.Fatal("DeleteExpired requires n stored entries")
 				}

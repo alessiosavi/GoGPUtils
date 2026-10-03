@@ -42,14 +42,21 @@ func BenchmarkItalian(b *testing.B) {
 	}
 }
 
-// BenchmarkLoadFromFile reads and parses 500 newline-delimited words, with
-// duplicates from benchkit's fixed 30-word vocabulary. File creation in
+// BenchmarkLoadFromFile reads and parses 500 distinct lowercase words from
+// benchkit, with no duplicates; the resulting set has 500 keys. File creation in
 // b.TempDir is setup; opening, reading, parsing and closing the same file are
 // measured each iteration. The informational language is "english"; the file
 // is not mutated and no restoration is measured.
 func BenchmarkLoadFromFile(b *testing.B) {
 	b.Run("words=500", func(b *testing.B) {
-		words := benchkit.Words(500)
+		words := benchkit.Strings(500, 8, "abcdefghijklmnopqrstuvwxyz")
+		distinct := make(map[string]struct{}, len(words))
+		for _, word := range words {
+			distinct[word] = struct{}{}
+		}
+		if len(distinct) != 500 {
+			b.Fatalf("setup has %d distinct words, want 500", len(distinct))
+		}
 		path := filepath.Join(b.TempDir(), "english.txt")
 		if err := os.WriteFile(path, []byte(strings.Join(words, "\n")+"\n"), 0o600); err != nil {
 			b.Fatal(err)
@@ -65,12 +72,19 @@ func BenchmarkLoadFromFile(b *testing.B) {
 	})
 }
 
-// BenchmarkLoadFromList constructs a set from 500 words, with duplicates from
-// benchkit's fixed 30-word vocabulary. The informational language is "english";
+// BenchmarkLoadFromList constructs a 500-key set from 500 distinct lowercase
+// words from benchkit, with no duplicates. The informational language is "english";
 // the input slice is immutable and no restoration is measured.
 func BenchmarkLoadFromList(b *testing.B) {
 	b.Run("words=500", func(b *testing.B) {
-		words := benchkit.Words(500)
+		words := benchkit.Strings(500, 8, "abcdefghijklmnopqrstuvwxyz")
+		distinct := make(map[string]struct{}, len(words))
+		for _, word := range words {
+			distinct[word] = struct{}{}
+		}
+		if len(distinct) != 500 {
+			b.Fatalf("setup has %d distinct words, want 500", len(distinct))
+		}
 		b.ReportAllocs()
 		for b.Loop() {
 			benchmarkSet = LoadFromList("english", words)

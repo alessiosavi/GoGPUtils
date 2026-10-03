@@ -10,7 +10,7 @@ Every exported function or method of the utility packages (everything except `aw
 ## Conventions
 
 - **File and names.** Each package has one `bench_test.go`. Function `Foo` is benchmarked by `BenchmarkFoo`, method `T.M` by `BenchmarkT_M`.
-- **Sub-benchmarks** are `key=value` dimensions: `n=` (input size), `type=`, `case=`, `mode=`, `order=`, `shards=`. Benchmark names and dimension values contain neither spaces nor commas, because paired-row counting reads benchstat's CSV output.
+- **Sub-benchmarks** are `key=value` dimensions: `n=` (input size), `type=`, `case=`, `mode=`, `order=`, `shards=`, `key=`, `bins=`, `files=`, `languages=`, `read=`, `words=`. Benchmark names and dimension values contain neither spaces nor commas, because paired-row counting reads benchstat's CSV output.
 - **Inputs** come from `internal/benchkit`. They are deterministic and seeded, with standard sizes `16, 1024, 65536`, or `8, 64, 512` for quadratic work.
 - **Loops.** Serial benchmarks use `for b.Loop()` with `b.ReportAllocs()`. Parallel ones use `b.RunParallel`.
 - **State.** Every iteration measures the same documented state. A benchmark that consumes its input restores it inside the loop, and its doc comment says so.
@@ -26,12 +26,13 @@ Every exported function or method of the utility packages (everything except `aw
 | `make bench-compare BASE=master [PKG] [BENCH] [COUNT=6] [BENCHTIME=500ms]` | Run BASE and the working tree, then `benchstat` |
 | `make bench-profile PKG=./sliceutil BENCH=BenchmarkFilter` | CPU and memory profiles for one package |
 | `make bench-cov` | Coverage report from `internal/benchcov` |
+| `scripts/bench.sh report RUN_DIR` | Re-print a comparison report from a saved `bench-compare` run directory |
 
 Each run directory holds `results.txt` (raw `go test` output, ready for `benchstat`), `meta.txt` (commit, dirty flag, content and suite fingerprints, Go version, `GOFLAGS`, `CGO_ENABLED`, OS/arch, CPU, exact command) and `packages.txt`.
 
 ## Comparing revisions
 
-- **Filter first.** A full comparison of every benchmark takes about two hours; pass `PKG` and `BENCH` for anything routine.
+- **Filter first.** A full unfiltered comparison is estimated to take about three hours at the defaults (500 ms per benchmark, six samples, two revisions); pass `PKG` and `BENCH` for anything routine.
 - **Samples.** Six samples (the default) are fine for a quick look. Use `COUNT=10` or more before claiming an improvement.
 - **Workloads.** Compare only paired rows whose workload is unchanged. After this suite lands, benchmark names and workloads are frozen; a changed workload gets a new case name.
 - **Environment.** `bench-compare` refuses to pair runs whose Go version, `GOFLAGS` or `CGO_ENABLED` differ.

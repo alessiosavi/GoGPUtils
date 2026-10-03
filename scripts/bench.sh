@@ -30,25 +30,29 @@ usage() {
 }
 
 # selected_pkgs DIR prints the in-scope import paths of the checkout at DIR,
-# narrowed to the PKG patterns when PKG is set. A requested package that the
-# active build cannot load is an error, never dropped silently.
+# narrowed to the PKG patterns when PKG is set. Absent packages are reported
+# and skipped so comparisons can show one-sided packages. Other load errors fail.
 selected_pkgs() {
-	local dir=$1 all listing bad want line
-	all=$(go run ./internal/benchcov/cmd/benchscope -root "$dir")
+	local dir=$1 all listing bad=0 want path err
+	all=$(go run ./internal/benchcov/cmd/benchscope -root "$dir") || return 1
 	if [[ -z ${PKG:-} ]]; then
 		printf '%s\n' "$all"
 		return
 	fi
 	# shellcheck disable=SC2086 # PKG may hold several patterns.
-	listing=$(cd "$dir" && go list -e -f '{{.ImportPath}}{{"\t"}}{{if .Error}}{{printf "%q" .Error.Err}}{{end}}' $PKG)
-	bad=$(awk -F '\t' '$2 != ""' <<<"$listing")
-	if [[ -n $bad ]]; then
-		while IFS= read -r line; do
-			printf 'bench.sh: package unavailable in %s: %s\n' "$dir" "$line" >&2
-		done <<<"$bad"
+	listing=$(cd "$dir" && go list -e -f '{{.ImportPath}}{{"\t"}}{{if .Error}}{{printf "%q" .Error.Err}}{{end}}' $PKG) || return 1
+	while IFS=$'\t' read -r path err; do
+		if [[ $err == *': directory not found"' ]]; then
+			printf 'bench.sh: package absent in %s: %s\n' "$dir" "$path" >&2
+		elif [[ -n $err ]]; then
+			printf 'bench.sh: package unavailable in %s: %s\t%s\n' "$dir" "$path" "$err" >&2
+			bad=1
+		fi
+	done <<<"$listing"
+	if ((bad)); then
 		return 1
 	fi
-	want=$(cut -f1 <<<"$listing" | sed '/^$/d' | sort -u)
+	want=$(awk -F '\t' '$2 == "" && $1 != "" { print $1 }' <<<"$listing" | sort -u)
 	comm -13 <(sort <<<"$all") <(printf '%s\n' "$want") | sed '/^$/d; s/^/bench.sh: not in benchmark scope: /' >&2
 	comm -12 <(sort <<<"$all") <(printf '%s\n' "$want")
 }
@@ -116,7 +120,7 @@ benchstat_run() { go run "$BENCHSTAT" "$@"; }
 run_bench() {
 	local dir=$1 out=$2 pkgs
 	mkdir -p "$out"
-	pkgs=$(selected_pkgs "$dir")
+	pkgs=$(selected_pkgs "$dir") || return 1
 	printf '%s\n' "$pkgs" | sed '/^$/d' >"$out/packages.txt"
 	if [[ -z $pkgs ]]; then
 		echo "bench.sh: no in-scope package selected in $dir" >&2
@@ -270,7 +274,7 @@ cmd_compare() {
 cmd_profile() {
 	[[ -n ${PKG:-} ]] || die "PKG is required, e.g. make bench-profile PKG=./sliceutil BENCH=BenchmarkFilter"
 	local pkgs out
-	pkgs=$(selected_pkgs "$repo")
+	pkgs=$(selected_pkgs "$repo") || return 1
 	if [[ -z $pkgs || $(wc -l <<<"$pkgs") -ne 1 ]]; then
 		die "PKG must select exactly one in-scope package; selected: $(tr '\n' ' ' <<<"$pkgs")"
 	fi
