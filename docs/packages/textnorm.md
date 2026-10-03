@@ -676,5 +676,5 @@ func main() {
 - **Immutability**: Pipelines are immutable — `Then()` always returns a new pipeline. This makes them safe to reuse and share.
 - **Nil safety**: All stage methods and token pipeline methods handle `nil` functions/sets gracefully by returning the original pipeline unchanged.
 - **Error propagation**: `Run()` stops at the first error and returns it. Individual stages in this package never return errors, but custom stages may.
-- **Zero dependencies for core**: The `textnorm` package depends only on `golang.org/x/text` for Unicode-aware operations. The stopwords subpackage has zero external dependencies.
+- **Minimal dependencies**: The `textnorm` package depends only on `golang.org/x/text` for Unicode-aware operations. The stopwords subpackage has zero external dependencies.
 - **Streaming deferred**: Streaming adapters are intentionally deferred until real usage proves they are worth the extra surface area.
