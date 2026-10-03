@@ -29,7 +29,8 @@ type modelOp struct {
 	adv  time.Duration
 }
 
-// modelExpiry is an independent transcription of spec §3.2/§4.3.
+// modelExpiry independently restates the deadline rules: ttl == 0 uses the
+// default, ttl < 0 never expires, and deadlines saturate at math.MaxInt64.
 func modelExpiry(now int64, ttl time.Duration) int64 {
 	if ttl == 0 {
 		ttl = modelDefaultTTL
@@ -57,7 +58,7 @@ func runModel(t *testing.T, capacity int, ops []modelOp) {
 	rec := &recorder[int, int]{}
 	c, clk := newTestCache(t, Config[int, int]{MaxEntries: capacity, Shards: 1, TTL: modelDefaultTTL, OnEvict: rec.record})
 	model := map[int]modelEntry{}
-	ref := newRefSieve(capacity) // exact SIEVE victim oracle (spec §6)
+	ref := newRefSieve(capacity) // exact SIEVE victim oracle
 	var hits, misses, evictions, expirations uint64
 	isExpired := func(e modelEntry) bool { return e.expiresAt != 0 && clk.now() >= e.expiresAt }
 
