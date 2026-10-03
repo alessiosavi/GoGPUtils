@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/maphash"
+	"math"
 	"math/bits"
 	"runtime"
 	"sync"
@@ -264,3 +265,87 @@ func reflexive[K comparable](key K) bool {
 
 	return key == other
 }
+
+// removal records an entry removed under a shard lock, reported to OnEvict
+// after the lock is released.
+type removal[K comparable, V any] struct {
+	key    K
+	value  V
+	reason EvictionReason
+}
+
+// recorder returns rec when OnEvict is set, else nil (removals are then not
+// collected).
+func (c *inner[K, V]) recorder(rec *[]removal[K, V]) *[]removal[K, V] {
+	if c.onEvict == nil {
+		return nil
+	}
+
+	return rec
+}
+
+// dispatch runs OnEvict for each removal. Callers must not hold a shard lock.
+func (c *inner[K, V]) dispatch(rec []removal[K, V]) {
+	for _, r := range rec {
+		c.onEvict(r.key, r.value, r.reason)
+	}
+}
+
+// live reports whether e has not expired, reading the clock only when e has
+// a deadline.
+func (c *inner[K, V]) live(e *entry[K, V]) bool {
+	return e.expiresAt == 0 || c.now() < e.expiresAt
+}
+
+// expiresAt converts a TTL (0 = cache default, < 0 = never) into an absolute
+// deadline, saturating at math.MaxInt64. The result 0 means never.
+func (c *inner[K, V]) expiresAt(ttl time.Duration, now int64) int64 {
+	if ttl == 0 {
+		ttl = c.ttl
+	}
+	if ttl <= 0 {
+		return 0
+	}
+
+	exp := now + int64(ttl)
+	if exp < now {
+		return math.MaxInt64
+	}
+	if exp == 0 {
+		return 1
+	}
+
+	return exp
+}
+
+// Get returns the value for key and marks it recently used. Expired entries
+// are removed and reported as a miss.
+//
+// Example:
+//
+//	if u, ok := c.Get("alice"); ok {
+//	    fmt.Println(u.Name)
+//	}
+func (c *Cache[K, V]) Get(key K) (V, bool) { return c.in.get(key) }
+
+// Peek returns the value for key without marking it used, updating stats, or
+// removing an expired entry.
+func (c *Cache[K, V]) Peek(key K) (V, bool) { return c.in.peek(key) }
+
+// Set stores value under key with the default TTL.
+//
+// Example:
+//
+//	c.Set("alice", alice)
+func (c *Cache[K, V]) Set(key K, value V) { c.in.setWithTTL(key, value, 0) }
+
+// Delete removes key and reports whether a live entry was removed.
+func (c *Cache[K, V]) Delete(key K) bool { return c.in.delete(key) }
+
+// Len returns the number of stored entries, which may include expired
+// entries that have not been removed yet.
+func (c *Cache[K, V]) Len() int { return c.in.length() }
+
+// Clear removes every entry (reported with ReasonDeleted). It is not atomic
+// across shards. Stats are kept.
+func (c *Cache[K, V]) Clear() { c.in.clear() }
