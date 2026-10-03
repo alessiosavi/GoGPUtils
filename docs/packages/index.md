@@ -21,6 +21,7 @@ Most of these packages use only the standard library; `stringutil` also uses `go
 | [cryptoutil](cryptoutil.md) | AES-GCM encryption                 | Encrypt/Decrypt, Key derivation, Hashing                              |
 | [randutil](randutil.md)     | Secure random generation           | Secure strings, IDs, choices, sequences                               |
 | [collection](collection.md) | Data structures                    | Stack, Queue, Set, Binary Search Tree                                 |
+| [cache](cache.md)           | In-memory cache                    | SIEVE eviction, TTL, GetOrLoad, OnEvict, Stats, iteration             |
 
 ## Text Processing
 

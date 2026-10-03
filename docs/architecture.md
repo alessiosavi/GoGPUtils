@@ -20,6 +20,7 @@ graph TB
         RD[randutil]
         CR[cryptoutil]
         COL[collection]
+        CA[cache]
     end
 
     subgraph Text["Text Processing (+1 dep)"]
@@ -71,7 +72,7 @@ graph TB
 
 ### Core Layer (stdlib only)
 
-The `collection`, `sliceutil`, `mathutil`, `fileutil`, `cryptoutil`, and `randutil`
+The `collection`, `cache`, `sliceutil`, `mathutil`, `fileutil`, `cryptoutil`, and `randutil`
 packages import only the Go standard library (excluding tests).
 
 `internal/constraints` defines numeric and ordered type constraints but currently has no importers.
