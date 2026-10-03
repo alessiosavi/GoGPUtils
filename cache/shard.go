@@ -30,6 +30,7 @@ type shard[K comparable, V any] struct {
 	tail     *entry[K, V] // oldest
 	hand     *entry[K, V] // SIEVE hand; nil = start at tail
 	capacity int          // 0 = unbounded
+	inflight map[K]*call[V]
 	stats    shardStats
 }
 
@@ -37,6 +38,7 @@ func newShard[K comparable, V any](capacity int) *shard[K, V] {
 	return &shard[K, V]{
 		items:    make(map[K]*entry[K, V]),
 		capacity: capacity,
+		inflight: make(map[K]*call[V]),
 	}
 }
 
@@ -227,6 +229,7 @@ func (c *inner[K, V]) setWithTTL(key K, value V, ttl time.Duration) {
 	s := c.shardFor(key)
 	var rec []removal[K, V]
 	s.mu.Lock()
+	s.invalidate(key)
 	now := c.now()
 	s.set(key, value, c.expiresAt(ttl, now), now, c.recorder(&rec))
 	s.mu.Unlock()
@@ -242,6 +245,7 @@ func (c *inner[K, V]) delete(key K) bool {
 	var rec []removal[K, V]
 	live := false
 	s.mu.Lock()
+	s.invalidate(key)
 	if e, ok := s.items[key]; ok {
 		if e.expired(c.now()) {
 			s.remove(e, ReasonExpired, c.recorder(&rec))
@@ -260,6 +264,10 @@ func (c *inner[K, V]) clear() {
 	for _, s := range c.shards {
 		var rec []removal[K, V]
 		s.mu.Lock()
+		for key, cl := range s.inflight {
+			cl.invalidated = true
+			delete(s.inflight, key)
+		}
 		for e := s.tail; e != nil; {
 			next := e.next
 			s.remove(e, ReasonDeleted, c.recorder(&rec))

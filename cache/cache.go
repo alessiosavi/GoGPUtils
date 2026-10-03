@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"hash/maphash"
@@ -385,3 +386,22 @@ func (c *Cache[K, V]) All() iter.Seq2[K, V] { return c.in.all() }
 
 // Stats returns the cache counters summed across shards.
 func (c *Cache[K, V]) Stats() Stats { return c.in.stats() }
+
+// GetOrLoad returns the value for key, loading it with load on a miss.
+// Concurrent misses for the same key share one load. The load runs on a
+// context detached from the caller's cancellation (values are kept), so one
+// caller giving up never fails the others; each caller still returns early
+// with ctx.Err() when its own ctx ends. Successful results are stored with
+// the default TTL unless Set, Delete, or Clear touched the key meanwhile;
+// errors are never cached. A panicking loader yields *PanicError and
+// runtime.Goexit yields ErrLoaderGoexit. A loader must not call GetOrLoad for
+// its own key.
+//
+// Example:
+//
+//	u, err := c.GetOrLoad(ctx, id, func(ctx context.Context) (User, error) {
+//	    return repo.Find(ctx, id)
+//	})
+func (c *Cache[K, V]) GetOrLoad(ctx context.Context, key K, load func(context.Context) (V, error)) (V, error) {
+	return c.in.getOrLoad(ctx, key, load)
+}

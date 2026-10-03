@@ -1,10 +1,12 @@
 package cache
 
 import (
+	"context"
 	"slices"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 )
 
@@ -103,5 +105,81 @@ func expectRemovals[K comparable, V comparable](t testing.TB, got, want []remova
 
 	if !slices.Equal(got, want) {
 		t.Fatalf("removals = %v, want %v", got, want)
+	}
+}
+
+// waitFor checks a condition after bubble goroutines are durably blocked.
+// Call it only from inside synctest.Test.
+func waitFor(t testing.TB, what string, cond func() bool) {
+	t.Helper()
+	synctest.Wait()
+	if !cond() {
+		t.Fatalf("condition not reached: %s", what)
+	}
+}
+
+func await[T any](t testing.TB, what string, ch <-chan T) T {
+	t.Helper()
+	select {
+	case v := <-ch:
+		return v
+	case <-time.After(5 * time.Second):
+		t.Fatalf("timed out waiting for %s", what)
+		var zero T
+		return zero
+	}
+}
+
+type result[V any] struct {
+	v   V
+	err error
+}
+
+// loadAsync runs GetOrLoad in a goroutine and delivers its result.
+func loadAsync[K comparable, V any](ctx context.Context, c *Cache[K, V], key K, load func(context.Context) (V, error)) <-chan result[V] {
+	ch := make(chan result[V], 1)
+	go func() {
+		v, err := c.GetOrLoad(ctx, key, load)
+		ch <- result[V]{v, err}
+	}()
+
+	return ch
+}
+
+func recv[V any](t testing.TB, ch <-chan result[V]) result[V] {
+	t.Helper()
+
+	select {
+	case r := <-ch:
+		return r
+	case <-time.After(5 * time.Second):
+		t.Fatal("GetOrLoad did not return")
+
+		return result[V]{}
+	}
+}
+
+// blockingLoader returns a loader that closes started when it begins and then
+// waits for release before returning value.
+func blockingLoader[V any](value V) (load func(context.Context) (V, error), started <-chan struct{}, release func()) {
+	s, r := make(chan struct{}), make(chan struct{})
+	var once sync.Once
+	load = func(context.Context) (V, error) {
+		once.Do(func() { close(s) })
+		<-r
+
+		return value, nil
+	}
+
+	return load, s, sync.OnceFunc(func() { close(r) })
+}
+
+func mustNotLoad[V any](t testing.TB) func(context.Context) (V, error) {
+	return func(context.Context) (V, error) {
+		t.Error("loader must not run")
+
+		var zero V
+
+		return zero, nil
 	}
 }
