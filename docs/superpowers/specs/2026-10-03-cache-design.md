@@ -267,9 +267,10 @@ Non-reflexive key → §3.1.
    If both are ready, either result may be returned. A caller giving up never
    cancels the load or affects other waiters.
 4. **Invalidation:** `SetWithTTL`, `Delete`, and `Clear` (under the shard lock)
-   set `call.invalidated = true` **and remove the call from `inflight`**. Existing
-   waiters still receive the old call's result; callers arriving afterwards start
-   a new load (new generation).
+   set `call.invalidated = true` **and remove the call from `inflight`**.
+   Existing waiters retain the old call's result. Later callers perform normal
+   lookup: a live entry is a hit; on a miss, they join the current generation or
+   start a new one. They never join the invalidated call.
 5. **`runLoad`** guarantees exactly one completion via a deferred `complete`:
    - The loader runs inside a nested function `invoke() (v V, err error)` with
      its own deferred `recover` that converts a panic into `*PanicError`
@@ -380,9 +381,12 @@ interleavings deterministically.
   cancel the load or others and does not count a `LoadError`; all waiters
   cancelled → load still completes and stores; errors not cached (next call
   reloads); panic → `*PanicError` with `Unwrap`; `runtime.Goexit` →
-  `ErrLoaderGoexit`; `Set`/`Delete`/`Clear` during a load → no stale write-back,
-  waiters get the old value, a caller arriving after invalidation runs a new
-  loader, and the old completion does not remove the new call; validation order
+  `ErrLoaderGoexit`; `Set`/`Delete`/`Clear` during a load prevent stale
+  write-back and existing waiters retain the old call's result; after `Set`,
+  while its value remains live, a later caller returns that value without
+  invoking its loader; after `Delete`/`Clear`, with the key absent, the first
+  later caller starts a new generation and subsequent misses join it; the old
+  completion cannot remove the newer call or overwrite its stored value; validation order
   (nil ctx, nil loader, done ctx) with no lookup effects; both hit paths mark
   visited; expired entry replaced during lock re-acquisition → hit.
 - **Callbacks & stats:** each reason and counter per §3.3; re-entrant callbacks
@@ -455,3 +459,6 @@ this spec.
   signal-only `requestStop` shared by `Close` and cleanup, `KeepAlive` after
   `cleanup.Stop` (§4.6). F12 residual: GC-cleanup observation is inconclusive on
   timeout, never a failure (§6).
+- **Codex round 3 (2026-10-03): N1–N3, F12 resolved; F2/F3/F12 fully resolved;
+  N4 accepted as prescribed** — post-invalidation callers do a normal lookup
+  (live value after `Set` is a hit; new generation only on a miss) (§4.4, §6).
