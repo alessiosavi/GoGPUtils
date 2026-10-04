@@ -389,12 +389,21 @@ func Union[T comparable](a, b []T) []T {
 	if a == nil && b == nil {
 		return nil
 	}
-
-	combined := make([]T, 0, len(a)+len(b))
-	combined = append(combined, a...)
-	combined = append(combined, b...)
-
-	return Unique(combined)
+	seen := make(map[T]struct{}, len(a)+len(b))
+	result := make([]T, 0, len(a)+len(b))
+	for _, v := range a {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	for _, v := range b {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
 // GroupBy groups elements by a key function.
