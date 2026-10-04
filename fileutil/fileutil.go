@@ -367,6 +367,32 @@ func WriteString(path, content string, perm fs.FileMode) error {
 
 // WriteLines writes lines to a file, joining with the specified terminator.
 func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.FileMode) error {
+	term := terminator.Bytes()
+	const maxInt = int(^uint(0) >> 1)
+	size := 0
+	for _, line := range lines {
+		if len(line) > maxInt-size {
+			return writeLinesOverflow(path, lines, terminator, perm)
+		}
+		size += len(line)
+		if len(term) > maxInt-size {
+			return writeLinesOverflow(path, lines, terminator, perm)
+		}
+		size += len(term)
+	}
+
+	data := make([]byte, size)
+	pos := 0
+	for _, line := range lines {
+		pos += copy(data[pos:], line)
+		pos += copy(data[pos:], term)
+	}
+
+	return os.WriteFile(path, data, perm)
+}
+
+// Preserve BASE's Join/concatenation panic before opening the destination.
+func writeLinesOverflow(path string, lines []string, terminator LineTerminator, perm fs.FileMode) error {
 	term := string(terminator.Bytes())
 
 	content := strings.Join(lines, term)
@@ -375,7 +401,12 @@ func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.
 		content += term
 	}
 
-	return WriteString(path, content, perm)
+	return writeStringOverflow(path, content, perm)
+}
+
+// Keep the overflow fallback independent of WriteString optimizations.
+func writeStringOverflow(path, content string, perm fs.FileMode) error {
+	return WriteBytes(path, []byte(content), perm)
 }
 
 // AppendBytes appends data to a file, creating it if necessary.
