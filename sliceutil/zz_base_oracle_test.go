@@ -9,6 +9,8 @@ import (
 	"slices"
 	"sync"
 	"testing"
+
+	"github.com/alessiosavi/GoGPUtils/internal/benchkit"
 )
 
 // Private copies from BASE 4c05787, with only identifiers renamed.
@@ -440,4 +442,22 @@ func TestShuffle32PanicState(t *testing.T) {
 		t.Fatalf("panic=%t/%t type=%v/%v message=%q/%q state=%x/%x oneDraw=%x partialEqual=%t",
 			gp, wp, gt, wt, gm, wm, got, want, oneDraw, oracleEqual(a, b))
 	}
+}
+
+func allocationCheck[T comparable](t *testing.T, src []T) {
+	var sink []T
+	a, b := src[:16], src[8:]
+	base := testing.AllocsPerRun(1000, func() { sink = baseIntersect(a, b) })
+	got := testing.AllocsPerRun(1000, func() { sink = Intersect(a, b) })
+	if len(sink) == 0 {
+		t.Fatal("fixture unexpectedly empty")
+	}
+	t.Logf("%T n=16 BASE=%g candidate=%g allocs/run", src, base, got)
+	if got > base {
+		t.Fatalf("allocation gate %g > %g", got, base)
+	}
+}
+func TestIntersectSmallAllocations(t *testing.T) {
+	t.Run("int", func(t *testing.T) { allocationCheck(t, benchkit.Ints(24)) })
+	t.Run("string", func(t *testing.T) { allocationCheck(t, benchkit.Strings(24, 8, "abcdefgh")) })
 }

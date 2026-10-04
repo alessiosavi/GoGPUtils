@@ -331,21 +331,19 @@ func Intersect[T comparable](a, b []T) []T {
 	if a == nil || b == nil {
 		return nil
 	}
-
-	set := make(map[T]struct{}, len(b))
+	set := make(map[T]bool, len(b))
 	for _, v := range b {
-		set[v] = struct{}{}
+		set[v] = true
 	}
-
-	result := make([]T, 0)
-
+	result := make([]T, 0, min(16, len(a), len(set)))
 	for _, v := range a {
-		if _, ok := set[v]; ok {
+		if set[v] {
 			result = append(result, v)
+			// Retain the key to preserve later unhashable interface-key panics.
+			set[v] = false
 		}
 	}
-
-	return Unique(result)
+	return result
 }
 
 // Difference returns elements in a that are not in b.
