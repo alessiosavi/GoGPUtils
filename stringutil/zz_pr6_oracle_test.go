@@ -1,7 +1,6 @@
 package stringutil
 
 import (
-	"errors"
 	"math/rand/v2"
 	"runtime"
 	"strings"
@@ -114,7 +113,7 @@ func zzInputs(visit func(string)) {
 
 func zzEqual(t testing.TB, name, in, got string, ge error, want string, we error) {
 	t.Helper()
-	if got != want || (!errors.Is(ge, we) || !errors.Is(we, ge)) {
+	if got != want || ge != we { //nolint:errorlint // Spec §§2.1/2.3 require BASE error identity.
 		t.Fatalf("%s input=%q got=%q err=%v want=%q err=%v", name, in, got, ge, want, we)
 	}
 	if len(in) > 0 && len(want) > 0 {

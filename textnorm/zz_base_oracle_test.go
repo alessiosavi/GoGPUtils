@@ -1,7 +1,6 @@
 package textnorm
 
 import (
-	"errors"
 	"fmt"
 	"math/rand/v2"
 	"runtime"
@@ -156,7 +155,7 @@ func zzInputs(visit func(string)) {
 
 func zzEqual(t testing.TB, name, in, got string, ge error, want string, we error) {
 	t.Helper()
-	if got != want || (!errors.Is(ge, we) || !errors.Is(we, ge)) {
+	if got != want || ge != we { //nolint:errorlint // Spec §§2.1/2.3 require BASE error identity.
 		t.Fatalf("%s input=%q got=%q err=%v want=%q err=%v", name, in, got, ge, want, we)
 	}
 	if len(in) > 0 && len(want) > 0 {
@@ -362,7 +361,7 @@ func TestZZSavedOutcomes(t *testing.T) {
 			h2, he2 := p.head.Run(h)
 			b, be := p.base.Run(s)
 			b2, be2 := p.base.Run(b)
-			if h != b || h2 != b2 || !errors.Is(he, be) || !errors.Is(be, he) || !errors.Is(he2, be2) || !errors.Is(be2, he2) {
+			if h != b || h2 != b2 || he != be || he2 != be2 { //nolint:errorlint // Spec §§2.1/2.3 require BASE error identity.
 				t.Fatalf("saved input mismatch %s %q", p.name, s)
 			}
 			msg := ""

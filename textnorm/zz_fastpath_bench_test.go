@@ -45,15 +45,35 @@ func zzBenchmarkFastPath(b *testing.B, p Pipeline, kinds ...string) {
 		})
 	}
 }
+
+// BenchmarkFastPath_FoldCase measures FoldCase for case=ascii (mixed case),
+// case=lower and case=late-nonascii. Pipeline construction and input preparation
+// are outside the timer; only Pipeline.Run is timed. Input is reused unchanged,
+// with no restoration.
 func BenchmarkFastPath_FoldCase(b *testing.B) {
 	zzBenchmarkFastPath(b, New().FoldCase(), "ascii", "lower", "late-nonascii")
 }
+
+// BenchmarkFastPath_Lower measures Lower for case=ascii (mixed case), case=lower
+// and case=late-nonascii. Pipeline construction and input preparation are outside
+// the timer; only Pipeline.Run is timed. Input is reused unchanged, with no
+// restoration.
 func BenchmarkFastPath_Lower(b *testing.B) {
 	zzBenchmarkFastPath(b, New().Lower(), "ascii", "lower", "late-nonascii")
 }
+
+// BenchmarkFastPath_NormalizeUnicode measures NormalizeUnicode for case=ascii
+// (mixed case) and case=late-nonascii. Pipeline construction and input preparation
+// are outside the timer; only Pipeline.Run is timed. Input is reused unchanged,
+// with no restoration.
 func BenchmarkFastPath_NormalizeUnicode(b *testing.B) {
 	zzBenchmarkFastPath(b, New().NormalizeUnicode(), "ascii", "late-nonascii")
 }
+
+// BenchmarkFastPath_NormalizeUnicodeLatin measures NormalizeUnicodeLatin for
+// case=ascii (mixed case) and case=late-nonascii. Pipeline construction and input
+// preparation are outside the timer; only Pipeline.Run is timed. Input is reused
+// unchanged, with no restoration.
 func BenchmarkFastPath_NormalizeUnicodeLatin(b *testing.B) {
 	zzBenchmarkFastPath(b, New().NormalizeUnicodeLatin(), "ascii", "late-nonascii")
 }
