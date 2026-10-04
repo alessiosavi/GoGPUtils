@@ -3,6 +3,7 @@ package stringutil
 import (
 	"math"
 	"strings"
+	"unicode/utf8"
 )
 
 // LevenshteinDistance returns the minimum number of single-character edits
@@ -443,13 +444,82 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	if n <= 0 {
 		n = 2
 	}
+	if s1 == s2 {
+		return 1.0
+	}
+	lower1, lower2 := strings.ToLower(s1), strings.ToLower(s2)
+	if !cosineExactLengths(len(lower1), len(lower2)) {
+		return cosineLegacy(s1, s2, n)
+	}
+	ngrams1, ngrams2 := ngrams(lower1, n), ngrams(lower2, n)
+	if len(ngrams1) == 0 && len(ngrams2) == 0 {
+		return 1.0
+	}
+	if len(ngrams1) == 0 || len(ngrams2) == 0 {
+		return 0.0
+	}
+	return cosineFast(ngrams1, ngrams2)
+}
+
+// Both nonnegative lowered byte lengths bound n-gram counts, squares and dot sums.
+func cosineExactLengths(len1, len2 int) bool {
+	return len1 <= 94_906_265 && len2 <= 94_906_265
+}
+
+func cosineFast(ngrams1, ngrams2 map[string]int) float64 {
+	dotProduct, mag1, mag2 := 0.0, 0.0, 0.0
+	for k, c1 := range ngrams1 {
+		dotProduct += float64(c1) * float64(ngrams2[k])
+		mag1 += float64(c1) * float64(c1)
+	}
+	for _, c2 := range ngrams2 {
+		mag2 += float64(c2) * float64(c2)
+	}
+	if mag1 == 0 || mag2 == 0 {
+		return 0.0
+	}
+	return dotProduct / (math.Sqrt(mag1) * math.Sqrt(mag2))
+}
+
+// ngrams generates a map of n-grams and their counts.
+// ngrams requires lowered (valid UTF-8) text in production callers.
+func ngrams(s string, n int) map[string]int {
+	if n <= 0 {
+		return legacyNgrams(s, n)
+	}
+	var result map[string]int
+	start, count := 0, 0
+	for end := range s {
+		if count >= n {
+			if result == nil {
+				result = make(map[string]int)
+			}
+			result[s[start:end]]++
+			_, width := utf8.DecodeRuneInString(s[start:])
+			start += width
+		}
+		count++
+	}
+	if count >= n {
+		if result == nil {
+			result = make(map[string]int)
+		}
+		result[s[start:]]++
+	}
+	return result
+}
+
+func cosineLegacy(s1, s2 string, n int) float64 {
+	if n <= 0 {
+		n = 2
+	}
 
 	if s1 == s2 {
 		return 1.0
 	}
 
-	ngrams1 := ngrams(strings.ToLower(s1), n)
-	ngrams2 := ngrams(strings.ToLower(s2), n)
+	ngrams1 := legacyNgrams(strings.ToLower(s1), n)
+	ngrams2 := legacyNgrams(strings.ToLower(s2), n)
 
 	if len(ngrams1) == 0 && len(ngrams2) == 0 {
 		return 1.0
@@ -489,8 +559,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	return dotProduct / (math.Sqrt(mag1) * math.Sqrt(mag2))
 }
 
-// ngrams generates a map of n-grams and their counts.
-func ngrams(s string, n int) map[string]int {
+func legacyNgrams(s string, n int) map[string]int {
 	runes := []rune(s)
 	if len(runes) < n {
 		return nil
