@@ -362,7 +362,15 @@ func WriteBytes(path string, data []byte, perm fs.FileMode) error {
 
 // WriteString writes a string to a file.
 func WriteString(path, content string, perm fs.FileMode) error {
-	return WriteBytes(path, []byte(content), perm)
+	//nolint:gosec // G304: this utility intentionally opens the caller-supplied path.
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(content)
+
+	return finishWrite(f, err)
 }
 
 // WriteLines writes lines to a file, joining with the specified terminator.
@@ -432,12 +440,31 @@ func finishWrite(f io.Closer, err error) error {
 
 // AppendString appends a string to a file.
 func AppendString(path, content string, perm fs.FileMode) error {
-	return AppendBytes(path, []byte(content), perm)
+	//nolint:gosec // G304: this utility intentionally opens the caller-supplied path.
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(content)
+
+	return finishWrite(f, err)
 }
 
 // AppendLine appends a line to a file with the specified terminator.
 func AppendLine(path, line string, terminator LineTerminator, perm fs.FileMode) error {
-	return AppendString(path, line+string(terminator.Bytes()), perm)
+	term := terminator.Bytes()
+	const maxInt = int(^uint(0) >> 1)
+	if len(line) > maxInt-len(term) {
+		// Preserve BASE's string concatenation panic before opening the file.
+		return AppendBytes(path, []byte(line+string(term)), perm)
+	}
+
+	data := make([]byte, len(line)+len(term))
+	copy(data, line)
+	copy(data[len(line):], term)
+
+	return AppendBytes(path, data, perm)
 }
 
 // ============================================================================
