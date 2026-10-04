@@ -2,6 +2,7 @@ package sliceutil
 
 import (
 	"cmp"
+	"math/bits"
 	"slices"
 	"sync"
 )
@@ -331,21 +332,19 @@ func Intersect[T comparable](a, b []T) []T {
 	if a == nil || b == nil {
 		return nil
 	}
-
-	set := make(map[T]struct{}, len(b))
+	set := make(map[T]bool, len(b))
 	for _, v := range b {
-		set[v] = struct{}{}
+		set[v] = true
 	}
-
-	result := make([]T, 0)
-
+	result := make([]T, 0, min(16, len(a), len(set)))
 	for _, v := range a {
-		if _, ok := set[v]; ok {
+		if set[v] {
 			result = append(result, v)
+			// Retain the key to preserve later unhashable interface-key panics.
+			set[v] = false
 		}
 	}
-
-	return Unique(result)
+	return result
 }
 
 // Difference returns elements in a that are not in b.
@@ -389,12 +388,21 @@ func Union[T comparable](a, b []T) []T {
 	if a == nil && b == nil {
 		return nil
 	}
-
-	combined := make([]T, 0, len(a)+len(b))
-	combined = append(combined, a...)
-	combined = append(combined, b...)
-
-	return Unique(combined)
+	seen := make(map[T]struct{}, len(a)+len(b))
+	result := make([]T, 0, len(a)+len(b))
+	for _, v := range a {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	for _, v := range b {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
 // GroupBy groups elements by a key function.
@@ -921,15 +929,41 @@ func Shuffle[T any](s []T) []T {
 	return result
 }
 
+// shuffleDrawBatchSize limits PRNG draws per lock hold.
+const shuffleDrawBatchSize = 16
+
 // ShuffleInPlace shuffles the slice in place using Fisher-Yates algorithm.
 // Uses math/rand for performance; use Shuffle for crypto-secure randomness.
 func ShuffleInPlace[T any](s []T) {
-	// Fisher-Yates shuffle using simple PRNG seeded from time
-	// For tests/determinism, see ShuffleWithSeed
-	for i := len(s) - 1; i > 0; i-- {
-		// Simple LCG for shuffling - not crypto secure but fast
-		j := int(fastrand()) % (i + 1)
-		s[i], s[j] = s[j], s[i]
+	if bits.UintSize == 32 {
+		// Fisher-Yates shuffle using simple PRNG seeded from time
+		// For tests/determinism, see ShuffleWithSeed
+		for i := len(s) - 1; i > 0; i-- {
+			// Simple LCG for shuffling - not crypto secure but fast
+			j := int(fastrand()) % (i + 1)
+			s[i], s[j] = s[j], s[i]
+		}
+		return
+	}
+	// Publish each bounded batch under the lock, then swap after unlocking.
+	var draws [shuffleDrawBatchSize]uint32
+	for i := len(s) - 1; i > 0; {
+		count := min(i, len(draws))
+		fastrandMu.Lock()
+		state := fastrandState
+		for k := range count {
+			state ^= state << 13
+			state ^= state >> 7
+			state ^= state << 17
+			draws[k] = uint32(state) // #nosec G115 -- Preserve BASE fastrand truncation to the low 32 bits.
+		}
+		fastrandState = state
+		fastrandMu.Unlock()
+		for k := range count {
+			j := int(draws[k]) % (i + 1)
+			s[i], s[j] = s[j], s[i]
+			i--
+		}
 	}
 }
 
