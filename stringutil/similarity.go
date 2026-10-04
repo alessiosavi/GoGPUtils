@@ -3,6 +3,7 @@ package stringutil
 import (
 	"math"
 	"strings"
+	"unicode/utf8"
 )
 
 // LevenshteinDistance returns the minimum number of single-character edits
@@ -114,38 +115,27 @@ func DamerauLevenshteinDistance(s1, s2 string) int {
 		return len1
 	}
 
-	// Create distance matrix
-	d := make([][]int, len1+1)
-	for i := range d {
-		d[i] = make([]int, len2+1)
-		d[i][0] = i
+	width := len2 + 1
+	rows := make([]int, 3*width)
+	prev2, prev, curr := rows[:width], rows[width:2*width], rows[2*width:]
+	for j := range prev {
+		prev[j] = j
 	}
-
-	for j := 0; j <= len2; j++ {
-		d[0][j] = j
-	}
-
 	for i := 1; i <= len1; i++ {
+		curr[0] = i
 		for j := 1; j <= len2; j++ {
 			cost := 0
 			if r1[i-1] != r2[j-1] {
 				cost = 1
 			}
-
-			d[i][j] = min(
-				d[i-1][j]+1,      // deletion
-				d[i][j-1]+1,      // insertion
-				d[i-1][j-1]+cost, // substitution
-			)
-
-			// Transposition
+			curr[j] = min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost)
 			if i > 1 && j > 1 && r1[i-1] == r2[j-2] && r1[i-2] == r2[j-1] {
-				d[i][j] = min(d[i][j], d[i-2][j-2]+cost)
+				curr[j] = min(curr[j], prev2[j-2]+cost)
 			}
 		}
+		prev2, prev, curr = prev, curr, prev2
 	}
-
-	return d[len1][len2]
+	return prev[len2]
 }
 
 // JaroSimilarity returns the Jaro similarity between two strings.
@@ -294,14 +284,9 @@ func DiceCoefficient(s1, s2 string) float64 {
 	// Count intersection
 	intersection := 0
 
-	counted := make(map[string]int)
-	for bg := range bigrams1 {
-		counted[bg] = bigrams1[bg]
-	}
-
 	for bg, count := range bigrams2 {
-		if counted[bg] > 0 {
-			commonCount := min(count, counted[bg])
+		if bigrams1[bg] > 0 {
+			commonCount := min(count, bigrams1[bg])
 			intersection += commonCount
 		}
 	}
@@ -322,18 +307,28 @@ func DiceCoefficient(s1, s2 string) float64 {
 
 // bigrams generates a map of bigrams and their counts.
 func bigrams(s string) map[string]int {
-	runes := []rune(s)
-	if len(runes) < 2 {
+	// Stop at two runes to keep this guard cheap and the helper inlineable.
+	runeCount := 0
+	for range s {
+		runeCount++
+		if runeCount == 2 {
+			break
+		}
+	}
+	if runeCount < 2 {
 		return nil
 	}
 
+	// Allocate outside the loop so small maps can stay on the caller's stack.
 	result := make(map[string]int)
-
-	for i := range len(runes) - 1 {
-		bg := string(runes[i : i+2])
-		result[bg]++
+	previous2, previous1 := -1, -1
+	for end := range s {
+		if previous2 >= 0 {
+			result[s[previous2:end]]++
+		}
+		previous2, previous1 = previous1, end
 	}
-
+	result[s[previous2:]]++
 	return result
 }
 
@@ -454,13 +449,82 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	if n <= 0 {
 		n = 2
 	}
+	if s1 == s2 {
+		return 1.0
+	}
+	lower1, lower2 := strings.ToLower(s1), strings.ToLower(s2)
+	if !cosineExactLengths(len(lower1), len(lower2)) {
+		return cosineLegacy(s1, s2, n)
+	}
+	ngrams1, ngrams2 := ngrams(lower1, n), ngrams(lower2, n)
+	if len(ngrams1) == 0 && len(ngrams2) == 0 {
+		return 1.0
+	}
+	if len(ngrams1) == 0 || len(ngrams2) == 0 {
+		return 0.0
+	}
+	return cosineFast(ngrams1, ngrams2)
+}
+
+// Both nonnegative lowered byte lengths bound n-gram counts, squares and dot sums.
+func cosineExactLengths(len1, len2 int) bool {
+	return len1 <= 94_906_265 && len2 <= 94_906_265
+}
+
+func cosineFast(ngrams1, ngrams2 map[string]int) float64 {
+	dotProduct, mag1, mag2 := 0.0, 0.0, 0.0
+	for k, c1 := range ngrams1 {
+		dotProduct += float64(c1) * float64(ngrams2[k])
+		mag1 += float64(c1) * float64(c1)
+	}
+	for _, c2 := range ngrams2 {
+		mag2 += float64(c2) * float64(c2)
+	}
+	if mag1 == 0 || mag2 == 0 {
+		return 0.0
+	}
+	return dotProduct / (math.Sqrt(mag1) * math.Sqrt(mag2))
+}
+
+// ngrams generates a map of n-grams and their counts.
+// ngrams requires lowered (valid UTF-8) text in production callers.
+func ngrams(s string, n int) map[string]int {
+	if n <= 0 {
+		return legacyNgrams(s, n)
+	}
+	var result map[string]int
+	start, count := 0, 0
+	for end := range s {
+		if count >= n {
+			if result == nil {
+				result = make(map[string]int)
+			}
+			result[s[start:end]]++
+			_, width := utf8.DecodeRuneInString(s[start:])
+			start += width
+		}
+		count++
+	}
+	if count >= n {
+		if result == nil {
+			result = make(map[string]int)
+		}
+		result[s[start:]]++
+	}
+	return result
+}
+
+func cosineLegacy(s1, s2 string, n int) float64 {
+	if n <= 0 {
+		n = 2
+	}
 
 	if s1 == s2 {
 		return 1.0
 	}
 
-	ngrams1 := ngrams(strings.ToLower(s1), n)
-	ngrams2 := ngrams(strings.ToLower(s2), n)
+	ngrams1 := legacyNgrams(strings.ToLower(s1), n)
+	ngrams2 := legacyNgrams(strings.ToLower(s2), n)
 
 	if len(ngrams1) == 0 && len(ngrams2) == 0 {
 		return 1.0
@@ -500,8 +564,7 @@ func CosineSimilarity(s1, s2 string, n int) float64 {
 	return dotProduct / (math.Sqrt(mag1) * math.Sqrt(mag2))
 }
 
-// ngrams generates a map of n-grams and their counts.
-func ngrams(s string, n int) map[string]int {
+func legacyNgrams(s string, n int) map[string]int {
 	runes := []rune(s)
 	if len(runes) < n {
 		return nil
