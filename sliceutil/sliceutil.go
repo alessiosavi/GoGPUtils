@@ -929,6 +929,9 @@ func Shuffle[T any](s []T) []T {
 	return result
 }
 
+// shuffleDrawBatchSize limits PRNG draws per lock hold.
+const shuffleDrawBatchSize = 16
+
 // ShuffleInPlace shuffles the slice in place using Fisher-Yates algorithm.
 // Uses math/rand for performance; use Shuffle for crypto-secure randomness.
 func ShuffleInPlace[T any](s []T) {
@@ -943,7 +946,7 @@ func ShuffleInPlace[T any](s []T) {
 		return
 	}
 	// Publish each bounded batch under the lock, then swap after unlocking.
-	var draws [64]uint32
+	var draws [shuffleDrawBatchSize]uint32
 	for i := len(s) - 1; i > 0; {
 		count := min(i, len(draws))
 		fastrandMu.Lock()

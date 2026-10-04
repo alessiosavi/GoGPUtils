@@ -290,7 +290,12 @@ func TestOracleShuffleSequence(t *testing.T) {
 	for range 32 {
 		seeds = append(seeds, r.Uint64())
 	}
-	sizes := []int{0, 1, 2, 63, 64, 65, 127, 128, 129, 1000}
+	// A length-n shuffle consumes n-1 draws: 17 and 33 end full batches;
+	// 18 and 34 add a partial batch. Retain the former 64-draw boundaries too.
+	sizes := []int{
+		0, 1, 2, 15, 16, 17, 18, 31, 32, 33, 34,
+		63, 64, 65, 127, 128, 129, 1000,
+	}
 	for _, seed := range seeds {
 		for _, copying := range []bool{false, true} {
 			SeedShuffle(seed)
