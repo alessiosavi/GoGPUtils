@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
-	"math/big"
+	"math/bits"
 	"math/rand/v2"
 )
 
@@ -56,6 +56,14 @@ func SecureBytes(n int) ([]byte, error) {
 // use ASCII charsets. Every byte position is selected with equal probability,
 // so repeated bytes in charset have proportionally greater probability.
 //
+// Reads may be batched. Output, errors, and consumed bytes match repeated
+// crypto/rand.Int draws with bound len(charset) over an identical byte stream
+// for readers whose behavior depends only on stream position. This excludes
+// readers whose output or errors depend on Read-call granularity, readers that
+// return data with a non-EOF error and later deliver more data, and readers that
+// replace crypto/rand.Reader during the call; the reader is captured once per
+// batch.
+//
 // Example:
 //
 //	password, err := SecureString(16, AlphaNumeric)
@@ -70,19 +78,68 @@ func SecureString(length int, charset string) (string, error) {
 	}
 
 	result := make([]byte, length)
-	charsetLen := big.NewInt(int64(len(charset)))
-
-	for i := range result {
-		// crypto/rand.Int uses rejection sampling to avoid modulo bias.
-		index, err := cryptorand.Int(cryptorand.Reader, charsetLen)
-		if err != nil {
+	if len(charset) == 1 {
+		for i := range result {
+			result[i] = charset[0]
+		}
+		return string(result), nil
+	}
+	k, mask := candidateParams(uint64(len(charset)))
+	var scratch []byte
+	if k >= 2 {
+		scratch = make([]byte, min(length, 4096/k)*k)
+	}
+	filled := 0
+	for filled < length {
+		remaining := length - filled
+		m := min(remaining, 4096/k)
+		var candidates []byte
+		if k == 1 {
+			candidates = result[filled : filled+m]
+		} else {
+			candidates = scratch[:m*k]
+		}
+		if err := fillSecureCandidates(cryptorand.Reader, candidates, k); err != nil {
 			return "", err
 		}
-
-		result[i] = charset[index.Int64()]
+		for i := 0; i < len(candidates); i += k {
+			v := uint64(candidates[i] & mask)
+			for j := 1; j < k; j++ {
+				v = v<<8 | uint64(candidates[i+j])
+			}
+			if v < uint64(len(charset)) {
+				result[filled] = charset[v]
+				filled++
+			}
+		}
 	}
-
 	return string(result), nil
+}
+
+// fillSecureCandidates keeps the underlying error distinct from ReadFull's
+// synthesized UnexpectedEOF while preserving candidate-sized error handling.
+func fillSecureCandidates(r io.Reader, p []byte, k int) error {
+	n := 0
+	for n < len(p) {
+		nr, err := r.Read(p[n:])
+		n += nr
+		if n == len(p) {
+			return nil
+		}
+		if err != nil {
+			// Like a candidate-sized ReadFull, ignore an error accompanying
+			// a completed candidate, then ask the same reader for more.
+			if nr > 0 && n%k == 0 {
+				continue
+			}
+			//nolint:errorlint // Only exact EOF is translated by io.ReadFull.
+			if err == io.EOF && n%k != 0 {
+				return io.ErrUnexpectedEOF
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 // SecureInt returns a uniformly distributed cryptographically secure random int in [0, max).
@@ -92,12 +149,9 @@ func SecureInt(max int) (int, error) {
 		return 0, ErrInvalidLength
 	}
 
-	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(max)))
-	if err != nil {
-		return 0, err
-	}
-
-	return int(n.Int64()), nil
+	n, err := secureUint64n(uint64(max))
+	//nolint:gosec // n is zero on error or less than the positive int bound max.
+	return int(n), err
 }
 
 // SecureInt64 returns a uniformly distributed cryptographically secure random int64 in [0, max).
@@ -107,12 +161,39 @@ func SecureInt64(max int64) (int64, error) {
 		return 0, ErrInvalidLength
 	}
 
-	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(max))
-	if err != nil {
-		return 0, err
-	}
+	n, err := secureUint64n(uint64(max))
+	//nolint:gosec // n is zero on error or less than the positive int64 bound max.
+	return int64(n), err
+}
 
-	return n.Int64(), nil
+// candidateParams requires bound > 1.
+func candidateParams(bound uint64) (k int, mask byte) {
+	bitLen := bits.Len64(bound - 1)
+	k = (bitLen + 7) / 8
+	top := bitLen - 8*(k-1)
+	return k, 0xff >> (8 - top)
+}
+
+func secureUint64n(bound uint64) (uint64, error) {
+	if bound == 1 {
+		return 0, nil
+	}
+	k, mask := candidateParams(bound)
+	var buf [8]byte
+	r := cryptorand.Reader
+	for {
+		if _, err := io.ReadFull(r, buf[:k]); err != nil {
+			return 0, err
+		}
+		buf[0] &= mask
+		var v uint64
+		for _, b := range buf[:k] {
+			v = v<<8 | uint64(b)
+		}
+		if v < bound {
+			return v, nil
+		}
+	}
 }
 
 // SecureID generates a cryptographically secure random ID.
@@ -442,6 +523,17 @@ func RangeStep(start, end, step int) []int {
 	}
 
 	var result []int
+	//nolint:gosec // Unsigned subtraction intentionally handles signed extremes.
+	distance, stride := uint64(end)-uint64(start), uint64(step)
+	if step < 0 {
+		//nolint:gosec // Modular conversion preserves the descending distance.
+		distance = uint64(start) - uint64(end)
+		stride = -stride
+	}
+	count := (distance-1)/stride + 1
+	if capacity := rangeStepCapacity(count); capacity > 0 {
+		result = make([]int, 0, capacity)
+	}
 
 	for i := start; (step > 0 && i < end) || (step < 0 && i > end); {
 		result = append(result, i)
@@ -455,4 +547,14 @@ func RangeStep(start, end, step int) []int {
 	}
 
 	return result
+}
+
+// rangeStepCapacity caps preallocation at 2^24 ints (at most 128 MiB), below
+// runtime allocation limits even on 32-bit, WebAssembly, and iOS targets.
+// Larger counts retain the nil-start append path to avoid an early cap panic.
+func rangeStepCapacity(count uint64) int {
+	if count <= 1<<24 {
+		return int(count)
+	}
+	return 0
 }
