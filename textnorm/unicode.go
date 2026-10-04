@@ -82,6 +82,15 @@ func normalizeUnicodeLatinStage(s string) (string, error) {
 
 // isASCII reports whether every input byte is below 0x80.
 func isASCII(s string) bool {
+	for len(s) >= 8 {
+		// The compiler combines these byte accesses into a single word load.
+		word := uint64(s[0]) | uint64(s[1])<<8 | uint64(s[2])<<16 | uint64(s[3])<<24 |
+			uint64(s[4])<<32 | uint64(s[5])<<40 | uint64(s[6])<<48 | uint64(s[7])<<56
+		if word&0x8080808080808080 != 0 {
+			return false
+		}
+		s = s[8:]
+	}
 	for i := range len(s) {
 		if s[i] >= 0x80 {
 			return false
