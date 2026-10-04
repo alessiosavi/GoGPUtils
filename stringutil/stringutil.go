@@ -312,19 +312,20 @@ func CountLines(s string) int {
 	if s == "" {
 		return 0
 	}
-
 	count := 1
-
-	for _, r := range s {
-		if r == '\n' {
-			count++
+	if len(s) <= 32 {
+		// The last byte either ends a line or belongs to the already-counted line.
+		for i := range len(s) - 1 {
+			if s[i] == '\n' {
+				count++
+			}
 		}
+		return count
 	}
-	// Don't count trailing newline as extra line
-	if strings.HasSuffix(s, "\n") {
+	count += strings.Count(s, "\n")
+	if s[len(s)-1] == '\n' {
 		count--
 	}
-
 	return count
 }
 
