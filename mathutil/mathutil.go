@@ -1032,9 +1032,24 @@ func MinMaxNormalize[T Number](s []T) []float64 {
 	return result
 }
 
+// histogramBinarySearchMinBins comes from the recorded PR-2 crossover experiment.
+// Use the BASE linear loop below 128 bins and binary search at or above 128.
+const histogramBinarySearchMinBins = 128
+
 // Histogram returns the frequency count of values in bins.
 // bins specifies the bin edges (n+1 edges for n bins).
 func Histogram[T Number](data []T, bins []T) []int {
+	if len(bins)-1 >= histogramBinarySearchMinBins {
+		return histogramBinary(data, bins)
+	}
+
+	return histogramLinear(data, bins)
+}
+
+// histogramLinear preserves the complete BASE implementation.
+//
+//nolint:intrange // Keep the BASE body verbatim.
+func histogramLinear[T Number](data []T, bins []T) []int {
 	if len(bins) < 2 {
 		return nil
 	}
@@ -1057,6 +1072,55 @@ func Histogram[T Number](data []T, bins []T) []int {
 			if i == len(sortedBins)-2 && v == sortedBins[i+1] {
 				counts[i]++
 			}
+		}
+	}
+
+	return counts
+}
+
+func histogramBinary[T Number](data []T, bins []T) []int {
+	if len(bins) < 2 {
+		return nil
+	}
+
+	// Sort bins
+	sortedBins := make([]T, len(bins))
+	copy(sortedBins, bins)
+	slices.Sort(sortedBins)
+
+	counts := make([]int, len(sortedBins)-1)
+
+	k := 0
+	for k < len(sortedBins) && sortedBins[k] != sortedBins[k] { //nolint:gocritic // Generic NaN test, including named float types.
+		k++
+	}
+	valid := sortedBins[k:]
+	for _, v := range data {
+		if v != v { //nolint:gocritic // Generic NaN test, including named float types.
+			continue
+		}
+		if len(valid) >= 2 {
+			// Find the first edge strictly greater than v. Comparing in T
+			// preserves integer extremes, infinities, and duplicate edges.
+			lo, hi := 0, len(valid)
+			for lo < hi {
+				mid := lo + (hi-lo)/2
+				if valid[mid] <= v {
+					lo = mid + 1
+				} else {
+					hi = mid
+				}
+			}
+			if lo >= 1 && lo < len(valid) {
+				counts[k+lo-1]++
+
+				continue
+			}
+		}
+		// With fewer than two non-NaN edges, only this rule can match.
+		// It also puts a duplicated maximum in the final bin.
+		if v == sortedBins[len(sortedBins)-1] {
+			counts[len(counts)-1]++
 		}
 	}
 
