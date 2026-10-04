@@ -1,7 +1,6 @@
 package collection
 
 import (
-	"fmt"
 	"runtime"
 	"slices"
 	"testing"
@@ -157,6 +156,9 @@ func pr10HeapBurstDrainRefill() any {
 }
 
 func TestPR10RetainedHeap(t *testing.T) {
+	if !testing.Verbose() {
+		t.Skip("informational retained-heap harness; run with -v; TestRetention holds the retention assertion")
+	}
 	cases := []struct {
 		name     string
 		makeLive func() any
@@ -184,7 +186,7 @@ func TestPR10RetainedHeap(t *testing.T) {
 		"Queue/BurstDrainRefill", pr10HeapBurstDrainRefill,
 	})
 	for _, c := range cases {
-		t.Run(c.name, func(_ *testing.T) {
+		t.Run(c.name, func(t *testing.T) {
 			var deltas []int64
 			for range 5 {
 				runtime.GC()
@@ -199,7 +201,7 @@ func TestPR10RetainedHeap(t *testing.T) {
 				deltas = append(deltas, int64(after.HeapAlloc)-int64(before.HeapAlloc))
 			}
 			slices.Sort(deltas)
-			fmt.Printf("HEAP %s samples=%v median=%d spread=[%d,%d]\n",
+			t.Logf("HEAP %s samples=%v median=%d spread=[%d,%d]\n",
 				c.name, deltas, deltas[2], deltas[0], deltas[4])
 		})
 	}
