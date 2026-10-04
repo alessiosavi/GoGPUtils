@@ -329,6 +329,13 @@ func Percentile[T Number](s []T, p float64) float64 {
 	copy(sorted, s)
 	slices.Sort(sorted)
 
+	return percentileSorted(sorted, p)
+}
+
+// percentileSorted returns the p-th percentile of sorted, which must be non-empty and sorted
+// with slices.Sort; p must satisfy 0 <= p <= 100. It holds Percentile's post-sort arithmetic so
+// Quartiles can sort once.
+func percentileSorted[T Number](sorted []T, p float64) float64 {
 	if p == 0 {
 		return float64(sorted[0])
 	}
@@ -352,9 +359,17 @@ func Percentile[T Number](s []T, p float64) float64 {
 
 // Quartiles returns Q1, Q2 (median), and Q3.
 func Quartiles[T Number](s []T) (q1, q2, q3 float64) {
-	q1 = Percentile(s, 25)
-	q2 = Percentile(s, 50)
-	q3 = Percentile(s, 75)
+	if len(s) == 0 {
+		return 0, 0, 0
+	}
+
+	sorted := make([]T, len(s))
+	copy(sorted, s)
+	slices.Sort(sorted)
+
+	q1 = percentileSorted(sorted, 25)
+	q2 = percentileSorted(sorted, 50)
+	q3 = percentileSorted(sorted, 75)
 
 	return
 }
