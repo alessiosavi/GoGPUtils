@@ -1,0 +1,3 @@
+# Exemptions for the basic fixture.
+
+a T.N # presentation-only method

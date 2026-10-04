@@ -531,6 +531,21 @@ go test -bench=. ./...
 
 ---
 
+## Benchmarks
+
+Every exported function or method of the utility packages has a canonical benchmark or a reviewed exemption, enforced in CI by `internal/benchcov`. Benchmarks use deterministic inputs from `internal/benchkit` and sweep input sizes.
+
+```bash
+make bench PKG=./sliceutil BENCH=Filter          # run
+make bench-compare BASE=master PKG=./sliceutil   # before/after with benchstat
+make bench-profile PKG=./sliceutil BENCH=BenchmarkFilter
+make bench-cov                                   # coverage report
+```
+
+See [docs/benchmarks.md](docs/benchmarks.md) for the conventions and the comparison rules.
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please ensure:

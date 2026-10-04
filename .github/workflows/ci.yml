@@ -134,6 +134,29 @@ jobs:
           args: --timeout=5m
         continue-on-error: true
 
+  bench-smoke:
+    name: Benchmark smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Run every benchmark twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          scope=$(go run ./internal/benchcov/cmd/benchscope)
+          mapfile -t pkgs <<<"$scope"
+          [[ ${#pkgs[@]} -gt 0 && -n ${pkgs[0]} ]] || { echo "benchscope selected nothing" >&2; exit 1; }
+          go test -run '^$' -bench . -benchtime=2x "${pkgs[@]}"
+
   benchmark:
     name: Benchmark
     runs-on: ubuntu-latest
@@ -150,10 +173,13 @@ jobs:
           cache: true
 
       - name: Run benchmarks
-        run: go test -bench=. -benchmem ./... | tee benchmark.txt
+        shell: bash
+        run: |
+          set -euo pipefail
+          BENCHTIME=200ms COUNT=1 scripts/bench.sh run
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: benchmark-results
-          path: benchmark.txt
+          path: bench-out/
