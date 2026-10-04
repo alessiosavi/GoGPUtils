@@ -795,6 +795,86 @@ func DetectLineTerminator(data []byte) LineTerminator {
 
 // NormalizeLineTerminators converts all line terminators to the specified style.
 func NormalizeLineTerminators(data []byte, target LineTerminator) []byte {
+	if len(data) == 0 {
+		return nil
+	}
+
+	term := "\n"
+	switch target {
+	case CRLF:
+		term = "\r\n"
+	case CR:
+		term = "\r"
+	}
+
+	// LF output without CR only needs a detached copy.
+	cr := bytes.Count(data, []byte{'\r'})
+	if cr == 0 && term == "\n" {
+		return append([]byte(nil), data...)
+	}
+
+	lf := bytes.Count(data, []byte{'\n'})
+	crlf := 0
+	firstCR := bytes.IndexByte(data, '\r')
+	for i := firstCR; i >= 0; {
+		if i+1 < len(data) && data[i+1] == '\n' {
+			crlf++
+		}
+		next := bytes.IndexByte(data[i+1:], '\r')
+		if next < 0 {
+			break
+		}
+		i += next + 1
+	}
+
+	// CR and LF occupy distinct bytes, so their sum cannot exceed len(data).
+	breaks := cr + lf - crlf
+	if breaks == 0 {
+		return append([]byte(nil), data...)
+	}
+	const maxInt = int(^uint(0) >> 1)
+	size := len(data) - cr - lf
+	if breaks > (maxInt-size)/len(term) {
+		return normalizeLineTerminatorsOverflow(data, target)
+	}
+	size += breaks * len(term)
+
+	result := make([]byte, 0, size)
+	pos := 0
+	nextCR, nextLF := firstCR, bytes.IndexByte(data, '\n')
+	for nextCR >= 0 || nextLF >= 0 {
+		next := nextLF
+		if nextCR >= 0 && (nextLF < 0 || nextCR < nextLF) {
+			next = nextCR
+		}
+		result = append(result, data[pos:next]...)
+		result = append(result, term...)
+		pos = next + 1
+		if next == nextCR && pos < len(data) && data[pos] == '\n' {
+			pos++
+		}
+
+		// Refresh only consumed positions; retain absent bytes as -1 so a
+		// missing or distant terminator never causes repeated suffix scans.
+		if nextCR >= 0 && nextCR < pos {
+			nextCR = bytes.IndexByte(data[pos:], '\r')
+			if nextCR >= 0 {
+				nextCR += pos
+			}
+		}
+		if nextLF >= 0 && nextLF < pos {
+			nextLF = bytes.IndexByte(data[pos:], '\n')
+			if nextLF >= 0 {
+				nextLF += pos
+			}
+		}
+	}
+
+	return append(result, data[pos:]...)
+}
+
+// Preserve BASE's allocation and panic behavior if the output length overflows.
+func normalizeLineTerminatorsOverflow(data []byte, target LineTerminator) []byte {
 	// First normalize to LF
 	data = bytes.ReplaceAll(data, []byte{'\r', '\n'}, []byte{'\n'})
 	data = bytes.ReplaceAll(data, []byte{'\r'}, []byte{'\n'})
