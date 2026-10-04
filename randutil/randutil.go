@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"math/big"
+	"math/bits"
 	"math/rand/v2"
 )
 
@@ -92,12 +93,9 @@ func SecureInt(max int) (int, error) {
 		return 0, ErrInvalidLength
 	}
 
-	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(int64(max)))
-	if err != nil {
-		return 0, err
-	}
-
-	return int(n.Int64()), nil
+	n, err := secureUint64n(uint64(max))
+	//nolint:gosec // n is zero on error or less than the positive int bound max.
+	return int(n), err
 }
 
 // SecureInt64 returns a uniformly distributed cryptographically secure random int64 in [0, max).
@@ -107,12 +105,39 @@ func SecureInt64(max int64) (int64, error) {
 		return 0, ErrInvalidLength
 	}
 
-	n, err := cryptorand.Int(cryptorand.Reader, big.NewInt(max))
-	if err != nil {
-		return 0, err
-	}
+	n, err := secureUint64n(uint64(max))
+	//nolint:gosec // n is zero on error or less than the positive int64 bound max.
+	return int64(n), err
+}
 
-	return n.Int64(), nil
+// candidateParams requires bound > 1.
+func candidateParams(bound uint64) (k int, mask byte) {
+	bitLen := bits.Len64(bound - 1)
+	k = (bitLen + 7) / 8
+	top := bitLen - 8*(k-1)
+	return k, 0xff >> (8 - top)
+}
+
+func secureUint64n(bound uint64) (uint64, error) {
+	if bound == 1 {
+		return 0, nil
+	}
+	k, mask := candidateParams(bound)
+	var buf [8]byte
+	r := cryptorand.Reader
+	for {
+		if _, err := io.ReadFull(r, buf[:k]); err != nil {
+			return 0, err
+		}
+		buf[0] &= mask
+		var v uint64
+		for _, b := range buf[:k] {
+			v = v<<8 | uint64(b)
+		}
+		if v < bound {
+			return v, nil
+		}
+	}
 }
 
 // SecureID generates a cryptographically secure random ID.
