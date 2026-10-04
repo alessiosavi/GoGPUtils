@@ -20,10 +20,10 @@ type CleanOption func(*cleanConfig)
 
 // cleanConfig holds all cleaning options.
 type cleanConfig struct {
+	dbMaxLen     int // 0 = unlimited (in runes)
 	unicodeNorm  bool
 	htmlStrip    bool
 	dbSanitize   bool
-	dbMaxLen     int  // 0 = unlimited (in runes)
 	dbReplaceNul bool // replace NUL bytes
 }
 
