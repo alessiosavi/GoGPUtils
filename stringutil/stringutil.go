@@ -860,11 +860,44 @@ func wrapLine(line string, width int) string {
 //	Indent("a\nb\nc", "  ")  // "  a\n  b\n  c"
 func Indent(s, prefix string) string {
 	lines := Lines(s)
-	for i, line := range lines {
-		lines[i] = prefix + line
+	if len(lines) == 0 {
+		return ""
 	}
-
-	return strings.Join(lines, "\n")
+	if len(lines) == 1 {
+		return prefix + lines[0]
+	}
+	// Preserve BASE's concatenation and Join failure path on integer overflow.
+	fallback := func() string {
+		for i, line := range lines {
+			lines[i] = prefix + line
+		}
+		return strings.Join(lines, "\n")
+	}
+	maxInt := int(^uint(0) >> 1)
+	if len(prefix) > maxInt/len(lines) {
+		return fallback()
+	}
+	size := len(prefix) * len(lines)
+	if size > maxInt-(len(lines)-1) {
+		return fallback()
+	}
+	size += len(lines) - 1
+	for _, line := range lines {
+		if len(line) > maxInt-size {
+			return fallback()
+		}
+		size += len(line)
+	}
+	var b strings.Builder
+	b.Grow(size)
+	for i, line := range lines {
+		if i > 0 {
+			b.WriteByte('\n')
+		}
+		b.WriteString(prefix)
+		b.WriteString(line)
+	}
+	return b.String()
 }
 
 // Dedent removes common leading whitespace from all lines.
