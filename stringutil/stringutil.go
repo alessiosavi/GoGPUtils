@@ -688,32 +688,22 @@ func CommonPrefix(strs ...string) string {
 		if len(strs) == 1 {
 			return strs[0]
 		}
-
 		return ""
 	}
-
-	// Find shortest string to bound our search
 	minLen := len(strs[0])
 	for _, s := range strs[1:] {
 		if len(s) < minLen {
 			minLen = len(s)
 		}
 	}
-
-	var prefix strings.Builder
-
 	for i := range minLen {
-		char := strs[0][i]
 		for _, s := range strs[1:] {
-			if s[i] != char {
-				return prefix.String()
+			if s[i] != strs[0][i] {
+				return strings.Clone(strs[0][:i])
 			}
 		}
-
-		prefix.WriteByte(char)
 	}
-
-	return prefix.String()
+	return strings.Clone(strs[0][:minLen])
 }
 
 // CommonSuffix returns the longest common suffix of the given strings.
