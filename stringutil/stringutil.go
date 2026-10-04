@@ -167,35 +167,45 @@ func TruncateWords(s string, maxLen int, suffix string) string {
 	if maxLen <= 0 {
 		return ""
 	}
-
-	runes := []rune(s)
-	if len(runes) <= maxLen {
+	if utf8.RuneCountInString(s) <= maxLen {
 		return s
 	}
-
-	suffixRunes := []rune(suffix)
-	if len(suffixRunes) >= maxLen {
-		return string(suffixRunes[:maxLen])
+	suffixCount := utf8.RuneCountInString(suffix)
+	if suffixCount >= maxLen {
+		off, invalid := runePrefix(suffix, maxLen)
+		if invalid == 0 {
+			return strings.Clone(suffix[:off])
+		}
+		// Preserve the rune round trip for an invalid suffix prefix.
+		runes := []rune(suffix)
+		return string(runes[:maxLen])
 	}
 
-	truncateAt := maxLen - len(suffixRunes)
-
-	// Find last space before truncate point
-	lastSpace := -1
-
-	for i := truncateAt - 1; i >= 0; i-- {
-		if unicode.IsSpace(runes[i]) {
-			lastSpace = i
-
+	cut := maxLen - suffixCount
+	off, lastSpace, count := len(s), -1, 0
+	invalid, spaceInvalid := 0, 0
+	for i, r := range s {
+		if count == cut {
+			off = i
 			break
 		}
+		if unicode.IsSpace(r) {
+			lastSpace = i
+			spaceInvalid = invalid
+		}
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				invalid++
+			}
+		}
+		count++
 	}
-
 	if lastSpace > 0 {
-		return string(runes[:lastSpace]) + suffix
+		off = lastSpace
+		invalid = spaceInvalid
 	}
-
-	return string(runes[:truncateAt]) + suffix
+	return encodeSpan(s[:off], invalid, suffix)
 }
 
 // PadLeft pads s on the left with padChar to reach the target length.
@@ -205,12 +215,12 @@ func TruncateWords(s string, maxLen int, suffix string) string {
 //
 //	PadLeft("42", 5, '0')  // "00042"
 func PadLeft(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	padding := length - len(runes)
+	padding := length - runeCount
 
 	var b strings.Builder
 
@@ -231,12 +241,12 @@ func PadLeft(s string, length int, padChar rune) string {
 //
 //	PadRight("42", 5, '0')  // "42000"
 func PadRight(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	padding := length - len(runes)
+	padding := length - runeCount
 
 	var b strings.Builder
 
@@ -257,12 +267,12 @@ func PadRight(s string, length int, padChar rune) string {
 //
 //	PadCenter("hello", 11, '*')  // "***hello***"
 func PadCenter(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	totalPadding := length - len(runes)
+	totalPadding := length - runeCount
 	leftPadding := totalPadding / 2
 	rightPadding := totalPadding - leftPadding
 
@@ -302,19 +312,20 @@ func CountLines(s string) int {
 	if s == "" {
 		return 0
 	}
-
 	count := 1
-
-	for _, r := range s {
-		if r == '\n' {
-			count++
+	if len(s) <= 32 {
+		// The last byte either ends a line or belongs to the already-counted line.
+		for i := range len(s) - 1 {
+			if s[i] == '\n' {
+				count++
+			}
 		}
+		return count
 	}
-	// Don't count trailing newline as extra line
-	if strings.HasSuffix(s, "\n") {
+	count += strings.Count(s, "\n")
+	if s[len(s)-1] == '\n' {
 		count--
 	}
-
 	return count
 }
 
@@ -456,11 +467,14 @@ func Capitalize(s string) string {
 	if s == "" {
 		return ""
 	}
-
-	runes := []rune(strings.ToLower(s))
-	runes[0] = unicode.ToUpper(runes[0])
-
-	return string(runes)
+	lower := strings.ToLower(s)
+	r, w := utf8.DecodeRuneInString(lower)
+	upper := unicode.ToUpper(r)
+	var b strings.Builder
+	b.Grow(len(lower) - w + utf8.RuneLen(upper))
+	b.WriteRune(upper)
+	b.WriteString(lower[w:])
+	return b.String()
 }
 
 // Title returns s with the first character of each word uppercased.
@@ -563,11 +577,13 @@ func PascalCase(s string) string {
 	if result == "" {
 		return ""
 	}
-
-	runes := []rune(result)
-	runes[0] = unicode.ToUpper(runes[0])
-
-	return string(runes)
+	r, w := utf8.DecodeRuneInString(result)
+	upper := unicode.ToUpper(r)
+	var b strings.Builder
+	b.Grow(len(result) - w + utf8.RuneLen(upper))
+	b.WriteRune(upper)
+	b.WriteString(result[w:])
+	return b.String()
 }
 
 // KebabCase converts s to kebab-case.
@@ -672,32 +688,22 @@ func CommonPrefix(strs ...string) string {
 		if len(strs) == 1 {
 			return strs[0]
 		}
-
 		return ""
 	}
-
-	// Find shortest string to bound our search
 	minLen := len(strs[0])
 	for _, s := range strs[1:] {
 		if len(s) < minLen {
 			minLen = len(s)
 		}
 	}
-
-	var prefix strings.Builder
-
 	for i := range minLen {
-		char := strs[0][i]
 		for _, s := range strs[1:] {
-			if s[i] != char {
-				return prefix.String()
+			if s[i] != strs[0][i] {
+				return strings.Clone(strs[0][:i])
 			}
 		}
-
-		prefix.WriteByte(char)
 	}
-
-	return prefix.String()
+	return strings.Clone(strs[0][:minLen])
 }
 
 // CommonSuffix returns the longest common suffix of the given strings.
@@ -767,27 +773,21 @@ func BetweenAll(s, start, end string) []string {
 	if start == "" && end == "" {
 		return nil
 	}
-
 	var results []string
-
 	remaining := s
-
 	for {
-		result, ok := Between(remaining, start, end)
-		if !ok {
+		startIdx := strings.Index(remaining, start)
+		if startIdx < 0 {
 			break
 		}
-
-		results = append(results, result)
-
-		// Consume through both markers. At least one is nonempty, so this
-		// strictly shortens remaining after each match.
-		idx := strings.Index(remaining, start)
-		remaining = remaining[idx+len(start):]
-		idx = strings.Index(remaining, end)
-		remaining = remaining[idx+len(end):]
+		after := remaining[startIdx+len(start):]
+		endIdx := strings.Index(after, end) //nolint:modernize // Keep explicit indexes for the reviewed single-search marker scan.
+		if endIdx < 0 {
+			break
+		}
+		results = append(results, after[:endIdx])
+		remaining = after[endIdx+len(end):]
 	}
-
 	return results
 }
 
@@ -979,4 +979,50 @@ func SplitAndTrim(s, sep string) []string {
 	}
 
 	return result
+}
+
+// runePrefix returns the byte boundary after k runes and the number of invalid bytes.
+// Counting/boundary pass; the selected span is re-read only when encoding it.
+func runePrefix(s string, k int) (off int, invalid int) {
+	count := 0
+	for i, r := range s {
+		if count == k {
+			return i, invalid
+		}
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				invalid++
+			}
+		}
+		count++
+	}
+	return len(s), invalid
+}
+
+// encodeSpan matches string([]rune(s)) + suffix. The suffix is appended raw.
+// invalid was counted during boundary selection; this is one encoding pass.
+func encodeSpan(s string, invalid int, suffix string) string {
+	if invalid == 0 {
+		if suffix == "" {
+			return strings.Clone(s)
+		}
+		return s + suffix
+	}
+	var b strings.Builder
+	b.Grow(len(s) + 2*invalid + len(suffix))
+	run := 0
+	for i, r := range s {
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				b.WriteString(s[run:i])
+				b.WriteString("\uFFFD")
+				run = i + 1
+			}
+		}
+	}
+	b.WriteString(s[run:])
+	b.WriteString(suffix)
+	return b.String()
 }
