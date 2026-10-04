@@ -474,15 +474,15 @@ func AppendLine(path, line string, terminator LineTerminator, perm fs.FileMode) 
 // EnsureDir creates a directory if it doesn't exist.
 // Creates parent directories as needed (like mkdir -p).
 func EnsureDir(path string, perm fs.FileMode) error {
-	if Exists(path) {
-		if !IsDir(path) {
-			return ErrNotDir
-		}
-
-		return nil
+	info, err := os.Stat(path)
+	if err != nil {
+		return os.MkdirAll(path, perm)
+	}
+	if !info.IsDir() {
+		return ErrNotDir
 	}
 
-	return os.MkdirAll(path, perm)
+	return nil
 }
 
 // List returns entries in a directory.
