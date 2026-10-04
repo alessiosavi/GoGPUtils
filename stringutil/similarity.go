@@ -114,38 +114,27 @@ func DamerauLevenshteinDistance(s1, s2 string) int {
 		return len1
 	}
 
-	// Create distance matrix
-	d := make([][]int, len1+1)
-	for i := range d {
-		d[i] = make([]int, len2+1)
-		d[i][0] = i
+	width := len2 + 1
+	rows := make([]int, 3*width)
+	prev2, prev, curr := rows[:width], rows[width:2*width], rows[2*width:]
+	for j := range prev {
+		prev[j] = j
 	}
-
-	for j := 0; j <= len2; j++ {
-		d[0][j] = j
-	}
-
 	for i := 1; i <= len1; i++ {
+		curr[0] = i
 		for j := 1; j <= len2; j++ {
 			cost := 0
 			if r1[i-1] != r2[j-1] {
 				cost = 1
 			}
-
-			d[i][j] = min(
-				d[i-1][j]+1,      // deletion
-				d[i][j-1]+1,      // insertion
-				d[i-1][j-1]+cost, // substitution
-			)
-
-			// Transposition
+			curr[j] = min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost)
 			if i > 1 && j > 1 && r1[i-1] == r2[j-2] && r1[i-2] == r2[j-1] {
-				d[i][j] = min(d[i][j], d[i-2][j-2]+cost)
+				curr[j] = min(curr[j], prev2[j-2]+cost)
 			}
 		}
+		prev2, prev, curr = prev, curr, prev2
 	}
-
-	return d[len1][len2]
+	return prev[len2]
 }
 
 // JaroSimilarity returns the Jaro similarity between two strings.
