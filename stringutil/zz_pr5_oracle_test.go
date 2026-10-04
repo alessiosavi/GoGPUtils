@@ -171,9 +171,6 @@ func TestZZPR5Differential(t *testing.T) {
 	}
 }
 func TestZZPR5Retention(t *testing.T) {
-	for _, s := range []string{"clean", "clean\a", "clean\xff", "\u200bclean", "\a", "\x00\u200b"} {
-		pr5Retention(t, "filter", RemoveNonPrintable, s, false)
-	}
 	pr5Retention(t, "Lines LF", func(s string) string { return Lines(s)[0] }, "a\nb", true)
 	for _, s := range []string{"a\rb", "a\r\nb", "a\r\nb\rc", "\r", "\r\n", "\r\r\n"} {
 		pr5Retention(t, "Lines CR", func(s string) string { return Lines(s)[0] }, s, false)

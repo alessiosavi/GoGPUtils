@@ -311,31 +311,19 @@ func TruncateRunes(s string, maxLen int) string {
 //	RemoveNonPrintable("Hello\x07World")  // "HelloWorld" (bell character removed)
 //	RemoveNonPrintable("Hello\tWorld\n")  // "Hello\tWorld\n" (whitespace preserved)
 func RemoveNonPrintable(s string) string {
-	first := -1
-	for i, r := range s {
-		if !unicode.IsPrint(r) && r != '\t' && r != '\n' && r != '\r' {
-			first = i
-			break
-		}
-		// Invalid bytes must be re-encoded as U+FFFD by the slow path.
-		if r == utf8.RuneError {
-			if _, width := utf8.DecodeRuneInString(s[i:]); width == 1 {
-				first = i
-				break
-			}
-		}
+	if s == "" {
+		return ""
 	}
-	if first < 0 {
-		return strings.Clone(s)
-	}
+
 	var b strings.Builder
 	b.Grow(len(s))
-	b.WriteString(s[:first])
-	for _, r := range s[first:] {
+
+	for _, r := range s {
 		if unicode.IsPrint(r) || r == '\t' || r == '\n' || r == '\r' {
 			b.WriteRune(r)
 		}
 	}
+
 	return b.String()
 }
 

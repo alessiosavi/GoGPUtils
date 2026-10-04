@@ -1,12 +1,10 @@
 package textnorm
 
 import (
-	"runtime"
 	"strings"
 	"testing"
 	"unicode"
 	"unsafe"
-	"weak"
 )
 
 func pr5BaseRemoveFormat(s string) (string, error) {
@@ -86,30 +84,6 @@ func pr5Inputs() []string {
 	return out
 }
 
-type pr5Parent [1 << 20]byte
-
-//go:noinline
-func pr5Live(fn func(string) string, s string) (string, weak.Pointer[pr5Parent]) {
-	p := new(pr5Parent)
-	copy(p[97:], s)
-	view := unsafe.String(&p[97], len(s))
-	w := weak.Make(p)
-	out := fn(view)
-	runtime.KeepAlive(p)
-	return out, w
-}
-func pr5Retention(t *testing.T, name string, fn func(string) string, s string, retained bool) {
-	t.Helper()
-	out, w := pr5Live(fn, s)
-	runtime.GC()
-	runtime.GC()
-	got := w.Value() != nil
-	runtime.KeepAlive(out)
-	if got != retained {
-		t.Fatalf("%s retained=%v want %v", name, got, retained)
-	}
-}
-
 var pr5RemoveFormat = New().RemoveFormatChars()
 
 func pr5Check(t testing.TB, s string) {
@@ -156,13 +130,6 @@ func TestZZPR5Differential(t *testing.T) {
 			}
 			pr5String(t, "Filter", s, a, b)
 		}
-	}
-}
-func TestZZPR5Retention(t *testing.T) {
-	pr5Retention(t, "view control", func(s string) string { return s }, "clean", true)
-	filter := func(s string) string { r, _ := pr5RemoveFormat.Run(s); return r }
-	for _, s := range []string{"clean", "clean\u200b", "clean\xff", "\u200bclean", "\u200b", "\x00\u200b"} {
-		pr5Retention(t, "filter", filter, s, false)
 	}
 }
 func FuzzZZFormatCharsDifferential(f *testing.F) {

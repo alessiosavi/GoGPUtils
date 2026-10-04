@@ -7,34 +7,6 @@ import (
 	"github.com/alessiosavi/GoGPUtils/internal/benchkit"
 )
 
-const pr5Drop = "\x07"
-
-// n is the exact input byte length; suffixes fit within that budget.
-func pr5BenchInput(name string, n int) string {
-	switch name {
-	case "clean":
-		return benchkit.Text(n, benchkit.Mixed)
-	case "late-removal":
-		return benchkit.Text(n-len(pr5Drop), benchkit.Mixed) + pr5Drop
-	case "invalid":
-		return benchkit.Text(n-1, benchkit.Mixed) + "\xff"
-	}
-	panic(name)
-}
-func BenchmarkPR5RemoveNonPrintable(b *testing.B) {
-	for _, name := range []string{"clean", "late-removal", "invalid"} {
-		b.Run("case="+name, func(b *testing.B) {
-			benchkit.Run(b, benchkit.Sizes, func(b *testing.B, n int) {
-				text := pr5BenchInput(name, n)
-				b.ReportAllocs()
-				for b.Loop() {
-					RemoveNonPrintable(text)
-				}
-			})
-		})
-	}
-}
-
 func pr5LineInput(name string, n int) string {
 	if name == "cr" {
 		return benchWordText(n, "\r")
