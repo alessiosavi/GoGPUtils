@@ -717,7 +717,7 @@ func modelContainers[T comparable](t *testing.T, val func(int) T) {
 				same(t, ok, wo)
 			}
 			bulk := func(n int) { sameItems(t, q.DequeueN(n), bq.DequeueN(n)); sameItems(t, s.PopN(n), bs.PopN(n)) }
-			// Directed sequences ensure wrapping, growth, retained empty capacity and Clear/refill.
+			// Directed sequences exercise partial drains, growth, empty queues and Clear/refill.
 			for _, n := range []int{0, 1, 7, 8, 9, 63, 64, 65, 100, 1024} {
 				v := make([]T, n)
 				for i := range v {
@@ -906,7 +906,7 @@ func TestOracleBSTValueCopy(t *testing.T) {
 	check()
 }
 
-func TestQueueZeroSizedWrap(t *testing.T) {
+func TestQueueZeroSizedDrainRefill(t *testing.T) {
 	c := int(^uint(0) >> 1)
 	q := NewQueueWithCapacity[struct{}](c)
 	b := baseNewQueueWithCapacity[struct{}](c)
@@ -984,7 +984,7 @@ func TestOracleConstructors(t *testing.T) {
 	}
 }
 
-func oracleWrappedRetirement[T comparable](t *testing.T, value T) {
+func oracleDrainRefillRetirement[T comparable](t *testing.T, value T) {
 	t.Helper()
 	for _, clearAll := range []bool{false, true} {
 		q := NewQueueWithCapacity[T](8)
@@ -998,7 +998,7 @@ func oracleWrappedRetirement[T comparable](t *testing.T, value T) {
 			q.Enqueue(value)
 			b.Enqueue(value)
 		}
-		// The ring's live positions are 5,6,7,0,1,2,3: retire both segments.
+		// Retire items after a partial drain and refill, then verify reuse.
 		if clearAll {
 			q.Clear()
 			b.Clear()
@@ -1012,10 +1012,10 @@ func oracleWrappedRetirement[T comparable](t *testing.T, value T) {
 	}
 }
 
-func TestOracleWrappedRetirement(t *testing.T) {
-	oracleWrappedRetirement(t, 7)
+func TestOracleDrainRefillRetirement(t *testing.T) {
+	oracleDrainRefillRetirement(t, 7)
 	value := 7
-	oracleWrappedRetirement(t, &value)
+	oracleDrainRefillRetirement(t, &value)
 }
 
 // Comparable equality preserves pointer identity; DeepEqual would only compare
