@@ -24,9 +24,16 @@ func (p Pipeline) RemoveFormatChars() Pipeline {
 	return p.Then(func(s string) (string, error) {
 		first := -1
 		for i, r := range s {
-			if (r != '\n' && r != '\t' && (unicode.Is(unicode.Cf, r) || unicode.Is(unicode.Cc, r))) || (r == utf8.RuneError && func() bool { _, width := utf8.DecodeRuneInString(s[i:]); return width == 1 }()) {
+			if r != '\n' && r != '\t' && (unicode.Is(unicode.Cf, r) || unicode.Is(unicode.Cc, r)) {
 				first = i
 				break
+			}
+			// Invalid bytes must be re-encoded as U+FFFD by the slow path.
+			if r == utf8.RuneError {
+				if _, width := utf8.DecodeRuneInString(s[i:]); width == 1 {
+					first = i
+					break
+				}
 			}
 		}
 		if first < 0 {
