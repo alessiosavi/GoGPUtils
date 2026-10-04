@@ -58,6 +58,10 @@ func normalizeUnicodeLatinStage(s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
+	if isASCII(s) {
+		// Preserve the original Builder's detached result.
+		return strings.Clone(s), nil
+	}
 	decomposed := norm.NFD.String(s)
 	var b strings.Builder
 	b.Grow(len(decomposed))
