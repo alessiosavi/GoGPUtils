@@ -783,27 +783,21 @@ func BetweenAll(s, start, end string) []string {
 	if start == "" && end == "" {
 		return nil
 	}
-
 	var results []string
-
 	remaining := s
-
 	for {
-		result, ok := Between(remaining, start, end)
-		if !ok {
+		startIdx := strings.Index(remaining, start)
+		if startIdx < 0 {
 			break
 		}
-
-		results = append(results, result)
-
-		// Consume through both markers. At least one is nonempty, so this
-		// strictly shortens remaining after each match.
-		idx := strings.Index(remaining, start)
-		remaining = remaining[idx+len(start):]
-		idx = strings.Index(remaining, end)
-		remaining = remaining[idx+len(end):]
+		after := remaining[startIdx+len(start):]
+		endIdx := strings.Index(after, end) //nolint:modernize // Keep explicit indexes for the reviewed single-search marker scan.
+		if endIdx < 0 {
+			break
+		}
+		results = append(results, after[:endIdx])
+		remaining = after[endIdx+len(end):]
 	}
-
 	return results
 }
 
