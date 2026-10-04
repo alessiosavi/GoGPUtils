@@ -283,14 +283,9 @@ func DiceCoefficient(s1, s2 string) float64 {
 	// Count intersection
 	intersection := 0
 
-	counted := make(map[string]int)
-	for bg := range bigrams1 {
-		counted[bg] = bigrams1[bg]
-	}
-
 	for bg, count := range bigrams2 {
-		if counted[bg] > 0 {
-			commonCount := min(count, counted[bg])
+		if bigrams1[bg] > 0 {
+			commonCount := min(count, bigrams1[bg])
 			intersection += commonCount
 		}
 	}
@@ -311,18 +306,23 @@ func DiceCoefficient(s1, s2 string) float64 {
 
 // bigrams generates a map of bigrams and their counts.
 func bigrams(s string) map[string]int {
-	runes := []rune(s)
-	if len(runes) < 2 {
-		return nil
+	var result map[string]int
+	previous2, previous1 := -1, -1
+	for end := range s {
+		if previous2 >= 0 {
+			if result == nil {
+				result = make(map[string]int)
+			}
+			result[s[previous2:end]]++
+		}
+		previous2, previous1 = previous1, end
 	}
-
-	result := make(map[string]int)
-
-	for i := range len(runes) - 1 {
-		bg := string(runes[i : i+2])
-		result[bg]++
+	if previous2 >= 0 {
+		if result == nil {
+			result = make(map[string]int)
+		}
+		result[s[previous2:]]++
 	}
-
 	return result
 }
 
