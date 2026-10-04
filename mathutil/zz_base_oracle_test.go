@@ -183,6 +183,33 @@ func oracleSliceEqual[T Number](a, b []T) bool {
 	return true
 }
 
+// Diagnostic helpers are called only on failure, keeping formatting out of the random loops.
+func oracleSliceBits[T Number](s []T) []uint64 {
+	if s == nil {
+		return nil
+	}
+	bits := make([]uint64, len(s))
+	for i, v := range s {
+		bits[i] = oracleBits(v)
+	}
+	return bits
+}
+
+func oracleSliceDifference[T Number](got, want []T) string {
+	for i := range min(len(got), len(want)) {
+		if oracleBits(got[i]) != oracleBits(want[i]) {
+			return fmt.Sprintf("index %d: want bits=0x%016x, got bits=0x%016x", i, oracleBits(want[i]), oracleBits(got[i]))
+		}
+	}
+	if len(got) != len(want) {
+		return fmt.Sprintf("first missing index %d: want length=%d, got length=%d", min(len(got), len(want)), len(want), len(got))
+	}
+	if (got == nil) != (want == nil) {
+		return fmt.Sprintf("want nil=%v, got nil=%v", want == nil, got == nil)
+	}
+	return ""
+}
+
 func oracleFloat64(r *rand.Rand) float64 {
 	switch r.IntN(12) {
 	case 0:
@@ -242,12 +269,12 @@ func outcome[R any](f func() R) (r R, panicked bool, msg string) {
 	return
 }
 
-func oracleCompare[R any](t *testing.T, label string, gotFn, wantFn func() R, equal func(R, R) bool) (R, bool) {
+func oracleCompare[R any](t *testing.T, label string, gotFn, wantFn func() R, equal func(R, R) bool, diagnostic func(R, R) string) (R, bool) {
 	t.Helper()
 	got, gp, gm := outcome(gotFn)
 	want, wp, wm := outcome(wantFn)
 	if gp != wp || (gp && gm != wm) || (!gp && !equal(got, want)) {
-		t.Fatalf("%s: got %#v panic=%v %q; want %#v panic=%v %q", label, got, gp, gm, want, wp, wm)
+		t.Fatalf("%s: %s; got %#v panic=%v %q; want %#v panic=%v %q", label, diagnostic(got, want), got, gp, gm, want, wp, wm)
 	}
 	return got, gp
 }
@@ -258,10 +285,13 @@ func oracleQuartileEqual(a, b [3]float64) bool {
 	return oracleFloatEqual(a[0], b[0]) && oracleFloatEqual(a[1], b[1]) && oracleFloatEqual(a[2], b[2])
 }
 
-func oracleCheckPercentile[T Number](t *testing.T, s []T, p float64) {
+func oracleCheckPercentile[T Number](t *testing.T, s []T, p float64, caseIndex int) {
 	t.Helper()
 	oracleCompare(t, "Percentile", func() float64 { return Percentile(s, p) },
-		func() float64 { return basePercentile(s, p) }, oracleFloatEqual)
+		func() float64 { return basePercentile(s, p) }, oracleFloatEqual, func(got, want float64) string {
+			return fmt.Sprintf("case %d p=%g (bits=0x%016x): want bits=0x%016x, got bits=0x%016x; input bits=%#x",
+				caseIndex, p, math.Float64bits(p), math.Float64bits(want), math.Float64bits(got), oracleSliceBits(s))
+		})
 }
 
 func oracleQuartiles[T Number](t *testing.T, next func(*rand.Rand) T) {
@@ -286,16 +316,21 @@ func oracleQuartiles[T Number](t *testing.T, next func(*rand.Rand) T) {
 		}, func() [3]float64 {
 			a, b, c := baseQuartiles(s)
 			return [3]float64{a, b, c}
-		}, oracleQuartileEqual)
+		}, oracleQuartileEqual, func(got, want [3]float64) string {
+			return fmt.Sprintf("case %d: %s; input bits=%#x", c, oracleSliceDifference(got[:], want[:]), oracleSliceBits(s))
+		})
 		oracleCompare(t, "IQR", func() float64 { return IQR(s) }, func() float64 {
 			a, _, c := baseQuartiles(s)
 			return c - a
-		}, oracleFloatEqual)
+		}, oracleFloatEqual, func(got, want float64) string {
+			return fmt.Sprintf("case %d: want bits=0x%016x, got bits=0x%016x; input bits=%#x",
+				c, math.Float64bits(want), math.Float64bits(got), oracleSliceBits(s))
+		})
 		for _, p := range []float64{-1, 0, 0.5, 25, 50, 75, 99.9, 100, 101, math.Inf(-1), math.Inf(1), math.NaN()} {
-			oracleCheckPercentile(t, s, p)
+			oracleCheckPercentile(t, s, p, c)
 		}
 		if !oracleSliceEqual(s, before) {
-			t.Fatalf("case %d mutated input", c)
+			t.Fatalf("case %d mutated input: %s", c, oracleSliceDifference(s, before))
 		}
 	}
 }
@@ -372,7 +407,64 @@ func oracleMatrixEqual[T Number](a, b Matrix[T]) bool {
 	return true
 }
 
-func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T]) {
+// Owner decision 2026-10-04, findings §2 item 5: only MatrixMultiply results may
+// differ in NaN payload/sign; NaN-ness and every non-NaN bit must still match BASE.
+func oracleMatrixResultCellEqual[T Number](a, b T) bool {
+	return oracleBits(a) == oracleBits(b) || (math.IsNaN(float64(a)) && math.IsNaN(float64(b)))
+}
+
+func oracleMatrixResultEqual[T Number](a, b Matrix[T]) bool {
+	if (a == nil) != (b == nil) || len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if (a[i] == nil) != (b[i] == nil) || len(a[i]) != len(b[i]) {
+			return false
+		}
+		for j := range a[i] {
+			if !oracleMatrixResultCellEqual(a[i][j], b[i][j]) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func oracleMatrixBits[T Number](m Matrix[T]) [][]uint64 {
+	if m == nil {
+		return nil
+	}
+	bits := make([][]uint64, len(m))
+	for i, row := range m {
+		bits[i] = oracleSliceBits(row)
+	}
+	return bits
+}
+
+func oracleMatrixDifference[T Number](got, want Matrix[T], equal func(T, T) bool) string {
+	for i := range min(len(got), len(want)) {
+		for j := range min(len(got[i]), len(want[i])) {
+			if !equal(got[i][j], want[i][j]) {
+				return fmt.Sprintf("cell [%d][%d]: want bits=0x%016x, got bits=0x%016x", i, j, oracleBits(want[i][j]), oracleBits(got[i][j]))
+			}
+		}
+		if len(got[i]) != len(want[i]) {
+			return fmt.Sprintf("row %d first missing index %d: want length=%d, got length=%d", i, min(len(got[i]), len(want[i])), len(want[i]), len(got[i]))
+		}
+		if (got[i] == nil) != (want[i] == nil) {
+			return fmt.Sprintf("row %d: want nil=%v, got nil=%v", i, want[i] == nil, got[i] == nil)
+		}
+	}
+	if len(got) != len(want) {
+		return fmt.Sprintf("first missing row %d: want rows=%d, got rows=%d", min(len(got), len(want)), len(want), len(got))
+	}
+	if (got == nil) != (want == nil) {
+		return fmt.Sprintf("want nil=%v, got nil=%v", want == nil, got == nil)
+	}
+	return ""
+}
+
+func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T], caseIndex int) {
 	t.Helper()
 	ac, bc := oracleCloneMatrix(a), oracleCloneMatrix(b)
 	type result struct {
@@ -385,10 +477,18 @@ func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T]) {
 	}, func() result {
 		m, err := baseMatrixMultiply(a, b)
 		return result{m, err}
-	}, func(a, b result) bool { return a.err == b.err && oracleMatrixEqual(a.matrix, b.matrix) }) //nolint:errorlint // identity comparison against BASE is intended
+	}, func(a, b result) bool { return a.err == b.err && oracleMatrixResultEqual(a.matrix, b.matrix) }, //nolint:errorlint // identity comparison against BASE is intended
+		func(got, want result) string {
+			return fmt.Sprintf("case %d: %s; a bits=%#x; b bits=%#x", caseIndex,
+				oracleMatrixDifference(got.matrix, want.matrix, oracleMatrixResultCellEqual[T]), oracleMatrixBits(ac), oracleMatrixBits(bc))
+		})
 	got := out.matrix
-	if !oracleMatrixEqual(a, ac) || !oracleMatrixEqual(b, bc) {
-		t.Fatal("matrix input mutated")
+	bitEqual := func(x, y T) bool { return oracleBits(x) == oracleBits(y) }
+	if !oracleMatrixEqual(a, ac) {
+		t.Fatalf("case %d matrix a input mutated: %s", caseIndex, oracleMatrixDifference(a, ac, bitEqual))
+	}
+	if !oracleMatrixEqual(b, bc) {
+		t.Fatalf("case %d matrix b input mutated: %s", caseIndex, oracleMatrixDifference(b, bc, bitEqual))
 	}
 	if panicked {
 		return
@@ -399,7 +499,7 @@ func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T]) {
 			for x := range got[i][:cap(got[i])] {
 				for y := range got[j][:cap(got[j])] {
 					if &got[i][:cap(got[i])][x] == &got[j][:cap(got[j])][y] {
-						t.Fatal("result rows overlap")
+						t.Fatalf("case %d result rows overlap at [%d][%d] and [%d][%d]", caseIndex, i, x, j, y)
 					}
 				}
 			}
@@ -409,7 +509,7 @@ func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T]) {
 		before := slices.Clone(got[1])
 		got[0] = append(got[0], T(123))
 		if !oracleSliceEqual(got[1], before) {
-			t.Fatal("append row 0 changed row 1")
+			t.Fatalf("case %d append row 0 changed row 1: %s", caseIndex, oracleSliceDifference(got[1], before))
 		}
 	}
 }
@@ -417,7 +517,7 @@ func oracleCheckMatrix[T Number](t *testing.T, a, b Matrix[T]) {
 func oracleMatrices[T Number](t *testing.T, next func(*rand.Rand) T) {
 	t.Helper()
 	r := rand.New(rand.NewPCG(0x789, 0xabc))
-	for range 4000 {
+	for c := range 4000 {
 		m, n, p := 1+r.IntN(9), 1+r.IntN(9), 1+r.IntN(9)
 		a, b := make(Matrix[T], m), make(Matrix[T], n)
 		for i := range a {
@@ -432,16 +532,16 @@ func oracleMatrices[T Number](t *testing.T, next func(*rand.Rand) T) {
 				b[i][j] = next(r)
 			}
 		}
-		oracleCheckMatrix(t, a, b)
+		oracleCheckMatrix(t, a, b, c)
 	}
-	for _, c := range []struct{ a, b Matrix[T] }{
+	for i, c := range []struct{ a, b Matrix[T] }{
 		{nil, nil}, {Matrix[T]{}, Matrix[T]{{1}}}, {Matrix[T]{{1}}, nil},
 		{Matrix[T]{{}}, Matrix[T]{{1}}}, {Matrix[T]{{1, 2}}, Matrix[T]{{1}}},
 		{Matrix[T]{{1}, {1, 2}}, Matrix[T]{{1}}},
 		{Matrix[T]{{1, 2}}, Matrix[T]{{1}, {1, 2}}},
 		{Matrix[T]{{1}, {2}}, Matrix[T]{{}}},
 	} {
-		oracleCheckMatrix(t, c.a, c.b)
+		oracleCheckMatrix(t, c.a, c.b, i)
 	}
 }
 
@@ -458,9 +558,149 @@ func TestOracleMatrixMultiply(t *testing.T) {
 	t.Run("overflow-myInt", func(t *testing.T) { oracleMatrixOverflow[myInt](t, math.MinInt64, math.MaxInt64) })
 }
 
+func TestOracleMatrixMultiplyNaNPropagation(t *testing.T) {
+	// Construct distinct payloads and opposite signs at each precision, including
+	// signaling NaNs. These cases assert NaN-ness parity with BASE, not NaN bits.
+	t.Run("float64/quiet", func(t *testing.T) {
+		oracleMatrixNaNPropagation(t, math.Float64frombits(0x7ff8000000000041), math.Float64frombits(0xfff8000000000082))
+	})
+	t.Run("float64/signaling", func(t *testing.T) {
+		oracleMatrixNaNPropagation(t, math.Float64frombits(0x7ff0000000000041), math.Float64frombits(0xfff0000000000082))
+	})
+	t.Run("float32/quiet", func(t *testing.T) {
+		oracleMatrixNaNPropagation(t, math.Float32frombits(0x7fc00041), math.Float32frombits(0xffc00082))
+	})
+	t.Run("float32/signaling", func(t *testing.T) {
+		oracleMatrixNaNPropagation(t, math.Float32frombits(0x7f800041), math.Float32frombits(0xff800082))
+	})
+}
+
+func oracleMatrixNaNPropagation[T Float](t *testing.T, nanA, nanB T) {
+	t.Helper()
+	inf := T(math.Inf(1))
+	for i, c := range []struct {
+		name string
+		a, b Matrix[T]
+	}{
+		{
+			name: "left-payload-a-then-b",
+			a:    Matrix[T]{{nanA, nanB}},
+			b:    Matrix[T]{{1}, {1}},
+		},
+		{
+			name: "left-payload-b-then-a",
+			a:    Matrix[T]{{nanB, nanA}},
+			b:    Matrix[T]{{1}, {1}},
+		},
+		{
+			name: "right-payload-a-then-b",
+			a:    Matrix[T]{{1, 1}},
+			b:    Matrix[T]{{nanA}, {nanB}},
+		},
+		{
+			name: "right-payload-b-then-a",
+			a:    Matrix[T]{{1, 1}},
+			b:    Matrix[T]{{nanB}, {nanA}},
+		},
+		{
+			name: "inf-times-zero-then-input",
+			a:    Matrix[T]{{inf, nanA}, {inf, nanB}},
+			b:    Matrix[T]{{0}, {1}},
+		},
+		{
+			name: "input-then-inf-times-zero",
+			a:    Matrix[T]{{nanA, inf}, {nanB, inf}},
+			b:    Matrix[T]{{1}, {0}},
+		},
+		{
+			name: "inf-minus-inf-then-input",
+			a:    Matrix[T]{{inf, -inf, nanA}, {inf, -inf, nanB}},
+			b:    Matrix[T]{{1}, {1}, {1}},
+		},
+		{
+			name: "both-operands-a-times-b",
+			a:    Matrix[T]{{nanA}},
+			b:    Matrix[T]{{nanB}},
+		},
+		{
+			name: "both-operands-b-times-a",
+			a:    Matrix[T]{{nanB}},
+			b:    Matrix[T]{{nanA}},
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) { oracleCheckMatrix(t, c.a, c.b, i) })
+	}
+}
+
+func TestOracleMatrixResultEqual(t *testing.T) {
+	t.Run("float64", func(t *testing.T) {
+		oracleCheckMatrixResultEqual(t, math.Float64frombits(0x7ff8000000000041), math.Float64frombits(0xfff0000000000082))
+	})
+	t.Run("float32", func(t *testing.T) {
+		oracleCheckMatrixResultEqual(t, math.Float32frombits(0x7fc00041), math.Float32frombits(0xff800082))
+	})
+	t.Run("myFloat", func(t *testing.T) {
+		oracleCheckMatrixResultEqual(t, myFloat(math.Float64frombits(0x7ff8000000000041)), myFloat(math.Float64frombits(0xfff0000000000082)))
+	})
+	t.Run("int64", func(t *testing.T) {
+		if oracleMatrixResultEqual(Matrix[int64]{{1 << 53}}, Matrix[int64]{{1<<53 + 1}}) {
+			t.Fatal("distinct integer bits compared equal")
+		}
+	})
+}
+
+func oracleCheckMatrixResultEqual[T Float](t *testing.T, nanA, nanB T) {
+	t.Helper()
+	nz, inf := T(math.Copysign(0, -1)), T(math.Inf(1))
+	for _, c := range []struct {
+		name      string
+		got, want Matrix[T]
+		equal     bool
+	}{
+		{"equal-bits", Matrix[T]{{0, nz, inf, -inf, 1}}, Matrix[T]{{0, nz, inf, -inf, 1}}, true},
+		{"both-nan", Matrix[T]{{nanA}}, Matrix[T]{{nanB}}, true},
+		{"nan-vs-number", Matrix[T]{{nanA}}, Matrix[T]{{1}}, false},
+		{"number-vs-nan", Matrix[T]{{1}}, Matrix[T]{{nanB}}, false},
+		{"positive-vs-negative-zero", Matrix[T]{{0}}, Matrix[T]{{nz}}, false},
+		{"negative-vs-positive-zero", Matrix[T]{{nz}}, Matrix[T]{{0}}, false},
+		{"positive-vs-negative-inf", Matrix[T]{{inf}}, Matrix[T]{{-inf}}, false},
+		{"different-finite", Matrix[T]{{1}}, Matrix[T]{{2}}, false},
+		{"nan-before-different-bits", Matrix[T]{{nanA, 0}}, Matrix[T]{{nanB, nz}}, false},
+		{"nil-vs-empty", nil, Matrix[T]{}, false},
+		{"nil-vs-empty-row", Matrix[T]{nil}, Matrix[T]{{}}, false},
+		{"different-rows", Matrix[T]{{1}}, Matrix[T]{{1}, {1}}, false},
+		{"different-columns", Matrix[T]{{1}}, Matrix[T]{{1, 1}}, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			if got := oracleMatrixResultEqual(c.got, c.want); got != c.equal {
+				t.Fatalf("equal=%v, want %v; got bits=%#x, want bits=%#x", got, c.equal, oracleMatrixBits(c.got), oracleMatrixBits(c.want))
+			}
+		})
+	}
+	// Input immutability and row independence must still reject changes to NaN bits.
+	if oracleMatrixEqual(Matrix[T]{{nanA}}, Matrix[T]{{nanB}}) || oracleSliceEqual([]T{nanA}, []T{nanB}) {
+		t.Fatal("strict input/row comparator accepted different NaN bits")
+	}
+}
+
+func TestOracleDifferenceDiagnostics(t *testing.T) {
+	nanA, nanB := math.Float64frombits(0x7ff8000000000041), math.Float64frombits(0xfff8000000000082)
+	got, want := Matrix[float64]{{nanA, 1}, {0, 2}}, Matrix[float64]{{nanB, 1}, {math.Copysign(0, -1), 3}}
+	if diff := oracleMatrixDifference(got, want, oracleMatrixResultCellEqual[float64]); diff != "cell [1][0]: want bits=0x8000000000000000, got bits=0x0000000000000000" {
+		t.Fatalf("unexpected first matrix difference: %s", diff)
+	}
+	if diff := oracleSliceDifference(got[0], want[0]); diff != "index 0: want bits=0xfff8000000000082, got bits=0x7ff8000000000041" {
+		t.Fatalf("unexpected first strict slice difference: %s", diff)
+	}
+	oracleCompare(t, "equal", func() float64 { return 1 }, func() float64 { return 1 }, oracleFloatEqual, func(_, _ float64) string {
+		t.Fatal("formatted diagnostic without a mismatch")
+		return ""
+	})
+}
+
 func oracleMatrixOverflow[T Integer](t *testing.T, lo, hi T) {
 	t.Helper()
-	oracleCheckMatrix(t, Matrix[T]{{hi, hi}, {lo, hi}}, Matrix[T]{{2, hi}, {2, 1}})
+	oracleCheckMatrix(t, Matrix[T]{{hi, hi}, {lo, hi}}, Matrix[T]{{2, hi}, {2, 1}}, 0)
 }
 
 //go:noinline
@@ -513,12 +753,14 @@ func oracleIndexes[T Number](t *testing.T, next func(*rand.Rand) T, cases [][]T)
 	for c, s := range cases {
 		before := slices.Clone(s)
 		equal := func(a, b int) bool { return a == b }
-		oracleCompare(t, fmt.Sprintf("MinIndex[%T] case %d %v", *new(T), c, s),
-			func() int { return MinIndex(s) }, func() int { return baseMinIndex(s) }, equal)
-		oracleCompare(t, fmt.Sprintf("MaxIndex[%T] case %d %v", *new(T), c, s),
-			func() int { return MaxIndex(s) }, func() int { return baseMaxIndex(s) }, equal)
+		diagnostic := func(got, want int) string {
+			return fmt.Sprintf("case %d: want index=%d (bits=0x%016x), got index=%d (bits=0x%016x); input bits=%#x",
+				c, want, oracleBits(want), got, oracleBits(got), oracleSliceBits(s))
+		}
+		oracleCompare(t, "MinIndex", func() int { return MinIndex(s) }, func() int { return baseMinIndex(s) }, equal, diagnostic)
+		oracleCompare(t, "MaxIndex", func() int { return MaxIndex(s) }, func() int { return baseMaxIndex(s) }, equal, diagnostic)
 		if !oracleSliceEqual(s, before) {
-			t.Fatal("extrema input mutated")
+			t.Fatalf("case %d extrema input mutated: %s", c, oracleSliceDifference(s, before))
 		}
 	}
 }
@@ -585,8 +827,10 @@ func TestOraclePrimes(t *testing.T) {
 		bounds = append(bounds, n)
 	}
 	bounds = append(bounds, 65536)
-	for _, n := range bounds {
-		oracleCompare(t, fmt.Sprintf("Primes(%d)", n), func() []int { return Primes(n) },
-			func() []int { return basePrimes(n) }, oracleSliceEqual[int])
+	for c, n := range bounds {
+		oracleCompare(t, "Primes", func() []int { return Primes(n) },
+			func() []int { return basePrimes(n) }, oracleSliceEqual[int], func(got, want []int) string {
+				return fmt.Sprintf("case %d n=%d: %s", c, n, oracleSliceDifference(got, want))
+			})
 	}
 }
