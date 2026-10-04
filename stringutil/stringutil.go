@@ -466,11 +466,14 @@ func Capitalize(s string) string {
 	if s == "" {
 		return ""
 	}
-
-	runes := []rune(strings.ToLower(s))
-	runes[0] = unicode.ToUpper(runes[0])
-
-	return string(runes)
+	lower := strings.ToLower(s)
+	r, w := utf8.DecodeRuneInString(lower)
+	upper := unicode.ToUpper(r)
+	var b strings.Builder
+	b.Grow(len(lower) - w + utf8.RuneLen(upper))
+	b.WriteRune(upper)
+	b.WriteString(lower[w:])
+	return b.String()
 }
 
 // Title returns s with the first character of each word uppercased.
@@ -573,11 +576,13 @@ func PascalCase(s string) string {
 	if result == "" {
 		return ""
 	}
-
-	runes := []rune(result)
-	runes[0] = unicode.ToUpper(runes[0])
-
-	return string(runes)
+	r, w := utf8.DecodeRuneInString(result)
+	upper := unicode.ToUpper(r)
+	var b strings.Builder
+	b.Grow(len(result) - w + utf8.RuneLen(upper))
+	b.WriteRune(upper)
+	b.WriteString(result[w:])
+	return b.String()
 }
 
 // KebabCase converts s to kebab-case.
