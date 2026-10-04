@@ -23,6 +23,14 @@ func normalizeUnicodeStage(s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
+	if isASCII(s) {
+		// Preserve x/text v0.42.0 transform.String ownership: its 128-byte
+		// initial buffer aliases unchanged input; larger input is detached.
+		if len(s) > 128 {
+			return strings.Clone(s), nil
+		}
+		return s, nil
+	}
 
 	t := transform.Chain(
 		norm.NFD,
@@ -50,6 +58,10 @@ func normalizeUnicodeLatinStage(s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
+	if isASCII(s) {
+		// Preserve the original Builder's detached result.
+		return strings.Clone(s), nil
+	}
 	decomposed := norm.NFD.String(s)
 	var b strings.Builder
 	b.Grow(len(decomposed))
@@ -66,4 +78,23 @@ func normalizeUnicodeLatinStage(s string) (string, error) {
 		b.WriteRune(r)
 	}
 	return norm.NFC.String(b.String()), nil
+}
+
+// isASCII reports whether every input byte is below 0x80.
+func isASCII(s string) bool {
+	for len(s) >= 8 {
+		// The compiler combines these byte accesses into a single word load.
+		word := uint64(s[0]) | uint64(s[1])<<8 | uint64(s[2])<<16 | uint64(s[3])<<24 |
+			uint64(s[4])<<32 | uint64(s[5])<<40 | uint64(s[6])<<48 | uint64(s[7])<<56
+		if word&0x8080808080808080 != 0 {
+			return false
+		}
+		s = s[8:]
+	}
+	for i := range len(s) {
+		if s[i] >= 0x80 {
+			return false
+		}
+	}
+	return true
 }

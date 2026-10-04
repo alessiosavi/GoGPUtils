@@ -1,6 +1,7 @@
 package textnorm
 
 import (
+	"strings"
 	"unicode"
 
 	"golang.org/x/text/cases"
@@ -12,6 +13,9 @@ import (
 // FoldCase appends full Unicode case folding.
 func (p Pipeline) FoldCase() Pipeline {
 	return p.Then(func(s string) (string, error) {
+		if isASCII(s) {
+			return strings.ToLower(s), nil
+		}
 		return cases.Fold().String(s), nil
 	})
 }
@@ -19,6 +23,9 @@ func (p Pipeline) FoldCase() Pipeline {
 // Lower appends Unicode-aware lowercasing.
 func (p Pipeline) Lower() Pipeline {
 	return p.Then(func(s string) (string, error) {
+		if isASCII(s) {
+			return strings.ToLower(s), nil
+		}
 		return cases.Lower(language.Und).String(s), nil
 	})
 }
@@ -30,7 +37,7 @@ func (p Pipeline) MapRunes(fn func(rune) rune) Pipeline {
 	}
 
 	return p.Then(func(s string) (string, error) {
-		result, _, err := transform.String(transform.Chain(runes.Map(fn)), s)
+		result, _, err := transform.String(runes.Map(fn), s)
 		if err != nil {
 			return "", err
 		}
@@ -49,7 +56,7 @@ func (p Pipeline) FilterRunes(keep runes.Set) Pipeline {
 		remove := runes.Predicate(func(r rune) bool {
 			return !keep.Contains(r)
 		})
-		result, _, err := transform.String(transform.Chain(runes.Remove(remove)), s)
+		result, _, err := transform.String(runes.Remove(remove), s)
 		if err != nil {
 			return "", err
 		}

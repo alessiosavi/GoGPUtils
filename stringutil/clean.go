@@ -176,6 +176,14 @@ func NormalizeUnicode(s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
+	if IsASCII(s) {
+		// Preserve x/text v0.42.0 transform.String ownership: its 128-byte
+		// initial buffer aliases unchanged input; larger input is detached.
+		if len(s) > 128 {
+			return strings.Clone(s), nil
+		}
+		return s, nil
+	}
 
 	// Chain: NFKD decomposition → remove combining marks (diacritics)
 	t := transform.Chain(
@@ -373,6 +381,14 @@ func RemoveAccents(s string) (string, error) {
 func ToASCII(s string) (string, error) {
 	if s == "" {
 		return "", nil
+	}
+	if IsASCII(s) {
+		// Preserve x/text v0.42.0 transform.String ownership: its 128-byte
+		// initial buffer aliases unchanged input; larger input is detached.
+		if len(s) > 128 {
+			return strings.Clone(s), nil
+		}
+		return s, nil
 	}
 
 	t := transform.Chain(
