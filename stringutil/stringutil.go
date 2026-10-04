@@ -338,16 +338,28 @@ func Lines(s string) []string {
 	if s == "" {
 		return nil
 	}
-	// Normalize line endings
-	s = strings.ReplaceAll(s, "\r\n", "\n")
-	s = strings.ReplaceAll(s, "\r", "\n")
+	if strings.IndexByte(s, '\r') >= 0 {
+		var b strings.Builder
+		b.Grow(len(s) - strings.Count(s, "\r\n"))
+		start := 0
+		for i := 0; i < len(s); i++ {
+			if s[i] != '\r' {
+				continue
+			}
+			b.WriteString(s[start:i])
+			b.WriteByte('\n')
+			if i+1 < len(s) && s[i+1] == '\n' {
+				i++
+			}
+			start = i + 1
+		}
+		b.WriteString(s[start:])
+		s = b.String()
+	}
 	lines := strings.Split(s, "\n")
-
-	// Remove trailing empty line if string ended with newline
 	if len(lines) > 0 && lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
 	}
-
 	return lines
 }
 
