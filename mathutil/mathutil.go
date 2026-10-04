@@ -332,9 +332,10 @@ func Percentile[T Number](s []T, p float64) float64 {
 	return percentileSorted(sorted, p)
 }
 
-// percentileSorted returns the p-th percentile of sorted, which must be non-empty and sorted
-// with slices.Sort; p must satisfy 0 <= p <= 100. It holds Percentile's post-sort arithmetic so
-// Quartiles can sort once.
+// percentileSorted returns the p-th percentile of a non-empty slice sorted with
+// slices.Sort, with Percentile's range checks already applied. NaN p passes
+// through unchanged to preserve the existing architecture-dependent outcome. It
+// holds Percentile's post-sort arithmetic so Quartiles can sort once.
 func percentileSorted[T Number](sorted []T, p float64) float64 {
 	if p == 0 {
 		return float64(sorted[0])
