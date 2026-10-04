@@ -234,7 +234,10 @@ func (t *BST[T]) Max() (T, bool) {
 //	tree.Insert(5, 3, 7, 1, 4)
 //	tree.InOrder() // [1, 3, 4, 5, 7]
 func (t *BST[T]) InOrder() []T {
-	var result []T
+	if t.root == nil {
+		return nil
+	}
+	result := make([]T, 0, max(0, t.size))
 
 	t.inOrderTraverse(t.root, &result)
 
@@ -253,7 +256,10 @@ func (t *BST[T]) inOrderTraverse(node *bstNode[T], result *[]T) {
 
 // PreOrder returns values in pre-order (root, left, right).
 func (t *BST[T]) PreOrder() []T {
-	var result []T
+	if t.root == nil {
+		return nil
+	}
+	result := make([]T, 0, max(0, t.size))
 
 	t.preOrderTraverse(t.root, &result)
 
@@ -272,7 +278,10 @@ func (t *BST[T]) preOrderTraverse(node *bstNode[T], result *[]T) {
 
 // PostOrder returns values in post-order (left, right, root).
 func (t *BST[T]) PostOrder() []T {
-	var result []T
+	if t.root == nil {
+		return nil
+	}
+	result := make([]T, 0, max(0, t.size))
 
 	t.postOrderTraverse(t.root, &result)
 
@@ -294,27 +303,57 @@ func (t *BST[T]) LevelOrder() []T {
 	if t.root == nil {
 		return nil
 	}
-
-	var result []T
-
-	queue := []*bstNode[T]{t.root}
-
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = queue[1:]
-
+	result := make([]T, 0, max(0, t.size))
+	q := bfsQueue[T]{buf: make([]*bstNode[T], 0, max(0, min(t.size, 64)))}
+	q.push(t.root)
+	for q.head < len(q.buf) {
+		node := q.pop()
 		result = append(result, node.value)
-
 		if node.left != nil {
-			queue = append(queue, node.left)
+			q.push(node.left)
 		}
-
 		if node.right != nil {
-			queue = append(queue, node.right)
+			q.push(node.right)
 		}
 	}
-
 	return result
+}
+
+// bfsQueue is the bounded workspace used by LevelOrder.
+type bfsQueue[T cmp.Ordered] struct {
+	buf  []*bstNode[T]
+	head int
+}
+
+func (q *bfsQueue[T]) push(node *bstNode[T]) {
+	if len(q.buf) == cap(q.buf) {
+		if q.head > 0 && q.head >= len(q.buf)/2 {
+			n := copy(q.buf, q.buf[q.head:])
+			clear(q.buf[n:])
+			q.buf = q.buf[:n]
+			q.head = 0
+		} else {
+			old := cap(q.buf)
+			if old > int(^uint(0)>>1)/2 {
+				panic("runtime error: growslice: len out of range")
+			}
+			c := 2 * old
+			if c == 0 {
+				c = 8
+			}
+			b := make([]*bstNode[T], len(q.buf)-q.head, c)
+			copy(b, q.buf[q.head:])
+			q.buf = b
+			q.head = 0
+		}
+	}
+	q.buf = append(q.buf, node)
+}
+func (q *bfsQueue[T]) pop() *bstNode[T] {
+	node := q.buf[q.head]
+	q.buf[q.head] = nil
+	q.head++
+	return node
 }
 
 // Height returns the height of the tree.

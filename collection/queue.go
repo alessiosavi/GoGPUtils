@@ -2,6 +2,7 @@ package collection
 
 // Queue is a generic FIFO (First-In-First-Out) data structure.
 // The zero value is not usable; use NewQueue to create a Queue.
+// A Queue must not be copied by value.
 type Queue[T any] struct {
 	items []T
 }
@@ -51,6 +52,10 @@ func (q *Queue[T]) Dequeue() (T, bool) {
 	}
 
 	item := q.items[0]
+	if mayHavePointers[T]() {
+		var zero T
+		q.items[0] = zero
+	}
 	q.items = q.items[1:]
 
 	return item, true
@@ -80,6 +85,9 @@ func (q *Queue[T]) IsEmpty() bool {
 
 // Clear removes all elements from the queue.
 func (q *Queue[T]) Clear() {
+	if mayHavePointers[T]() {
+		clear(q.items)
+	}
 	q.items = q.items[:0]
 }
 
@@ -116,6 +124,9 @@ func (q *Queue[T]) DequeueN(n int) []T {
 
 	result := make([]T, n)
 	copy(result, q.items[:n])
+	if mayHavePointers[T]() {
+		clear(q.items[:n])
+	}
 	q.items = q.items[n:]
 
 	return result

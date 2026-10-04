@@ -2,6 +2,7 @@ package collection
 
 // Stack is a generic LIFO (Last-In-First-Out) data structure.
 // The zero value is not usable; use NewStack to create a Stack.
+// A Stack must not be copied by value.
 type Stack[T any] struct {
 	items []T
 }
@@ -53,6 +54,10 @@ func (s *Stack[T]) Pop() (T, bool) {
 
 	idx := len(s.items) - 1
 	item := s.items[idx]
+	if mayHavePointers[T]() {
+		var zero T
+		s.items[idx] = zero
+	}
 	s.items = s.items[:idx]
 
 	return item, true
@@ -82,6 +87,9 @@ func (s *Stack[T]) IsEmpty() bool {
 
 // Clear removes all elements from the stack.
 func (s *Stack[T]) Clear() {
+	if mayHavePointers[T]() {
+		clear(s.items)
+	}
 	s.items = s.items[:0]
 }
 
@@ -107,6 +115,9 @@ func (s *Stack[T]) PopAll() []T {
 		result[len(s.items)-1-i] = s.items[i]
 	}
 
+	if mayHavePointers[T]() {
+		clear(s.items)
+	}
 	s.items = s.items[:0]
 
 	return result
@@ -134,6 +145,9 @@ func (s *Stack[T]) PopN(n int) []T {
 		result[i] = s.items[len(s.items)-1-i]
 	}
 
+	if mayHavePointers[T]() {
+		clear(s.items[len(s.items)-n:])
+	}
 	s.items = s.items[:len(s.items)-n]
 
 	return result
