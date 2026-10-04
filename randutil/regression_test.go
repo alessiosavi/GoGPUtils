@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/bits"
 	"slices"
 	"testing"
 	"time"
@@ -142,6 +143,37 @@ func TestRangeStep_StopsAtIntegerOverflow(t *testing.T) {
 				}
 			case <-time.After(time.Second):
 				t.Fatal("RangeStep did not terminate within one second")
+			}
+		})
+	}
+}
+
+func TestRangeStepCapacity(t *testing.T) {
+	// Check enormous counts without attempting their allocations. The extreme
+	// range spans 2^bits.UintSize-1 values; a step of 4 needs 2^(bits.UintSize-2).
+	tests := []struct {
+		name  string
+		count uint64
+		want  int
+	}{
+		{"empty", 0, 0},
+		{"singleton", 1, 1},
+		{"benchmark small", 16, 16},
+		{"benchmark medium", 1024, 1024},
+		{"benchmark large", 65536, 65536},
+		{"below limit", 1<<24 - 1, 1<<24 - 1},
+		{"at limit", 1 << 24, 1 << 24},
+		{"above limit", 1<<24 + 1, 0},
+		{"RangeStep(0, 1<<48, 1)", 1 << 48, 0},
+		{"RangeStep(MinInt, MaxInt, 4)", 1 << (bits.UintSize - 2), 0},
+		{"MaxInt", uint64(math.MaxInt), 0},
+		{"above MaxInt", uint64(math.MaxInt) + 1, 0},
+		{"MaxUint64", math.MaxUint64, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := rangeStepCapacity(tt.count); got != tt.want {
+				t.Errorf("rangeStepCapacity(%d) = %d, want %d", tt.count, got, tt.want)
 			}
 		})
 	}

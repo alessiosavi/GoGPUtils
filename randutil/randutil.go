@@ -531,8 +531,8 @@ func RangeStep(start, end, step int) []int {
 		stride = -stride
 	}
 	count := (distance-1)/stride + 1
-	if count <= uint64(^uint(0)>>1) {
-		result = make([]int, 0, int(count))
+	if capacity := rangeStepCapacity(count); capacity > 0 {
+		result = make([]int, 0, capacity)
 	}
 
 	for i := start; (step > 0 && i < end) || (step < 0 && i > end); {
@@ -547,4 +547,14 @@ func RangeStep(start, end, step int) []int {
 	}
 
 	return result
+}
+
+// rangeStepCapacity caps preallocation at 2^24 ints (at most 128 MiB), below
+// runtime allocation limits even on 32-bit, WebAssembly, and iOS targets.
+// Larger counts retain the nil-start append path to avoid an early cap panic.
+func rangeStepCapacity(count uint64) int {
+	if count <= 1<<24 {
+		return int(count)
+	}
+	return 0
 }
