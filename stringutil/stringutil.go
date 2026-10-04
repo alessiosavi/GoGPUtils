@@ -167,35 +167,45 @@ func TruncateWords(s string, maxLen int, suffix string) string {
 	if maxLen <= 0 {
 		return ""
 	}
-
-	runes := []rune(s)
-	if len(runes) <= maxLen {
+	if utf8.RuneCountInString(s) <= maxLen {
 		return s
 	}
-
-	suffixRunes := []rune(suffix)
-	if len(suffixRunes) >= maxLen {
-		return string(suffixRunes[:maxLen])
+	suffixCount := utf8.RuneCountInString(suffix)
+	if suffixCount >= maxLen {
+		off, invalid := runePrefix(suffix, maxLen)
+		if invalid == 0 {
+			return strings.Clone(suffix[:off])
+		}
+		// Preserve the rune round trip for an invalid suffix prefix.
+		runes := []rune(suffix)
+		return string(runes[:maxLen])
 	}
 
-	truncateAt := maxLen - len(suffixRunes)
-
-	// Find last space before truncate point
-	lastSpace := -1
-
-	for i := truncateAt - 1; i >= 0; i-- {
-		if unicode.IsSpace(runes[i]) {
-			lastSpace = i
-
+	cut := maxLen - suffixCount
+	off, lastSpace, count := len(s), -1, 0
+	invalid, spaceInvalid := 0, 0
+	for i, r := range s {
+		if count == cut {
+			off = i
 			break
 		}
+		if unicode.IsSpace(r) {
+			lastSpace = i
+			spaceInvalid = invalid
+		}
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				invalid++
+			}
+		}
+		count++
 	}
-
 	if lastSpace > 0 {
-		return string(runes[:lastSpace]) + suffix
+		off = lastSpace
+		invalid = spaceInvalid
 	}
-
-	return string(runes[:truncateAt]) + suffix
+	return encodeSpan(s[:off], invalid, suffix)
 }
 
 // PadLeft pads s on the left with padChar to reach the target length.
@@ -205,12 +215,12 @@ func TruncateWords(s string, maxLen int, suffix string) string {
 //
 //	PadLeft("42", 5, '0')  // "00042"
 func PadLeft(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	padding := length - len(runes)
+	padding := length - runeCount
 
 	var b strings.Builder
 
@@ -231,12 +241,12 @@ func PadLeft(s string, length int, padChar rune) string {
 //
 //	PadRight("42", 5, '0')  // "42000"
 func PadRight(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	padding := length - len(runes)
+	padding := length - runeCount
 
 	var b strings.Builder
 
@@ -257,12 +267,12 @@ func PadRight(s string, length int, padChar rune) string {
 //
 //	PadCenter("hello", 11, '*')  // "***hello***"
 func PadCenter(s string, length int, padChar rune) string {
-	runes := []rune(s)
-	if len(runes) >= length {
+	runeCount := utf8.RuneCountInString(s)
+	if runeCount >= length {
 		return s
 	}
 
-	totalPadding := length - len(runes)
+	totalPadding := length - runeCount
 	leftPadding := totalPadding / 2
 	rightPadding := totalPadding - leftPadding
 
@@ -979,4 +989,50 @@ func SplitAndTrim(s, sep string) []string {
 	}
 
 	return result
+}
+
+// runePrefix returns the byte boundary after k runes and the number of invalid bytes.
+// Counting/boundary pass; the selected span is re-read only when encoding it.
+func runePrefix(s string, k int) (off int, invalid int) {
+	count := 0
+	for i, r := range s {
+		if count == k {
+			return i, invalid
+		}
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				invalid++
+			}
+		}
+		count++
+	}
+	return len(s), invalid
+}
+
+// encodeSpan matches string([]rune(s)) + suffix. The suffix is appended raw.
+// invalid was counted during boundary selection; this is one encoding pass.
+func encodeSpan(s string, invalid int, suffix string) string {
+	if invalid == 0 {
+		if suffix == "" {
+			return strings.Clone(s)
+		}
+		return s + suffix
+	}
+	var b strings.Builder
+	b.Grow(len(s) + 2*invalid + len(suffix))
+	run := 0
+	for i, r := range s {
+		if r == utf8.RuneError {
+			_, w := utf8.DecodeRuneInString(s[i:])
+			if w == 1 {
+				b.WriteString(s[run:i])
+				b.WriteString("\uFFFD")
+				run = i + 1
+			}
+		}
+	}
+	b.WriteString(s[run:])
+	b.WriteString(suffix)
+	return b.String()
 }
