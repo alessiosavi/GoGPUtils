@@ -23,6 +23,14 @@ func normalizeUnicodeStage(s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
+	if isASCII(s) {
+		// Preserve x/text v0.42.0 transform.String ownership: its 128-byte
+		// initial buffer aliases unchanged input; larger input is detached.
+		if len(s) > 128 {
+			return strings.Clone(s), nil
+		}
+		return s, nil
+	}
 
 	t := transform.Chain(
 		norm.NFD,
@@ -66,4 +74,14 @@ func normalizeUnicodeLatinStage(s string) (string, error) {
 		b.WriteRune(r)
 	}
 	return norm.NFC.String(b.String()), nil
+}
+
+// isASCII reports whether every input byte is below 0x80.
+func isASCII(s string) bool {
+	for i := range len(s) {
+		if s[i] >= 0x80 {
+			return false
+		}
+	}
+	return true
 }
