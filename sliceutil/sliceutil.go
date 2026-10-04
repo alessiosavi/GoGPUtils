@@ -2,6 +2,7 @@ package sliceutil
 
 import (
 	"cmp"
+	"math/bits"
 	"slices"
 	"sync"
 )
@@ -931,12 +932,35 @@ func Shuffle[T any](s []T) []T {
 // ShuffleInPlace shuffles the slice in place using Fisher-Yates algorithm.
 // Uses math/rand for performance; use Shuffle for crypto-secure randomness.
 func ShuffleInPlace[T any](s []T) {
-	// Fisher-Yates shuffle using simple PRNG seeded from time
-	// For tests/determinism, see ShuffleWithSeed
-	for i := len(s) - 1; i > 0; i-- {
-		// Simple LCG for shuffling - not crypto secure but fast
-		j := int(fastrand()) % (i + 1)
-		s[i], s[j] = s[j], s[i]
+	if bits.UintSize == 32 {
+		// Fisher-Yates shuffle using simple PRNG seeded from time
+		// For tests/determinism, see ShuffleWithSeed
+		for i := len(s) - 1; i > 0; i-- {
+			// Simple LCG for shuffling - not crypto secure but fast
+			j := int(fastrand()) % (i + 1)
+			s[i], s[j] = s[j], s[i]
+		}
+		return
+	}
+	// Publish each bounded batch under the lock, then swap after unlocking.
+	var draws [64]uint32
+	for i := len(s) - 1; i > 0; {
+		count := min(i, len(draws))
+		fastrandMu.Lock()
+		state := fastrandState
+		for k := range count {
+			state ^= state << 13
+			state ^= state >> 7
+			state ^= state << 17
+			draws[k] = uint32(state) // #nosec G115 -- Preserve BASE fastrand truncation to the low 32 bits.
+		}
+		fastrandState = state
+		fastrandMu.Unlock()
+		for k := range count {
+			j := int(draws[k]) % (i + 1)
+			s[i], s[j] = s[j], s[i]
+			i--
+		}
 	}
 }
 
