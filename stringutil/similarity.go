@@ -307,23 +307,28 @@ func DiceCoefficient(s1, s2 string) float64 {
 
 // bigrams generates a map of bigrams and their counts.
 func bigrams(s string) map[string]int {
-	var result map[string]int
+	// Stop at two runes to keep this guard cheap and the helper inlineable.
+	runeCount := 0
+	for range s {
+		runeCount++
+		if runeCount == 2 {
+			break
+		}
+	}
+	if runeCount < 2 {
+		return nil
+	}
+
+	// Allocate outside the loop so small maps can stay on the caller's stack.
+	result := make(map[string]int)
 	previous2, previous1 := -1, -1
 	for end := range s {
 		if previous2 >= 0 {
-			if result == nil {
-				result = make(map[string]int)
-			}
 			result[s[previous2:end]]++
 		}
 		previous2, previous1 = previous1, end
 	}
-	if previous2 >= 0 {
-		if result == nil {
-			result = make(map[string]int)
-		}
-		result[s[previous2:]]++
-	}
+	result[s[previous2:]]++
 	return result
 }
 
