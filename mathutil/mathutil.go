@@ -767,16 +767,14 @@ func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error) {
 
 	result := make(Matrix[T], m)
 	for i := range result {
-		result[i] = make([]T, p)
-
-		for j := range p {
-			var sum T
-			for k := range n {
-				sum += a[i][k] * b[k][j]
+		ri := make([]T, p)
+		for k, aik := range a[i] {
+			bk := b[k][:len(ri)]
+			for j, bkj := range bk {
+				ri[j] += aik * bkj
 			}
-
-			result[i][j] = sum
 		}
+		result[i] = ri
 	}
 
 	return result, nil
