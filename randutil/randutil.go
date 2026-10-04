@@ -56,12 +56,13 @@ func SecureBytes(n int) ([]byte, error) {
 // use ASCII charsets. Every byte position is selected with equal probability,
 // so repeated bytes in charset have proportionally greater probability.
 //
-// Reads may be batched. Output, errors, and consumed bytes match candidate-sized
-// reads for readers whose behavior depends only on stream position. Readers
-// whose output or errors depend on Read-call granularity, or which return data
-// with a non-EOF error and later recover, are excluded from that guarantee.
-// Readers that replace crypto/rand.Reader during the call are also excluded:
-// the reader is captured once per batch.
+// Reads may be batched. Output, errors, and consumed bytes match repeated
+// crypto/rand.Int draws with bound len(charset) over an identical byte stream
+// for readers whose behavior depends only on stream position. This excludes
+// readers whose output or errors depend on Read-call granularity, readers that
+// return data with a non-EOF error and later deliver more data, and readers that
+// replace crypto/rand.Reader during the call; the reader is captured once per
+// batch.
 //
 // Example:
 //
