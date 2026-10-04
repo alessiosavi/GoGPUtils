@@ -34,3 +34,21 @@ func TestSecureIntAllocations(t *testing.T) {
 		}
 	})
 }
+
+var allocStringSink string
+
+func TestSecureStringAllocations(t *testing.T) {
+	for _, length := range []int{16, 1024} {
+		got := testing.AllocsPerRun(100, func() {
+			var err error
+			allocStringSink, err = SecureString(length, AlphaNumeric)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+		t.Logf("SecureString(%d, AlphaNumeric) allocations=%g", length, got)
+		if got > 2 {
+			t.Errorf("SecureString(%d, AlphaNumeric): want at most 2 allocations, got %g", length, got)
+		}
+	}
+}

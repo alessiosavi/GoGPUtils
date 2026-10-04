@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
-	"math/big"
 	"math/bits"
 	"math/rand/v2"
 )
@@ -57,6 +56,13 @@ func SecureBytes(n int) ([]byte, error) {
 // use ASCII charsets. Every byte position is selected with equal probability,
 // so repeated bytes in charset have proportionally greater probability.
 //
+// Reads may be batched. Output, errors, and consumed bytes match candidate-sized
+// reads for readers whose behavior depends only on stream position. Readers
+// whose output or errors depend on Read-call granularity, or which return data
+// with a non-EOF error and later recover, are excluded from that guarantee.
+// Readers that replace crypto/rand.Reader during the call are also excluded:
+// the reader is captured once per batch.
+//
 // Example:
 //
 //	password, err := SecureString(16, AlphaNumeric)
@@ -71,19 +77,68 @@ func SecureString(length int, charset string) (string, error) {
 	}
 
 	result := make([]byte, length)
-	charsetLen := big.NewInt(int64(len(charset)))
-
-	for i := range result {
-		// crypto/rand.Int uses rejection sampling to avoid modulo bias.
-		index, err := cryptorand.Int(cryptorand.Reader, charsetLen)
-		if err != nil {
+	if len(charset) == 1 {
+		for i := range result {
+			result[i] = charset[0]
+		}
+		return string(result), nil
+	}
+	k, mask := candidateParams(uint64(len(charset)))
+	var scratch []byte
+	if k >= 2 {
+		scratch = make([]byte, min(length, 4096/k)*k)
+	}
+	filled := 0
+	for filled < length {
+		remaining := length - filled
+		m := min(remaining, 4096/k)
+		var candidates []byte
+		if k == 1 {
+			candidates = result[filled : filled+m]
+		} else {
+			candidates = scratch[:m*k]
+		}
+		if err := fillSecureCandidates(cryptorand.Reader, candidates, k); err != nil {
 			return "", err
 		}
-
-		result[i] = charset[index.Int64()]
+		for i := 0; i < len(candidates); i += k {
+			v := uint64(candidates[i] & mask)
+			for j := 1; j < k; j++ {
+				v = v<<8 | uint64(candidates[i+j])
+			}
+			if v < uint64(len(charset)) {
+				result[filled] = charset[v]
+				filled++
+			}
+		}
 	}
-
 	return string(result), nil
+}
+
+// fillSecureCandidates keeps the underlying error distinct from ReadFull's
+// synthesized UnexpectedEOF while preserving candidate-sized error handling.
+func fillSecureCandidates(r io.Reader, p []byte, k int) error {
+	n := 0
+	for n < len(p) {
+		nr, err := r.Read(p[n:])
+		n += nr
+		if n == len(p) {
+			return nil
+		}
+		if err != nil {
+			// Like a candidate-sized ReadFull, ignore an error accompanying
+			// a completed candidate, then ask the same reader for more.
+			if nr > 0 && n%k == 0 {
+				continue
+			}
+			//nolint:errorlint // Only exact EOF is translated by io.ReadFull.
+			if err == io.EOF && n%k != 0 {
+				return io.ErrUnexpectedEOF
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 // SecureInt returns a uniformly distributed cryptographically secure random int in [0, max).
