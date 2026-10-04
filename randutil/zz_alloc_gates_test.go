@@ -52,3 +52,15 @@ func TestSecureStringAllocations(t *testing.T) {
 		}
 	}
 }
+
+var allocRangeSink []int
+
+func TestRangeStepAllocations(t *testing.T) {
+	got := testing.AllocsPerRun(10, func() {
+		allocRangeSink = RangeStep(0, 131072, 2)
+	})
+	t.Logf("RangeStep(0, 131072, 2) allocations=%g", got)
+	if got != 1 {
+		t.Fatalf("want 1 allocation, got %g", got)
+	}
+}

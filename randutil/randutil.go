@@ -522,6 +522,17 @@ func RangeStep(start, end, step int) []int {
 	}
 
 	var result []int
+	//nolint:gosec // Unsigned subtraction intentionally handles signed extremes.
+	distance, stride := uint64(end)-uint64(start), uint64(step)
+	if step < 0 {
+		//nolint:gosec // Modular conversion preserves the descending distance.
+		distance = uint64(start) - uint64(end)
+		stride = -stride
+	}
+	count := (distance-1)/stride + 1
+	if count <= uint64(^uint(0)>>1) {
+		result = make([]int, 0, int(count))
+	}
 
 	for i := start; (step > 0 && i < end) || (step < 0 && i > end); {
 		result = append(result, i)
