@@ -329,6 +329,14 @@ func Percentile[T Number](s []T, p float64) float64 {
 	copy(sorted, s)
 	slices.Sort(sorted)
 
+	return percentileSorted(sorted, p)
+}
+
+// percentileSorted returns the p-th percentile of a non-empty slice sorted with
+// slices.Sort, with Percentile's range checks already applied. NaN p passes
+// through unchanged to preserve the existing architecture-dependent outcome. It
+// holds Percentile's post-sort arithmetic so Quartiles can sort once.
+func percentileSorted[T Number](sorted []T, p float64) float64 {
 	if p == 0 {
 		return float64(sorted[0])
 	}
@@ -352,9 +360,17 @@ func Percentile[T Number](s []T, p float64) float64 {
 
 // Quartiles returns Q1, Q2 (median), and Q3.
 func Quartiles[T Number](s []T) (q1, q2, q3 float64) {
-	q1 = Percentile(s, 25)
-	q2 = Percentile(s, 50)
-	q3 = Percentile(s, 75)
+	if len(s) == 0 {
+		return 0, 0, 0
+	}
+
+	sorted := make([]T, len(s))
+	copy(sorted, s)
+	slices.Sort(sorted)
+
+	q1 = percentileSorted(sorted, 25)
+	q2 = percentileSorted(sorted, 50)
+	q3 = percentileSorted(sorted, 75)
 
 	return
 }
@@ -752,16 +768,14 @@ func MatrixMultiply[T Number](a, b Matrix[T]) (Matrix[T], error) {
 
 	result := make(Matrix[T], m)
 	for i := range result {
-		result[i] = make([]T, p)
-
-		for j := range p {
-			var sum T
-			for k := range n {
-				sum += a[i][k] * b[k][j]
+		ri := make([]T, p)
+		for k, aik := range a[i] {
+			bk := b[k][:len(ri)]
+			for j, bkj := range bk {
+				ri[j] += aik * bkj
 			}
-
-			result[i][j] = sum
 		}
+		result[i] = ri
 	}
 
 	return result, nil
