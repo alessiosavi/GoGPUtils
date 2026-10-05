@@ -326,7 +326,9 @@ func oracleQuartiles[T Number](t *testing.T, next func(*rand.Rand) T) {
 			return fmt.Sprintf("case %d: want bits=0x%016x, got bits=0x%016x; input bits=%#x",
 				c, math.Float64bits(want), math.Float64bits(got), oracleSliceBits(s))
 		})
-		for _, p := range []float64{-1, 0, 0.5, 25, 50, 75, 99.9, 100, 101, math.Inf(-1), math.Inf(1), math.NaN()} {
+		// C-07 intentionally changes NaN p; TestPercentileNaN pins its zero result.
+		// Keep BASE equivalence for all other p, including slices containing NaNs.
+		for _, p := range []float64{-1, 0, 0.5, 25, 50, 75, 99.9, 100, 101, math.Inf(-1), math.Inf(1)} {
 			oracleCheckPercentile(t, s, p, c)
 		}
 		if !oracleSliceEqual(s, before) {
@@ -359,7 +361,7 @@ func TestPercentileValidationAllocs(t *testing.T) {
 	}{
 		{"big", big}, {"nil", nil}, {"empty", []float64{}},
 	} {
-		for _, p := range []float64{-1, 101, math.Inf(-1), math.Inf(1)} {
+		for _, p := range []float64{-1, 101, math.Inf(-1), math.Inf(1), math.NaN()} {
 			t.Run(fmt.Sprintf("%s/p=%v", c.name, p), func(t *testing.T) {
 				if got := testing.AllocsPerRun(50, func() { Percentile(c.input, p) }); got != 0 {
 					t.Fatalf("allocations=%g want 0", got)
@@ -367,8 +369,8 @@ func TestPercentileValidationAllocs(t *testing.T) {
 			})
 		}
 		if len(c.input) == 0 {
-			// Empty input must also short-circuit otherwise-valid or NaN p.
-			for _, p := range []float64{0, 50, 100, math.NaN()} {
+			// Empty input must also short-circuit otherwise-valid p.
+			for _, p := range []float64{0, 50, 100} {
 				t.Run(fmt.Sprintf("%s/p=%v", c.name, p), func(t *testing.T) {
 					if got := testing.AllocsPerRun(50, func() { Percentile(c.input, p) }); got != 0 {
 						t.Fatalf("allocations=%g want 0", got)
