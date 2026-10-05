@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/alessiosavi/GoGPUtils/aws"
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
@@ -511,18 +512,12 @@ func (c *Client) PurgeQueue(ctx context.Context, queueURL string) error {
 }
 
 // generateBatchID generates a unique ID for batch operations.
+// SendMessageBatch and DeleteMessageBatch pass non-negative i+j indexes.
 func generateBatchID(index int) string {
-	// Simple numeric ID - AWS allows up to 80 characters
-	const digits = "0123456789"
-	if index < 10 {
+	if index < 0 {
+		const digits = "0123456789"
+		// Preserve the original negative-index panic.
 		return string(digits[index])
 	}
-
-	result := make([]byte, 0, 10)
-	for index > 0 {
-		result = append([]byte{digits[index%10]}, result...)
-		index /= 10
-	}
-
-	return string(result)
+	return strconv.Itoa(index)
 }
