@@ -68,6 +68,19 @@ func baseFoldCaseStage() Stage {
 	}
 }
 
+// C-01 intentionally changes BASE's defective Cherokee folding. Adjust only
+// those mappings using the Unicode fixture; retain all other BASE behavior.
+func correctedFoldCaseOracleStage() Stage {
+	base := baseFoldCaseStage()
+	return func(s string) (string, error) {
+		folded, err := base(s)
+		if strings.ContainsAny(folded, cherokeeLower) {
+			folded = cherokeeFoldOracle.Replace(folded)
+		}
+		return folded, err
+	}
+}
+
 func baseLowerStage() Stage {
 	return func(s string) (string, error) {
 		return cases.Lower(language.Und).String(s), nil
@@ -178,7 +191,7 @@ func zzPairs() []struct {
 	}{
 		{"NormalizeUnicode", normalizeUnicodeStage, baseNormalizeUnicodeStage},
 		{"NormalizeUnicodeLatin", normalizeUnicodeLatinStage, baseNormalizeUnicodeLatinStage},
-		{"FoldCase", New().FoldCase().Run, baseFoldCaseStage()},
+		{"FoldCase", New().FoldCase().Run, correctedFoldCaseOracleStage()},
 		{"Lower", New().Lower().Run, baseLowerStage()},
 		{"MapRunes", New().MapRunes(unicode.ToLower).Run, baseMapRunesStage(unicode.ToLower)},
 		{"FilterRunes", New().FilterRunes(runes.In(unicode.Letter)).Run, baseFilterRunesStage(runes.In(unicode.Letter))},
@@ -354,8 +367,8 @@ func TestZZSavedOutcomes(t *testing.T) {
 			name       string
 			head, base Pipeline
 		}{
-			{"Pipeline", New().NormalizeUnicode().FoldCase().TrimSpace().CollapseWhitespace(), New().Then(baseNormalizeUnicodeStage).Then(baseFoldCaseStage()).TrimSpace().CollapseWhitespace()},
-			{"CanonicalPreset", CanonicalPreset(), New().SanitizeUTF8().Then(baseNormalizeUnicodeStage).Then(baseFoldCaseStage()).TrimSpace().CollapseWhitespace()},
+			{"Pipeline", New().NormalizeUnicode().FoldCase().TrimSpace().CollapseWhitespace(), New().Then(baseNormalizeUnicodeStage).Then(correctedFoldCaseOracleStage()).TrimSpace().CollapseWhitespace()},
+			{"CanonicalPreset", CanonicalPreset(), New().SanitizeUTF8().Then(baseNormalizeUnicodeStage).Then(correctedFoldCaseOracleStage()).TrimSpace().CollapseWhitespace()},
 		} {
 			h, he := p.head.Run(s)
 			h2, he2 := p.head.Run(h)
