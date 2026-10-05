@@ -22,6 +22,7 @@ func WithWidthFold() PresetOption {
 
 // SearchPreset builds a search-key pipeline (UTF-8 sanitize, Unicode
 // normalize, fold case, keep letters/numbers/spaces, trim, collapse).
+// Cherokee case pairs share the uppercase representation produced by FoldCase.
 //
 // To dedup repeated tokens or strip stopwords, compose on top:
 //
@@ -57,6 +58,7 @@ func SearchPreset(opts ...PresetOption) Pipeline {
 }
 
 // CanonicalPreset builds a general-purpose canonicalization pipeline.
+// Cherokee case pairs share the uppercase representation produced by FoldCase.
 func CanonicalPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
 	for _, opt := range opts {
@@ -81,6 +83,7 @@ func CanonicalPreset(opts ...PresetOption) Pipeline {
 // NOT collide with "Galaxy S22" and "4.5" must NOT collide with "45".
 // Unlike SearchPreset it never merges tokens (rejected runes become spaces),
 // never dedups tokens, and strips diacritics only from Latin bases.
+// Cherokee case pairs share the uppercase representation produced by FoldCase.
 func MeaningPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
 	for _, opt := range opts {
