@@ -139,6 +139,7 @@ func TestFoldCherokeePrefilter(t *testing.T) {
 		in, want string
 	}{
 		{"no-candidate", "café 中文\xff\x80", "café 中文\xff\x80"},
+		{"both-leads-without-prefix", "café \xe1!\xea?\x8f\xad\xae", "café \xe1!\xea?\x8f\xad\xae"},
 		{"korean", "한국어", "한국어"},
 		{"greek-extended", "ἀἄἆ", "ἀἄἆ"},
 		{"korean-and-greek-extended", "한국어 ἀἄἆ\xff\x80", "한국어 ἀἄἆ\xff\x80"},
@@ -183,6 +184,7 @@ func TestFoldCaseCorrectionAllocations(t *testing.T) {
 		"", "ascii", "ASCII", "café 中文", "\xff\x80", "Straße Σς", "ꮳ", "Straße ꮳ", "Ꮳ", "Straße Ꮳ",
 		"café 가\u1200", "café \xea", "café \xea\xad", "café \xea\xae", "café \xe1", "café \xe1\x8f",
 		"한국어 ἀἄἆ", "\uab40\uab6f", "\uab40\uab70\uab80ᏸ\uab6f", "\u13c0\u13f5", "\xea\xff\xad\xb0",
+		"café \xe1!\xea?\x8f\xad\xae",
 	} {
 		t.Run(fmt.Sprintf("%q", in), func(t *testing.T) {
 			var sink string
