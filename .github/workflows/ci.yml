@@ -45,6 +45,33 @@ jobs:
           files: coverage.out
           fail_ci_if_error: false
 
+  test-386:
+    name: Unit Tests (linux/386, Go stable)
+    runs-on: ubuntu-latest
+    env:
+      GOOS: linux
+      GOARCH: "386"
+      CGO_ENABLED: "0"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "stable"
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            .github/workflows/ci.yml
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run unit tests (386)
+        run: go test -count=1 ./...
+
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
