@@ -1090,6 +1090,8 @@ func histogramBinary[T Number](data []T, bins []T) []int {
 
 	counts := make([]int, len(sortedBins)-1)
 
+	// slices.Sort documents that NaNs are ordered before other values,
+	// so NaN edges form a prefix.
 	k := 0
 	for k < len(sortedBins) && sortedBins[k] != sortedBins[k] { //nolint:gocritic // Generic NaN test, including named float types.
 		k++

@@ -957,7 +957,7 @@ Returns the frequency count of values in bins. `bins` specifies the bin edges (n
 func Histogram[T Number](data []T, bins []T) []int
 ```
 
-**Complexity:** O(m × n) time where m = len(data), n = len(bins)-1; O(n) space
+**Complexity:** O(n log n) time to sort the edges, plus O(m × n) counting time for n < 128 or O(m × log n) for n ≥ 128, where m = len(data), n = len(bins)-1; O(n) space
 
 ```go
 data := []int{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}
@@ -1029,4 +1029,4 @@ func main() {
 | Matrix Transpose      | O(m×n)           | O(m×n)           | Creates new matrix                  |
 | DotProduct            | O(n)             | O(1)             | Single pass                         |
 | CosineSimilarity      | O(n)             | O(1)             | Computes dot product + magnitudes   |
-| Histogram             | O(m×n)           | O(n)             | m = data length, n = bins           |
+| Histogram             | O(n log n) sorting; O(m×n) counting for n < 128, O(m×log n) for n ≥ 128 | O(n) | m = len(data), n = len(bins)-1 |
