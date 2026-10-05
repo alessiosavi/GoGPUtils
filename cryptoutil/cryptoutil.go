@@ -91,7 +91,7 @@ func Decrypt(ciphertextB64 string, key []byte) ([]byte, error) {
 	nonce, encryptedData := ciphertext[:nonceSize], ciphertext[nonceSize:]
 
 	// Reuse the decoded buffer unless base64 newlines left excessive slack.
-	// Short authentication tags take the original Open(nil, ...) path.
+	// Inputs too short to carry a full tag take the original Open(nil, ...) path.
 	var dst []byte
 	plainLen := len(encryptedData) - gcm.Overhead()
 	if plainLen >= 0 && cap(ciphertext)-plainLen <= 64+plainLen/8 {

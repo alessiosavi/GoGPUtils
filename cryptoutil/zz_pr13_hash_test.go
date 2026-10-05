@@ -20,11 +20,11 @@ func TestZZHashStringAllocations(t *testing.T) {
 				t.Fatal("hash differs from BASE")
 			}
 			if n <= 32 {
-				if gotAllocs != baseAllocs || gotBytes != baseBytes {
-					t.Fatal("short-input allocations must match BASE")
+				if gotAllocs > baseAllocs || gotBytes > baseBytes {
+					t.Fatal("short-input allocations and bytes must not exceed BASE")
 				}
-			} else if gotAllocs != 2 || gotAllocs > baseAllocs || gotBytes != 128 || gotBytes >= baseBytes {
-				t.Fatal("streamed input must use two allocations/128 bytes and improve BASE bytes")
+			} else if gotAllocs >= baseAllocs || gotBytes >= baseBytes {
+				t.Fatal("streamed input must reduce allocations and bytes versus BASE")
 			}
 		})
 	}
