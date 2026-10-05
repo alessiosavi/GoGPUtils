@@ -362,11 +362,45 @@ func WriteBytes(path string, data []byte, perm fs.FileMode) error {
 
 // WriteString writes a string to a file.
 func WriteString(path, content string, perm fs.FileMode) error {
-	return WriteBytes(path, []byte(content), perm)
+	//nolint:gosec // G304: this utility intentionally opens the caller-supplied path.
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(content)
+
+	return finishWrite(f, err)
 }
 
 // WriteLines writes lines to a file, joining with the specified terminator.
 func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.FileMode) error {
+	term := terminator.Bytes()
+	const maxInt = int(^uint(0) >> 1)
+	size := 0
+	for _, line := range lines {
+		if len(line) > maxInt-size {
+			return writeLinesOverflow(path, lines, terminator, perm)
+		}
+		size += len(line)
+		if len(term) > maxInt-size {
+			return writeLinesOverflow(path, lines, terminator, perm)
+		}
+		size += len(term)
+	}
+
+	data := make([]byte, size)
+	pos := 0
+	for _, line := range lines {
+		pos += copy(data[pos:], line)
+		pos += copy(data[pos:], term)
+	}
+
+	return os.WriteFile(path, data, perm)
+}
+
+// Preserve BASE's Join/concatenation panic before opening the destination.
+func writeLinesOverflow(path string, lines []string, terminator LineTerminator, perm fs.FileMode) error {
 	term := string(terminator.Bytes())
 
 	content := strings.Join(lines, term)
@@ -375,7 +409,12 @@ func WriteLines(path string, lines []string, terminator LineTerminator, perm fs.
 		content += term
 	}
 
-	return WriteString(path, content, perm)
+	return writeStringOverflow(path, content, perm)
+}
+
+// Keep the overflow fallback independent of WriteString optimizations.
+func writeStringOverflow(path, content string, perm fs.FileMode) error {
+	return WriteBytes(path, []byte(content), perm)
 }
 
 // AppendBytes appends data to a file, creating it if necessary.
@@ -401,12 +440,31 @@ func finishWrite(f io.Closer, err error) error {
 
 // AppendString appends a string to a file.
 func AppendString(path, content string, perm fs.FileMode) error {
-	return AppendBytes(path, []byte(content), perm)
+	//nolint:gosec // G304: this utility intentionally opens the caller-supplied path.
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(content)
+
+	return finishWrite(f, err)
 }
 
 // AppendLine appends a line to a file with the specified terminator.
 func AppendLine(path, line string, terminator LineTerminator, perm fs.FileMode) error {
-	return AppendString(path, line+string(terminator.Bytes()), perm)
+	term := terminator.Bytes()
+	const maxInt = int(^uint(0) >> 1)
+	if len(line) > maxInt-len(term) {
+		// Preserve BASE's string concatenation panic before opening the file.
+		return AppendBytes(path, []byte(line+string(term)), perm)
+	}
+
+	data := make([]byte, len(line)+len(term))
+	copy(data, line)
+	copy(data[len(line):], term)
+
+	return AppendBytes(path, data, perm)
 }
 
 // ============================================================================
@@ -416,15 +474,15 @@ func AppendLine(path, line string, terminator LineTerminator, perm fs.FileMode) 
 // EnsureDir creates a directory if it doesn't exist.
 // Creates parent directories as needed (like mkdir -p).
 func EnsureDir(path string, perm fs.FileMode) error {
-	if Exists(path) {
-		if !IsDir(path) {
-			return ErrNotDir
-		}
-
-		return nil
+	info, err := os.Stat(path)
+	if err != nil {
+		return os.MkdirAll(path, perm)
+	}
+	if !info.IsDir() {
+		return ErrNotDir
 	}
 
-	return os.MkdirAll(path, perm)
+	return nil
 }
 
 // List returns entries in a directory.
@@ -795,6 +853,86 @@ func DetectLineTerminator(data []byte) LineTerminator {
 
 // NormalizeLineTerminators converts all line terminators to the specified style.
 func NormalizeLineTerminators(data []byte, target LineTerminator) []byte {
+	if len(data) == 0 {
+		return nil
+	}
+
+	term := "\n"
+	switch target {
+	case CRLF:
+		term = "\r\n"
+	case CR:
+		term = "\r"
+	}
+
+	// LF output without CR only needs a detached copy.
+	cr := bytes.Count(data, []byte{'\r'})
+	if cr == 0 && term == "\n" {
+		return append([]byte(nil), data...)
+	}
+
+	lf := bytes.Count(data, []byte{'\n'})
+	crlf := 0
+	firstCR := bytes.IndexByte(data, '\r')
+	for i := firstCR; i >= 0; {
+		if i+1 < len(data) && data[i+1] == '\n' {
+			crlf++
+		}
+		next := bytes.IndexByte(data[i+1:], '\r')
+		if next < 0 {
+			break
+		}
+		i += next + 1
+	}
+
+	// CR and LF occupy distinct bytes, so their sum cannot exceed len(data).
+	breaks := cr + lf - crlf
+	if breaks == 0 {
+		return append([]byte(nil), data...)
+	}
+	const maxInt = int(^uint(0) >> 1)
+	size := len(data) - cr - lf
+	if breaks > (maxInt-size)/len(term) {
+		return normalizeLineTerminatorsOverflow(data, target)
+	}
+	size += breaks * len(term)
+
+	result := make([]byte, 0, size)
+	pos := 0
+	nextCR, nextLF := firstCR, bytes.IndexByte(data, '\n')
+	for nextCR >= 0 || nextLF >= 0 {
+		next := nextLF
+		if nextCR >= 0 && (nextLF < 0 || nextCR < nextLF) {
+			next = nextCR
+		}
+		result = append(result, data[pos:next]...)
+		result = append(result, term...)
+		pos = next + 1
+		if next == nextCR && pos < len(data) && data[pos] == '\n' {
+			pos++
+		}
+
+		// Refresh only consumed positions; retain absent bytes as -1 so a
+		// missing or distant terminator never causes repeated suffix scans.
+		if nextCR >= 0 && nextCR < pos {
+			nextCR = bytes.IndexByte(data[pos:], '\r')
+			if nextCR >= 0 {
+				nextCR += pos
+			}
+		}
+		if nextLF >= 0 && nextLF < pos {
+			nextLF = bytes.IndexByte(data[pos:], '\n')
+			if nextLF >= 0 {
+				nextLF += pos
+			}
+		}
+	}
+
+	return append(result, data[pos:]...)
+}
+
+// Preserve BASE's allocation and panic behavior if the output length overflows.
+func normalizeLineTerminatorsOverflow(data []byte, target LineTerminator) []byte {
 	// First normalize to LF
 	data = bytes.ReplaceAll(data, []byte{'\r', '\n'}, []byte{'\n'})
 	data = bytes.ReplaceAll(data, []byte{'\r'}, []byte{'\n'})
