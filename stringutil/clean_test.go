@@ -175,6 +175,44 @@ func TestCleanString_DBSanitize_WithTruncation(t *testing.T) {
 // NormalizeUnicode Tests
 // ============================================================================
 
+func TestNormalizationMalformedUTF8(t *testing.T) {
+	const input = "0000000000\xf2Ă"
+	for _, tt := range []struct {
+		name          string
+		normalize     func(string) (string, error)
+		wantRaw       string
+		wantSanitized string
+	}{
+		{"NormalizeUnicode", NormalizeUnicode, "0000000000\ufffdĂ", "0000000000\ufffdA"},
+		{"RemoveAccents", RemoveAccents, "0000000000\ufffdĂ", "0000000000\ufffdA"},
+		{"CleanString/normalization", func(s string) (string, error) {
+			return CleanString(s, WithUnicodeNorm())
+		}, "0000000000\ufffdĂ", "0000000000\ufffdA"},
+		{"CleanString/normalization then sanitization option", func(s string) (string, error) {
+			return CleanString(s, WithUnicodeNorm(), WithDBSanitize(0))
+		}, "0000000000\ufffdĂ", "0000000000\ufffdA"},
+		{"CleanString/sanitization then normalization option", func(s string) (string, error) {
+			return CleanString(s, WithDBSanitize(0), WithUnicodeNorm())
+		}, "0000000000\ufffdĂ", "0000000000\ufffdA"},
+		{"Slugify", Slugify, "0000000000-ă", "0000000000-a"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Run("raw", func(t *testing.T) {
+				got, err := tt.normalize(input)
+				if err != nil || got != tt.wantRaw {
+					t.Fatalf("raw input: got %q, %v; want %q, nil", got, err, tt.wantRaw)
+				}
+			})
+			t.Run("sanitized first", func(t *testing.T) {
+				got, err := tt.normalize(SanitizeUTF8(input))
+				if err != nil || got != tt.wantSanitized {
+					t.Fatalf("sanitized input: got %q, %v; want %q, nil", got, err, tt.wantSanitized)
+				}
+			})
+		})
+	}
+}
+
 func TestNormalizeUnicode(t *testing.T) {
 	tests := []struct {
 		name  string

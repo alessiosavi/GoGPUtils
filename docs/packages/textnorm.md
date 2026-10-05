@@ -115,7 +115,7 @@ Executes all stages in declaration order, passing the output of each stage as in
 
 ## Preset Functions
 
-Presets are pre-configured pipelines for common use cases. All presets accept optional `PresetOption` arguments.
+Presets are pre-configured pipelines for common use cases. All presets accept optional `PresetOption` arguments. Every preset starts with `SanitizeUTF8()`, so normalization receives valid UTF-8.
 
 ### `SearchPreset`
 
@@ -125,7 +125,7 @@ func SearchPreset(opts ...PresetOption) Pipeline
 
 Builds a **search-key pipeline** optimized for indexing and search:
 
-1. `SanitizeUTF8()` — remove invalid bytes and NUL characters
+1. `SanitizeUTF8()` — replace each invalid byte with U+FFFD and remove NUL characters
 2. `NormalizeUnicode()` — decompose and strip accents
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
 4. `FoldCase()` — full Unicode case folding
@@ -163,7 +163,7 @@ func CanonicalPreset(opts ...PresetOption) Pipeline
 
 Builds a **general-purpose canonicalization pipeline**:
 
-1. `SanitizeUTF8()` — remove invalid bytes and NUL characters
+1. `SanitizeUTF8()` — replace each invalid byte with U+FFFD and remove NUL characters
 2. `NormalizeUnicode()` — decompose and strip accents
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
 4. `FoldCase()` — full Unicode case folding
@@ -185,7 +185,7 @@ func DBSafePreset(opts ...PresetOption) Pipeline
 
 Builds a **persistence-safe normalization pipeline** for database storage:
 
-1. `SanitizeUTF8()` — remove invalid bytes and NUL characters
+1. `SanitizeUTF8()` — replace each invalid byte with U+FFFD and remove NUL characters
 2. `NormalizeUnicode()` — decompose and strip accents
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
 4. `TrimSpace()` — remove leading/trailing whitespace
@@ -198,7 +198,7 @@ Unlike `SearchPreset` and `CanonicalPreset`, this preset **preserves case and pu
 ```go
 input := string([]byte{'g', 'o', 0x00, 0xff, '!'})
 result, err := textnorm.DBSafePreset().Run(input)
-// result == "go!" (NUL removed, invalid byte replaced with replacement char)
+// result == "go\uFFFD!" (NUL removed, invalid byte replaced with replacement char)
 ```
 
 ### `WithWidthFold`
@@ -226,7 +226,9 @@ result, err := textnorm.SearchPreset(textnorm.WithWidthFold()).Run("Ｇｏ")
 func (p Pipeline) SanitizeUTF8() Pipeline
 ```
 
-Appends a UTF-8 and NUL sanitization stage. Invalid UTF-8 byte sequences are replaced with the Unicode replacement character (`U+FFFD`, `�`). NUL bytes (`\x00`) are removed entirely. Valid UTF-8 strings without NUL bytes pass through unchanged.
+Appends a UTF-8 and NUL sanitization stage. Each invalid UTF-8 byte is replaced with the Unicode replacement character (`U+FFFD`, `�`). NUL bytes (`\x00`) are removed entirely. Valid UTF-8 strings without NUL bytes pass through unchanged.
+
+Start pipelines over untrusted bytes with this stage, before Unicode normalization, as every preset does.
 
 **Example:**
 
@@ -244,11 +246,24 @@ func (p Pipeline) NormalizeUnicode() Pipeline
 
 Appends a Unicode normalization stage. Decomposes characters using NFD, strips diacritical marks (Unicode category `Mn`), then recomposes using NFC. This effectively removes accents from Latin characters.
 
+Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent decomposition of the following character, leaving its accent in the output even when normalization returns a nil error. Start pipelines over untrusted bytes with `SanitizeUTF8()`, as every preset does. Sanitization replaces each invalid byte with U+FFFD and also removes NUL bytes.
+
 **Example:**
 
 ```go
 result, err := textnorm.New().NormalizeUnicode().Run("café")
 // result == "cafe"
+```
+
+For the malformed input below, raw normalization leaves `Ă` accented on the first pass; sanitizing first removes its accent immediately:
+
+```go
+input := "0000000000\xf2Ă"
+raw, err := textnorm.New().NormalizeUnicode().Run(input)
+// raw == "0000000000\uFFFDĂ", err == nil
+
+sanitized, err := textnorm.New().SanitizeUTF8().NormalizeUnicode().Run(input)
+// sanitized == "0000000000\uFFFDA", err == nil
 ```
 
 ### `RemoveAccents`
@@ -259,11 +274,28 @@ func (p Pipeline) RemoveAccents() Pipeline
 
 Appends a diacritic-removal stage. This is an alias for `NormalizeUnicode()` — both perform the same transformation.
 
+Its decomposition guarantees also require valid UTF-8: a malformed byte can prevent decomposition of the following character. Start pipelines over untrusted bytes with `SanitizeUTF8()`, as every preset does.
+
 **Example:**
 
 ```go
 result, err := textnorm.New().RemoveAccents().Run("naïve")
 // result == "naive"
+```
+
+### `NormalizeUnicodeLatin`
+
+```go
+func (p Pipeline) NormalizeUnicodeLatin() Pipeline
+```
+
+Appends NFD decomposition, removal of combining marks (`Mn`) only when their base character is Latin, and NFC recomposition. Latin accents are removed while marks on other scripts, such as Devanagari matras and Arabic harakat, are preserved.
+
+Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent decomposition of the following character. Start pipelines over untrusted bytes with `SanitizeUTF8()`, as every preset does. The malformed-input example under `NormalizeUnicode` produces the same outputs with this stage.
+
+```go
+result, err := textnorm.New().SanitizeUTF8().NormalizeUnicodeLatin().Run("Café किताब")
+// result == "Cafe किताब"
 ```
 
 ### `FoldCase`

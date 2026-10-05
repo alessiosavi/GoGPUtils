@@ -158,6 +158,11 @@ func CleanString(input string, options ...CleanOption) (string, error) {
 // NormalizeUnicode applies NFKD normalization and removes combining marks
 // (diacritics) from the input string.
 //
+// Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent
+// decomposition of the following character, leaving its accent in the output.
+// For untrusted bytes, call SanitizeUTF8 before normalization, for example
+// NormalizeUnicode(SanitizeUTF8(s)). The sanitizer also removes NUL bytes.
+//
 // The process:
 //  1. NFKD (Compatibility Decomposition): decomposes characters into their
 //     base form + combining marks (e.g., "é" → "e" + combining acute accent)
@@ -358,6 +363,11 @@ func NormalizeWhitespace(s string) string {
 // RemoveAccents is an alias for NormalizeUnicode that removes diacritical
 // marks from characters. This is a common operation name used in many
 // string-processing libraries.
+//
+// Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent
+// decomposition of the following character, leaving its accent in the output.
+// For untrusted bytes, call SanitizeUTF8 first: RemoveAccents(SanitizeUTF8(s)).
+// The sanitizer also removes NUL bytes.
 //
 // Example:
 //

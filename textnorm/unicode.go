@@ -9,12 +9,24 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// NormalizeUnicode appends a Unicode normalization stage.
+// NormalizeUnicode appends NFD decomposition, combining-mark (Mn) removal,
+// and NFC recomposition.
+//
+// Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent
+// decomposition of the following character, leaving its accent in the output.
+// Pipelines over untrusted bytes should start with SanitizeUTF8(), as every
+// preset does.
 func (p Pipeline) NormalizeUnicode() Pipeline {
 	return p.Then(normalizeUnicodeStage)
 }
 
 // RemoveAccents appends a diacritic-removal stage.
+// It performs the same transformation as NormalizeUnicode.
+//
+// Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent
+// decomposition of the following character, leaving its accent in the output.
+// Pipelines over untrusted bytes should start with SanitizeUTF8(), as every
+// preset does.
 func (p Pipeline) RemoveAccents() Pipeline {
 	return p.Then(normalizeUnicodeStage)
 }
@@ -50,6 +62,11 @@ func normalizeUnicodeStage(s string) (string, error) {
 // combining marks (Mn) are removed ONLY when their base character is Latin.
 // Latin "café"→"cafe", but Devanagari matras and Arabic harakat — which are
 // meaning-bearing vowels, not decorations — survive intact.
+//
+// Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent
+// decomposition of the following character, leaving its accent in the output.
+// Pipelines over untrusted bytes should start with SanitizeUTF8(), as every
+// preset does.
 func (p Pipeline) NormalizeUnicodeLatin() Pipeline {
 	return p.Then(normalizeUnicodeLatinStage)
 }

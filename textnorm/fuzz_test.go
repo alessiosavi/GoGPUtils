@@ -13,12 +13,13 @@ func FuzzPipeline(f *testing.F) {
 		"  Café   Straße  ",
 		"🙂🙂",
 		string([]byte{'g', 'o', 0xff, 0x00, '!', 0xfe}),
+		"0000000000\xf2Ă", // A malformed byte can block decomposition without sanitization.
 	} {
 		f.Add(seed)
 	}
 
 	f.Fuzz(func(t *testing.T, input string) {
-		pipe := New().NormalizeUnicode().FoldCase().TrimSpace().CollapseWhitespace()
+		pipe := New().SanitizeUTF8().NormalizeUnicode().FoldCase().TrimSpace().CollapseWhitespace()
 		out1, err := pipe.Run(input)
 		if err != nil {
 			t.Fatalf("Run() error = %v", err)
