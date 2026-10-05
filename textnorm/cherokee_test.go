@@ -123,9 +123,43 @@ func TestCherokeeFoldPreservesOtherBytes(t *testing.T) {
 	}
 }
 
+func TestFoldCherokeePrefilter(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		in, want string
+	}{
+		{"no-candidate", "café 中文\xff\x80", "café 中文\xff\x80"},
+		{"ea-first", "café ꮳᏸ", "café ᏣᏰ"},
+		{"e1-first", "café ᏸꮳ", "café ᏰᏣ"},
+		{"non-cherokee-ea", "café 가ᏸ", "café 가Ᏸ"},
+		{"non-cherokee-e1", "café \u1200ꮳ", "café \u1200Ꮳ"},
+		{"only-non-cherokee", "café 가\u1200", "café 가\u1200"},
+		{"invalid-ea", "café \xeaꮳᏸ", "café \xeaᏣᏰ"},
+		{"invalid-e1", "café \xe1ᏸꮳ", "café \xe1ᏰᏣ"},
+		{"invalid-prefix", "café \xf0\x80ꮳ", "café \xf0\x80Ꮳ"},
+		{"incomplete-ea-before-mapping", "café \xea\xadᏸ", "café \xea\xadᏰ"},
+		{"incomplete-e1-before-mapping", "café \xe1\x8fꮳ", "café \xe1\x8fᏣ"},
+		{"truncated-ea", "café \xea", "café \xea"},
+		{"truncated-ea-ad", "café \xea\xad", "café \xea\xad"},
+		{"truncated-ea-ae", "café \xea\xae", "café \xea\xae"},
+		{"truncated-e1", "café \xe1", "café \xe1"},
+		{"truncated-e1-8f", "café \xe1\x8f", "café \xe1\x8f"},
+		{"truncated-after-mapping", "café ꮳ\xe1\x8f", "café Ꮳ\xe1\x8f"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := foldCherokee(tc.in); got != tc.want {
+				t.Fatalf("foldCherokee(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestFoldCaseCorrectionAllocations(t *testing.T) {
 	p := New().FoldCase()
-	for _, in := range []string{"", "ascii", "ASCII", "café 中文", "\xff\x80", "Straße Σς", "ꮳ", "Straße ꮳ", "Ꮳ", "Straße Ꮳ"} {
+	for _, in := range []string{
+		"", "ascii", "ASCII", "café 中文", "\xff\x80", "Straße Σς", "ꮳ", "Straße ꮳ", "Ꮳ", "Straße Ꮳ",
+		"café 가\u1200", "café \xea", "café \xea\xad", "café \xea\xae", "café \xe1", "café \xe1\x8f",
+	} {
 		t.Run(fmt.Sprintf("%q", in), func(t *testing.T) {
 			var sink string
 			base := testing.AllocsPerRun(20, func() { sink = cases.Fold().String(in) })

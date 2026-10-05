@@ -27,9 +27,20 @@ func (p Pipeline) FoldCase() Pipeline {
 // https://github.com/golang/go/issues/46101 (golang/go#46101).
 // Copy untouched spans verbatim so this correction preserves malformed bytes.
 func foldCherokee(s string) string {
+	// Lowercase Cherokee starts with 0xEA (U+AB70–U+ABBF) or 0xE1
+	// (U+13F8–U+13FD). Skip rune decoding when neither byte is present.
+	first := strings.IndexByte(s, 0xEA)
+	if i := strings.IndexByte(s, 0xE1); first < 0 || (i >= 0 && i < first) {
+		first = i
+	}
+	if first < 0 {
+		return s
+	}
+	// Neither byte can be a UTF-8 continuation byte, so starting here is
+	// safe even when the candidate or the preceding bytes are malformed.
 	var b strings.Builder
 	last := 0
-	for i, r := range s {
+	for i, r := range s[first:] {
 		var upper rune
 		switch {
 		case r >= '\uAB70' && r <= '\uABBF':
@@ -39,6 +50,7 @@ func foldCherokee(s string) string {
 		default:
 			continue
 		}
+		i += first
 		if last == 0 {
 			// Both sides of every pair have the same UTF-8 length.
 			b.Grow(len(s))
