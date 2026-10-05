@@ -323,7 +323,7 @@ SampleStdDev([]float64{1, 2, 3, 4, 5})  // ~1.581 (sqrt(2.5))
 
 ### Percentile
 
-Returns the value at the given percentile (0-100). Uses linear interpolation between data points. Returns `0` for empty slices or invalid percentiles.
+Returns the value at the given percentile (0-100). Uses linear interpolation between data points without modifying the input slice. Returns `0` without allocating for empty slices or invalid percentiles: `p` is NaN or outside `[0, 100]` (including either infinity). This applies to every input length and architecture. NaN values in the data slice are sorted before other values and are not discarded.
 
 ```go
 func Percentile[T Number](s []T, p float64) float64
@@ -333,9 +333,10 @@ func Percentile[T Number](s []T, p float64) float64
 
 ```go
 data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-Percentile(data, 0)     // 1.0
-Percentile(data, 50)    // 5.5 (median)
-Percentile(data, 100)   // 10.0
+Percentile(data, 0)          // 1.0
+Percentile(data, 50)         // 5.5 (median)
+Percentile(data, 100)        // 10.0
+Percentile(data, math.NaN()) // 0.0 (invalid percentile)
 ```
 
 ---

@@ -314,14 +314,14 @@ func SampleStdDev[T Number](s []T) float64 {
 }
 
 // Percentile returns the value at the given percentile (0-100).
-// Uses linear interpolation between data points.
-// Returns 0 for empty slices.
+// Uses linear interpolation between data points without modifying s.
+// Returns 0 without allocating for empty slices or invalid p (NaN or outside [0, 100]).
 //
 // Example:
 //
 //	Percentile([]int{1, 2, 3, 4, 5}, 50)  // 3.0 (median)
 func Percentile[T Number](s []T, p float64) float64 {
-	if len(s) == 0 || p < 0 || p > 100 {
+	if len(s) == 0 || math.IsNaN(p) || p < 0 || p > 100 {
 		return 0
 	}
 
@@ -333,9 +333,8 @@ func Percentile[T Number](s []T, p float64) float64 {
 }
 
 // percentileSorted returns the p-th percentile of a non-empty slice sorted with
-// slices.Sort, with Percentile's range checks already applied. NaN p passes
-// through unchanged to preserve the existing architecture-dependent outcome. It
-// holds Percentile's post-sort arithmetic so Quartiles can sort once.
+// slices.Sort, with finite p in [0, 100]. It holds Percentile's post-sort arithmetic
+// so Quartiles can sort once.
 func percentileSorted[T Number](sorted []T, p float64) float64 {
 	if p == 0 {
 		return float64(sorted[0])
