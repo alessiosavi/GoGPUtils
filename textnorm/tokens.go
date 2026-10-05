@@ -82,8 +82,11 @@ func (tp TokenPipeline) Run(input string) ([]string, error) {
 }
 
 // JoinTokens joins token output back into a string pipeline.
+// Each Run of the returned pipeline executes tp.Run once, including its source,
+// then joins the tokens with sep. Errors and panics propagate unchanged.
+// The returned pipeline has a single joining stage; tp and its source are unchanged.
 func (tp TokenPipeline) JoinTokens(sep string) Pipeline {
-	return tp.source.Then(func(input string) (string, error) {
+	return New().Then(func(input string) (string, error) {
 		tokens, err := tp.Run(input)
 		if err != nil {
 			return "", err

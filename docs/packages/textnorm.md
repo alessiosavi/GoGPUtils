@@ -132,10 +132,22 @@ Builds a **search-key pipeline** optimized for indexing and search:
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
 4. `FoldCase()` — full Unicode case folding
 5. `FilterRunes()` — keep only letters, numbers, and spaces
-6. `TrimSpace()` — remove leading/trailing whitespace
-7. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
-8. `SplitTokens()` — split into tokens
-9. `JoinTokens(" ")` — join tokens with single spaces
+6. `NormalizeUnicode()` — normalize again to compose characters brought together by filtering
+7. `TrimSpace()` — remove leading/trailing whitespace
+8. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
+9. `SplitTokens()` — split into tokens
+10. `JoinTokens(" ")` — join tokens with single spaces
+
+Each declared stage executes once per `Run`. Normalization is explicitly applied
+both before and after filtering so search keys remain idempotent: for example,
+`"ᄀ!ᅡ"` becomes `"가"` and `"ᄀ-ᅡ-ᆨ"` becomes `"각"` on the first run.
+
+**Key compatibility:** stock `SearchPreset` keys, with or without `WithWidthFold`,
+retain the output of the earlier double-source `JoinTokens` behavior. The
+single-source correction can change keys from **custom pipelines with
+non-idempotent source stages**, such as `DecodeHTMLEntities()`. Regenerate affected
+custom keys and indexes from the original text when upgrading from that behavior.
+Cherokee case pairs still produce the same stable uppercase representation.
 
 **Example:**
 
@@ -519,7 +531,23 @@ result, err := textnorm.New().SplitTokens().RemoveStopwords(stop).JoinTokens(" "
 func (tp TokenPipeline) JoinTokens(sep string) Pipeline
 ```
 
-Joins token output back into a string pipeline. The token pipeline is executed, and tokens are joined with `sep` using `strings.Join`.
+Returns a new string pipeline with a single joining stage. Each `Run(input)` calls
+`tp.Run(input)` exactly once, including the source string pipeline, and joins the
+result with `sep` using `strings.Join`. Nested split/join conversions also execute
+the original source once. Empty or nil token slices produce `""`; empty token
+elements and separator bytes are preserved as with `strings.Join`.
+
+Errors retain their identity and stop the pipeline with empty output; panics
+propagate unchanged. Appended string stages receive the joined result. Building
+new stages on the returned pipeline, the token pipeline, or its source leaves the
+other pipelines unchanged.
+
+Earlier versions executed the source twice. Custom pipelines with non-idempotent
+source stages can therefore change output. For example, a source stage appending
+`" x"` to `"a"` now joins with `"|"` to produce `"a|x"`, rather than `"a|x|x"`.
+Likewise, `DecodeHTMLEntities().SplitTokens().JoinTokens(" ")` turns `"&amp;amp;"`
+into `"&amp;"`, rather than `"&"`. Side effects, errors, and panics caused only by
+the extra source execution no longer occur.
 
 **Example:**
 

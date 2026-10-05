@@ -36,29 +36,68 @@ func FuzzPipeline(f *testing.F) {
 	})
 }
 
+var searchPresetSeeds = []string{
+	"  Café,   go!  ",
+	"Straße",
+	"Ꮳꮳ Ᏸᏸ",
+	"🙂 mixed CASE 🙂",
+	"",
+	"00000000000000000000000000000ꮒ0",
+	"0000000000\xf2Ă",
+	"go\xff\x00!\xfe",
+	"Ｇｏ ＣＡＦÉ",
+	// Filtering can expose Hangul L+V and LV+T composition boundaries.
+	"ᄀ!ᅡ",
+	"ᄀ-ᅡ-ᆨ",
+	"가!ᆨ",
+	"ᄒ,ᅵ,ᇂ",
+	"ᄀ🙂ᅡ",
+	"ᄀ+ᅡ🙂ᆨ",
+	"가🙂ᆨ",
+	"ᄀ\x00ᅡ",
+	"ᄀ\x00ᅡ\x00ᆨ",
+	"가\x00ᆨ",
+	"ᄀ\xffᅡ",
+	"ᄀ\xfeᅡ\xffᆨ",
+	"가\xffᆨ",
+	"ᄀ\u0903ᅡ\u200dᆨ",
+	"  ＧＯ ᄀ!ᅡ 가🙂ᆨ ＣＡＦÉ  ",
+}
+
 func FuzzSearchPreset(f *testing.F) {
-	for _, seed := range []string{
-		"  Café,   go!  ",
-		"Straße",
-		"Ꮳꮳ Ᏸᏸ",
-		"🙂 mixed CASE 🙂",
-	} {
+	for _, seed := range searchPresetSeeds {
 		f.Add(seed)
 	}
 
 	f.Fuzz(func(t *testing.T, input string) {
-		pipe := SearchPreset()
-		out1, err := pipe.Run(input)
-		if err != nil {
-			t.Fatalf("Run() error = %v", err)
+		for _, widthFold := range []bool{false, true} {
+			var opts []PresetOption
+			if widthFold {
+				opts = append(opts, WithWidthFold())
+			}
+			pipe := SearchPreset(opts...)
+			out1, err := pipe.Run(input)
+			if err != nil {
+				t.Fatalf("Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			out2, err := pipe.Run(out1)
+			if err != nil {
+				t.Fatalf("second Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			if out1 != out2 {
+				t.Fatalf("SearchPreset(%q) not idempotent (widthFold=%t): %q != %q", input, widthFold, out1, out2)
+			}
 		}
-		out2, err := pipe.Run(out1)
-		if err != nil {
-			t.Fatalf("second Run() error = %v", err)
-		}
-		if out1 != out2 {
-			t.Fatalf("SearchPreset not idempotent: %q != %q", out1, out2)
-		}
+	})
+}
+
+func FuzzSearchPresetDifferential(f *testing.F) {
+	for _, seed := range searchPresetSeeds {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, input string) {
+		checkSearchPresetAgainstBase(t, input)
 	})
 }
 

@@ -21,8 +21,11 @@ func WithWidthFold() PresetOption {
 }
 
 // SearchPreset builds a search-key pipeline (UTF-8 sanitize, Unicode
-// normalize, fold case, keep letters/numbers/spaces, trim, collapse).
+// normalize, optional width fold, fold case, keep letters/numbers/spaces,
+// normalize again, trim, collapse, split tokens, join tokens).
 // Cherokee case pairs share the uppercase representation produced by FoldCase.
+// Each declared stage runs once per Run. The second normalization composes
+// characters brought together by filtering, keeping search keys idempotent.
 //
 // To dedup repeated tokens or strip stopwords, compose on top:
 //
@@ -51,6 +54,7 @@ func SearchPreset(opts ...PresetOption) Pipeline {
 	return pipe.
 		FoldCase().
 		FilterRunes(keep).
+		NormalizeUnicode().
 		TrimSpace().
 		CollapseWhitespace().
 		SplitTokens().
