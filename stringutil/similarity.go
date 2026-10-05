@@ -6,11 +6,15 @@ import (
 	"unicode/utf8"
 )
 
-// LevenshteinDistance returns the minimum number of single-character edits
+// LevenshteinDistance returns the minimum number of single-rune edits
 // (insertions, deletions, substitutions) required to change s1 into s2.
+// It compares decoded Unicode code points without normalization; each invalid
+// UTF-8 byte is treated as U+FFFD. If either input is empty, the distance is
+// the other input's rune count. Two empty strings have distance zero.
 //
-// Time complexity: O(len(s1) * len(s2))
-// Space complexity: O(min(len(s1), len(s2)))
+// For nonempty inputs with m and n runes, time complexity is O(m*n) and space
+// complexity is O(m+n), including the input rune slices. With one empty input,
+// counting the other input takes O(len(s)) time and O(1) space.
 //
 // Example:
 //
@@ -21,11 +25,11 @@ func LevenshteinDistance(s1, s2 string) int {
 	}
 
 	if len(s1) == 0 {
-		return len(s2)
+		return utf8.RuneCountInString(s2)
 	}
 
 	if len(s2) == 0 {
-		return len(s1)
+		return utf8.RuneCountInString(s1)
 	}
 
 	// Convert to runes for proper Unicode handling
@@ -69,7 +73,10 @@ func LevenshteinDistance(s1, s2 string) int {
 }
 
 // LevenshteinSimilarity returns a similarity score between 0 and 1
-// based on Levenshtein distance. 1 means identical strings.
+// based on Levenshtein distance divided by the larger input rune count.
+// Identical decoded rune sequences, including two empty strings, score 1.
+// Exactly one empty input scores 0. Decoding follows LevenshteinDistance,
+// treating each invalid UTF-8 byte as U+FFFD without normalization.
 //
 // Example:
 //
