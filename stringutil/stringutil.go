@@ -689,8 +689,15 @@ func NthRune(s string, n int) (rune, bool) {
 	return 0, false
 }
 
-// CommonPrefix returns the longest common prefix of the given strings.
-// Returns empty string if no common prefix or fewer than 2 strings.
+// CommonPrefix returns the longest common sequence of decoded runes at the start
+// of the given strings. It compares runes, not grapheme clusters, and does not
+// normalize text. Each invalid UTF-8 byte compares as U+FFFD, including against a
+// literal U+FFFD; multi-input results encode those runes as valid UTF-8.
+// Zero inputs return ""; one input is returned unchanged, even if malformed.
+// With two or more inputs, the result is detached from the inputs and never
+// splits a rune. For valid inputs, it is a byte prefix of every input.
+// Worst-case time is O(n*m) for n inputs of at most m bytes, with O(1) auxiliary
+// space plus the returned string. Only the common span and its boundary are read.
 //
 // Example:
 //
@@ -702,23 +709,53 @@ func CommonPrefix(strs ...string) string {
 		}
 		return ""
 	}
-	minLen := len(strs[0])
+	prefix := strs[0]
+	invalid := 0
 	for _, s := range strs[1:] {
-		if len(s) < minLen {
-			minLen = len(s)
+		// Keep the shared-byte scan fast; no need to validate discarded tails.
+		i := 0
+		for limit := min(len(prefix), len(s)); i < limit && prefix[i] == s[i]; {
+			i++
 		}
-	}
-	for i := range minLen {
-		for _, s := range strs[1:] {
-			if s[i] != strs[0][i] {
-				return strings.Clone(strs[0][:i])
+		// A mismatch can lie inside a valid rune. Back off before decoding it.
+		for i > 0 && i < len(prefix) && !utf8.RuneStart(prefix[i]) {
+			i--
+		}
+		if !utf8.ValidString(prefix[:i]) {
+			// Equal malformed bytes may have different segmentation at the
+			// boundary. Compare decoded runes from the beginning in that case.
+			i = 0
+		}
+		invalid = 0
+		for j := i; i < len(prefix) && j < len(s); {
+			r, width := utf8.DecodeRuneInString(prefix[i:])
+			other, otherWidth := utf8.DecodeRuneInString(s[j:])
+			if r != other {
+				break
 			}
+			if r == utf8.RuneError && width == 1 {
+				invalid++
+			}
+			i += width
+			j += otherWidth
+		}
+		prefix = prefix[:i]
+		if prefix == "" {
+			return ""
 		}
 	}
-	return strings.Clone(strs[0][:minLen])
+	return encodeSpan(prefix, invalid, "")
 }
 
-// CommonSuffix returns the longest common suffix of the given strings.
+// CommonSuffix returns the longest common sequence of decoded runes at the end
+// of the given strings. It compares runes, not grapheme clusters, and does not
+// normalize text. Each invalid UTF-8 byte compares as U+FFFD, including against a
+// literal U+FFFD; multi-input results encode those runes as valid UTF-8.
+// Zero inputs return ""; one input is returned unchanged, even if malformed.
+// With two or more inputs, the result is detached from the inputs and never
+// splits a rune. For valid inputs, it is a byte suffix of every input.
+// It scans backwards without reversing inputs. Worst-case time is O(n*m) for n
+// inputs of at most m bytes, with O(1) auxiliary space plus the returned string.
 func CommonSuffix(strs ...string) string {
 	if len(strs) < 2 {
 		if len(strs) == 1 {
@@ -728,13 +765,30 @@ func CommonSuffix(strs ...string) string {
 		return ""
 	}
 
-	// Reverse all strings, find prefix, then reverse result
-	reversed := make([]string, len(strs))
-	for i, s := range strs {
-		reversed[i] = Reverse(s)
+	suffix := strs[0]
+	invalid := 0
+	for _, s := range strs[1:] {
+		i, j := len(suffix), len(s)
+		invalid = 0
+		for i > 0 && j > 0 {
+			r, width := utf8.DecodeLastRuneInString(suffix[:i])
+			other, otherWidth := utf8.DecodeLastRuneInString(s[:j])
+			if r != other {
+				break
+			}
+			if r == utf8.RuneError && width == 1 {
+				invalid++
+			}
+			i -= width
+			j -= otherWidth
+		}
+		suffix = suffix[i:]
+		if suffix == "" {
+			return ""
+		}
 	}
 
-	return Reverse(CommonPrefix(reversed...))
+	return encodeSpan(suffix, invalid, "")
 }
 
 // Repeat returns s repeated n times.

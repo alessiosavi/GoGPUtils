@@ -133,7 +133,23 @@ parts := stringutil.BetweenAll("a,b,c", "", ",")
 func CommonPrefix(strs ...string) string
 ```
 
-Returns the longest common prefix of the given strings. Returns empty string if no common prefix or fewer than 2 strings.
+Returns the longest common prefix of decoded runes, without splitting a rune.
+Comparisons use runes, not grapheme clusters, and perform no normalization: for
+example, `CommonPrefix("e\u0301", "e\u0300")` returns `"e"`.
+
+Zero inputs return `""`. One input is returned unchanged, even if it contains
+malformed UTF-8. With two or more inputs, each invalid byte compares as U+FFFD,
+including against a literal U+FFFD, and the common rune sequence is encoded as
+valid UTF-8. For example, `CommonPrefix("\xff", "\xfe", "�")` returns `"�"`, while
+`CommonPrefix("é", "ê")` returns `""`.
+
+Multi-input results are detached from the inputs, so a short result does not
+retain a large input. For valid inputs, the result is a byte prefix of every
+input. The implementation scans shared bytes, backs off at rune boundaries, and
+decodes when needed for malformed input; it does not validate discarded tails.
+For `n` inputs of at most `m` bytes, worst-case time is O(n*m), with O(1) auxiliary
+space plus O(L) bytes for the returned string of `L` bytes. Zero or one input
+takes O(1) time and space.
 
 **Example:**
 
@@ -148,7 +164,21 @@ prefix := stringutil.CommonPrefix("interstellar", "internet", "internal")
 func CommonSuffix(strs ...string) string
 ```
 
-Returns the longest common suffix of the given strings.
+Returns the longest common suffix of decoded runes, without splitting a rune.
+Like `CommonPrefix`, it compares runes rather than grapheme clusters and performs
+no normalization. Thus `CommonSuffix("a\u0301", "e\u0301")` returns the combining
+mark `"\u0301"`, and `CommonSuffix("é", "ê")` returns `""`.
+
+Zero inputs return `""`; one input is returned unchanged, even if malformed.
+With two or more inputs, every invalid UTF-8 byte compares as U+FFFD, including
+against a literal U+FFFD, and the result is encoded as valid UTF-8. For example,
+`CommonSuffix("a\xff", "b�")` returns `"�"`. Multi-input results are detached
+from the inputs; for valid inputs, the result is a byte suffix of every input.
+
+The implementation decodes backwards without reversing whole inputs. For `n`
+inputs of at most `m` bytes, worst-case time is O(n*m), with O(1) auxiliary space
+plus O(L) bytes for the returned string of `L` bytes. Zero or one input takes
+O(1) time and space.
 
 ---
 
