@@ -866,6 +866,8 @@ Applies the specified cleaning options to the input string. Options are applied 
 
 If no options are provided, the input string is returned unchanged.
 
+For untrusted bytes, sanitize the input before calling `CleanString` with `WithUnicodeNorm()`: `stringutil.CleanString(stringutil.SanitizeUTF8(input), stringutil.WithUnicodeNorm())`. The decomposition guarantees require valid UTF-8. Enabling `WithDBSanitize` runs sanitization **after** normalization, regardless of option argument order; it cannot ensure decomposition of a character following a malformed byte on that first pass.
+
 **Example:**
 
 ```go
@@ -943,6 +945,8 @@ func NormalizeUnicode(s string) (string, error)
 
 Applies NFKD normalization and removes combining marks (diacritics) from the input string.
 
+Decomposition guarantees hold for valid UTF-8. A malformed byte can prevent decomposition of the following character, leaving its accent in the output even when normalization returns a nil error. For pipelines over untrusted bytes, use the existing `stringutil.SanitizeUTF8` helper first: `stringutil.NormalizeUnicode(stringutil.SanitizeUTF8(input))`. It replaces each invalid byte with U+FFFD and also removes NUL bytes. Textnorm pipelines use the equivalent `SanitizeUTF8()` stage first, as every textnorm preset does.
+
 **Example:**
 
 ```go
@@ -951,6 +955,15 @@ result, _ := stringutil.NormalizeUnicode("café résumé")
 
 result, _ := stringutil.NormalizeUnicode("naïve")
 // result = "naive"
+```
+
+```go
+input := "0000000000\xf2Ă"
+raw, err := stringutil.NormalizeUnicode(input)
+// raw == "0000000000\uFFFDĂ", err == nil
+
+sanitized, err := stringutil.NormalizeUnicode(stringutil.SanitizeUTF8(input))
+// sanitized == "0000000000\uFFFDA", err == nil
 ```
 
 ### StripHTMLEntities
@@ -977,7 +990,7 @@ result := stringutil.StripHTMLEntities("Price: &euro;10")
 func SanitizeUTF8(s string) string
 ```
 
-Ensures the string contains only valid UTF-8 and removes NUL bytes. Invalid UTF-8 byte sequences are replaced with U+FFFD.
+Ensures the string contains only valid UTF-8 and removes NUL bytes. Each invalid UTF-8 byte is replaced with U+FFFD. Call this before normalization when processing untrusted bytes.
 
 **Example:**
 
@@ -1042,6 +1055,8 @@ func RemoveAccents(s string) (string, error)
 
 Alias for `NormalizeUnicode` that removes diacritical marks from characters.
 
+Its decomposition guarantees also require valid UTF-8: a malformed byte can prevent decomposition of the following character. For untrusted bytes, call `stringutil.RemoveAccents(stringutil.SanitizeUTF8(input))`; the sanitizer also removes NUL bytes.
+
 **Example:**
 
 ```go
@@ -1071,6 +1086,8 @@ func Slugify(s string) (string, error)
 ```
 
 Converts a string to a URL-friendly slug. Normalizes Unicode, lowercases, replaces non-alphanumeric characters with hyphens, collapses multiple hyphens, and trims leading/trailing hyphens.
+
+`Slugify` normalizes before filtering and does not sanitize the input first. For untrusted bytes, call `stringutil.Slugify(stringutil.SanitizeUTF8(input))` so malformed bytes cannot block decomposition. For example, raw `"0000000000\xf2Ă"` produces `"0000000000-ă"`; sanitizing first produces `"0000000000-a"` (both return a nil error).
 
 **Example:**
 
