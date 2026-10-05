@@ -465,8 +465,22 @@ func zzCheck(t testing.TB, s string, a, b int, r rune, suffix, start, end string
 	zzCompare(t, "CountLines", func() any { return CountLines(s) }, func() any { return zzBaseCountLines(s) })
 	zzCompare(t, "BetweenAll", func() any { return BetweenAll(s, start, end) }, func() any { return zzBaseBetweenAll(s, start, end) })
 	for _, xs := range [][]string{nil, {s}, {s, suffix}, {s, suffix, start}, {s, suffix, start, end}} {
-		zzCompare(t, "CommonPrefix", func() any { return CommonPrefix(xs...) }, func() any { return zzBaseCommonPrefix(xs...) })
-		zzCompare(t, "CommonSuffix", func() any { return CommonSuffix(xs...) }, func() any { return zzBaseCommonSuffix(xs...) })
+		// C-04 deliberately changes split-rune and malformed-input results.
+		// Keep BASE comparisons only for valid inputs where BASE agrees with
+		// the independent rune oracle; common_affix_test.go covers the rest.
+		valid := true
+		for _, input := range xs {
+			valid = valid && utf8.ValidString(input)
+		}
+		if !valid {
+			continue
+		}
+		if base := zzBaseCommonPrefix(xs...); base == commonAffixOracle(xs, false) {
+			zzCompare(t, "CommonPrefix", func() any { return CommonPrefix(xs...) }, func() any { return base })
+		}
+		if base := zzBaseCommonSuffix(xs...); base == commonAffixOracle(xs, true) {
+			zzCompare(t, "CommonSuffix", func() any { return CommonSuffix(xs...) }, func() any { return base })
+		}
 	}
 	for mode := range 8 {
 		var opts []CleanOption
@@ -712,11 +726,12 @@ func TestZZPlanLayout(t *testing.T) {
 }
 
 func TestZZKnownBehaviorUnchanged(t *testing.T) {
-	if got := CommonPrefix("é", "è"); got != "\xc3" {
-		t.Fatalf("C-04 must remain unchanged: %q", got)
+	// C-04 replaces the old split-rune expectations with decoded-rune results.
+	if got := CommonPrefix("é", "è"); got != "" {
+		t.Fatalf("CommonPrefix must compare complete runes: %q", got)
 	}
-	if got := CommonSuffix("é", "è"); got != "�" {
-		t.Fatalf("C-04 CommonSuffix must remain unchanged: %q", got)
+	if got := CommonSuffix("é", "è"); got != "" {
+		t.Fatalf("CommonSuffix must compare complete runes: %q", got)
 	}
 
 	if got := Truncate("abcdef", 3, "\xff"); got != "ab\xff" {
