@@ -13,7 +13,7 @@ import (
 	"github.com/alessiosavi/GoGPUtils/internal/benchkit"
 )
 
-// Private copies from BASE 4c05787, with only identifiers renamed.
+// Private copies from BASE 4c05787, with identifiers renamed and comments corrected.
 var baseFastrandMu sync.Mutex
 var baseFastrandState uint64 = 1
 
@@ -86,10 +86,9 @@ func baseShuffle[T any](s []T) []T {
 }
 
 func baseShuffleInPlace[T any](s []T) {
-	// Fisher-Yates shuffle using simple PRNG seeded from time
-	// For tests/determinism, see ShuffleWithSeed
+	// Fisher-Yates shuffle; for tests/determinism, see setBaseSeed.
 	for i := len(s) - 1; i > 0; i-- {
-		// Simple LCG for shuffling - not crypto secure but fast
+		// Preserve BASE's signed conversion here for the 64-bit differential oracle.
 		j := int(baseFastrand()) % (i + 1)
 		s[i], s[j] = s[j], s[i]
 	}
@@ -300,6 +299,10 @@ func TestOracleShuffleSequence(t *testing.T) {
 		for _, copying := range []bool{false, true} {
 			SeedShuffle(seed)
 			setBaseSeed(seed)
+			referenceState := seed
+			if referenceState == 0 {
+				referenceState = 1
+			}
 			for repeat := range 3 {
 				for _, index := range r.Perm(len(sizes)) {
 					n := sizes[index]
@@ -312,20 +315,33 @@ func TestOracleShuffleSequence(t *testing.T) {
 						a, b = nil, nil
 					}
 					var got, want []int
-					var gp, wp bool
-					var gm, wm string
 					if copying {
-						got, gp, gm = outcome(func() []int { return Shuffle(a) })
-						want, wp, wm = outcome(func() []int { return baseShuffle(b) })
+						got = Shuffle(a)
+						if bits.UintSize == 32 {
+							// C-06 corrects BASE's signed-index panic on 32-bit.
+							want = slices.Clone(b)
+							shuffleReferenceInPlace(want, &referenceState)
+						} else {
+							want = baseShuffle(b)
+						}
 					} else {
-						got, gp, gm = outcome(func() []int { ShuffleInPlace(a); return a })
-						want, wp, wm = outcome(func() []int { baseShuffleInPlace(b); return b })
+						ShuffleInPlace(a)
+						got = a
+						if bits.UintSize == 32 {
+							shuffleReferenceInPlace(b, &referenceState)
+						} else {
+							baseShuffleInPlace(b)
+						}
+						want = b
 					}
 					gs, ws := states()
-					if gp != wp || gm != wm || !oracleEqual(got, want) || !oracleEqual(a, b) || gs != ws {
-						t.Fatalf("seed=%d n=%d copy=%t: panic %t/%t %q/%q; state %x/%x; output equal=%t partial equal=%t", seed, n, copying, gp, wp, gm, wm, gs, ws, oracleEqual(got, want), oracleEqual(a, b))
+					if bits.UintSize == 32 {
+						ws = referenceState
 					}
-					if copying && !gp {
+					if !oracleEqual(got, want) || !oracleEqual(a, b) || gs != ws {
+						t.Fatalf("seed=%d n=%d copy=%t: state %x/%x; output equal=%t input equal=%t", seed, n, copying, gs, ws, oracleEqual(got, want), oracleEqual(a, b))
+					}
+					if copying {
 						for i := range got {
 							for j := range a {
 								if &got[i] == &a[j] {
@@ -341,9 +357,8 @@ func TestOracleShuffleSequence(t *testing.T) {
 }
 
 func TestShuffleConcurrentSeeding(t *testing.T) {
-	if bits.UintSize == 32 {
-		t.Skip("the separate sequence oracle covers existing 32-bit panics")
-	}
+	saved, _ := states()
+	t.Cleanup(func() { SeedShuffle(saved) })
 	var wg sync.WaitGroup
 	for worker := range 8 {
 		wg.Go(func() {
@@ -385,9 +400,6 @@ func TestIntersectConsumedKeyPanic(t *testing.T) {
 }
 
 func TestShuffleConcurrentDrawAccounting(t *testing.T) {
-	if bits.UintSize == 32 {
-		t.Skip("32-bit BASE panics are covered separately")
-	}
 	saved, _ := states()
 	t.Cleanup(func() { SeedShuffle(saved) })
 	const workers, calls, size = 8, 200, 129
@@ -417,35 +429,30 @@ func TestShuffleConcurrentDrawAccounting(t *testing.T) {
 	t.Logf("state=%x matches BASE after %d draws", got, draws)
 }
 
-func TestShuffle32PanicState(t *testing.T) {
+func TestShuffle32PermutationState(t *testing.T) {
 	if bits.UintSize != 32 {
 		t.Skip("requires 32-bit runtime")
 	}
 	saved, _ := states()
 	t.Cleanup(func() { SeedShuffle(saved) })
-	setBaseSeed(42)
-	baseFastrand()
-	_, oneDraw := states()
 	SeedShuffle(42)
-	setBaseSeed(42)
 	a, b := make([]int, 16), make([]int, 16)
 	for i := range a {
 		a[i], b[i] = i, i
 	}
-	gp, gt, gm := panicDetails(func() { ShuffleInPlace(a) })
+	wantState := uint64(42)
+	shuffleReferenceInPlace(b, &wantState)
+	panicked, _, msg := panicDetails(func() { ShuffleInPlace(a) })
 	if !fastrandMu.TryLock() {
-		t.Fatal("global mutex remains locked after panic")
+		t.Fatal("global mutex remains locked after shuffle")
 	}
+	gotState := fastrandState
 	fastrandMu.Unlock()
-	wp, wt, wm := panicDetails(func() { baseShuffleInPlace(b) })
-	if !baseFastrandMu.TryLock() {
-		t.Fatal("BASE mutex remains locked after panic")
+	if panicked {
+		t.Fatalf("shuffle panicked: %s", msg)
 	}
-	baseFastrandMu.Unlock()
-	got, want := states()
-	if !wp || gp != wp || gt != wt || gm != wm || got != want || want != oneDraw || !oracleEqual(a, b) {
-		t.Fatalf("panic=%t/%t type=%v/%v message=%q/%q state=%x/%x oneDraw=%x partialEqual=%t",
-			gp, wp, gt, wt, gm, wm, got, want, oneDraw, oracleEqual(a, b))
+	if gotState != wantState || !slices.Equal(a, b) {
+		t.Fatalf("permutation=%v want=%v; state=%#x want=%#x after 15 draws", a, b, gotState, wantState)
 	}
 }
 
