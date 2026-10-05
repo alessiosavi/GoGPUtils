@@ -180,9 +180,10 @@ Builds a **general-purpose canonicalization pipeline**:
 1. `SanitizeUTF8()` — replace each invalid byte with U+FFFD and remove NUL characters
 2. `NormalizeUnicode()` — decompose and strip accents
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
-4. `FoldCase()` — full Unicode case folding
-5. `TrimSpace()` — remove leading/trailing whitespace
-6. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
+4. `NormalizeUnicode()` _(with width folding)_ — normalize characters and marks exposed by width folding
+5. `FoldCase()` — full Unicode case folding
+6. `TrimSpace()` — remove leading/trailing whitespace
+7. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
 
 **Example:**
 
@@ -202,8 +203,9 @@ Builds a **persistence-safe normalization pipeline** for database storage:
 1. `SanitizeUTF8()` — replace each invalid byte with U+FFFD and remove NUL characters
 2. `NormalizeUnicode()` — decompose and strip accents
 3. `FoldWidth()` _(optional, via `WithWidthFold()`)_ — fold full-width characters
-4. `TrimSpace()` — remove leading/trailing whitespace
-5. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
+4. `NormalizeUnicode()` _(with width folding)_ — normalize characters and marks exposed by width folding
+5. `TrimSpace()` — remove leading/trailing whitespace
+6. `CollapseWhitespace()` — collapse consecutive whitespace to single spaces
 
 Unlike `SearchPreset` and `CanonicalPreset`, this preset **preserves case and punctuation** — it only sanitizes and normalizes whitespace.
 
@@ -222,6 +224,21 @@ func WithWidthFold() PresetOption
 ```
 
 Enables explicit width folding in a preset pipeline. Full-width characters (e.g., `Ｇｏ`) are folded to their half-width equivalents (e.g., `Go`).
+
+Presets that normalize run their normalizer again after width folding.
+`CanonicalPreset` and `DBSafePreset` repeat `NormalizeUnicode()` immediately
+after `FoldWidth()`; `MeaningPreset` repeats `NormalizeUnicodeLatin()` there.
+For example, `"ｶﾞ"` becomes `"カ"` in Canonical/DBSafe and `"ガ"` in Meaning
+on the first run. Search already normalizes again after filtering. Hygiene
+does not normalize.
+
+**Key compatibility:** width-folded outputs change for halfwidth voiced and
+semi-voiced marks and some Meaning composition contexts. Even previously stable
+Meaning keys can change: `"＜\u0338"` now produces empty output instead of
+`"\u0338"`. Regenerate affected keys from the original inputs and account for
+new collisions. Presets without `WithWidthFold`, Search, and Hygiene retain
+their outputs. Meaning still has other idempotence limitations, including
+`"++"` becoming `"+"` and then empty on a second run.
 
 **Example:**
 

@@ -102,6 +102,7 @@ func FuzzSearchPresetDifferential(f *testing.F) {
 }
 
 func FuzzCanonicalPreset(f *testing.F) {
+	addWidthFoldPresetSeeds(f)
 	for _, seed := range []string{
 		"  Hello,   World!  ",
 		"Café",
@@ -112,40 +113,63 @@ func FuzzCanonicalPreset(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, input string) {
-		pipe := CanonicalPreset()
-		out1, err := pipe.Run(input)
-		if err != nil {
-			t.Fatalf("Run() error = %v", err)
-		}
-		out2, err := pipe.Run(out1)
-		if err != nil {
-			t.Fatalf("second Run() error = %v", err)
-		}
-		if out1 != out2 {
-			t.Fatalf("CanonicalPreset not idempotent: %q != %q", out1, out2)
+		for _, widthFold := range []bool{false, true} {
+			var opts []PresetOption
+			if widthFold {
+				opts = append(opts, WithWidthFold())
+			}
+			pipe := CanonicalPreset(opts...)
+			out1, err := pipe.Run(input)
+			if err != nil {
+				t.Fatalf("Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			out2, err := pipe.Run(out1)
+			if err != nil {
+				t.Fatalf("second Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			if out1 != out2 {
+				t.Fatalf("CanonicalPreset(%q) not idempotent (widthFold=%t): %q != %q", input, widthFold, out1, out2)
+			}
 		}
 	})
 }
 
 func FuzzMeaningPreset(f *testing.F) {
+	addWidthFoldPresetSeeds(f)
 	f.Add("Galaxy S22+ 4.5\" 1,000 100%")
 	f.Add("c++ a+b % off 1.000")
 	f.Add("Café किताब مَكتَب")
 	f.Add("Ꮳꮳ Ᏸᏸ")
 	f.Fuzz(func(t *testing.T, in string) {
-		out, err := MeaningPreset().Run(in)
-		if err != nil {
-			t.Fatalf("MeaningPreset(%q): %v", in, err)
-		}
-		for _, r := range out {
-			ok := unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsMark(r) || r == ' ' ||
-				r == '.' || r == ',' || r == '+' || r == '%'
-			if !ok {
-				t.Fatalf("illegal rune %q in output %q for input %q", r, out, in)
+		// Meaning still has unrelated case-folding and punctuation idempotence
+		// failures; compare its exact output with the width-normalization model.
+		for _, widthFold := range []bool{false, true} {
+			var opts []PresetOption
+			if widthFold {
+				opts = append(opts, WithWidthFold())
 			}
-		}
-		if strings.Contains(out, "  ") {
-			t.Fatalf("uncollapsed whitespace in %q", out)
+			out, err := MeaningPreset(opts...).Run(in)
+			if err != nil {
+				t.Fatalf("MeaningPreset(%q, widthFold=%t): %v", in, widthFold, err)
+			}
+			model := widthFoldBaseMeaningPreset()
+			if widthFold {
+				model = widthFoldPresetModel("Meaning", true, true)
+			}
+			want, wantErr := model.Run(in)
+			if out != want || err != wantErr { //nolint:errorlint // Compare oracle error identity.
+				t.Fatalf("MeaningPreset(%+q, widthFold=%t) = %+q, %v; model = %+q, %v", in, widthFold, out, err, want, wantErr)
+			}
+			for _, r := range out {
+				ok := unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsMark(r) || r == ' ' ||
+					r == '.' || r == ',' || r == '+' || r == '%'
+				if !ok {
+					t.Fatalf("illegal rune %q in output %q for input %q (widthFold=%t)", r, out, in, widthFold)
+				}
+			}
+			if strings.Contains(out, "  ") {
+				t.Fatalf("uncollapsed whitespace in %q (widthFold=%t)", out, widthFold)
+			}
 		}
 	})
 }
@@ -178,6 +202,7 @@ func FuzzHygienePreset(f *testing.F) {
 }
 
 func FuzzDBSafePreset(f *testing.F) {
+	addWidthFoldPresetSeeds(f)
 	for _, seed := range []string{
 		string([]byte{'g', 'o', 0x00, 0xff, '!', 0xfe}),
 		"valid text",
@@ -187,20 +212,26 @@ func FuzzDBSafePreset(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, input string) {
-		pipe := DBSafePreset()
-		out1, err := pipe.Run(input)
-		if err != nil {
-			t.Fatalf("Run() error = %v", err)
-		}
-		if !utf8.ValidString(out1) {
-			t.Fatalf("DBSafePreset produced invalid UTF-8: %q", out1)
-		}
-		out2, err := pipe.Run(out1)
-		if err != nil {
-			t.Fatalf("second Run() error = %v", err)
-		}
-		if out1 != out2 {
-			t.Fatalf("DBSafePreset not idempotent: %q != %q", out1, out2)
+		for _, widthFold := range []bool{false, true} {
+			var opts []PresetOption
+			if widthFold {
+				opts = append(opts, WithWidthFold())
+			}
+			pipe := DBSafePreset(opts...)
+			out1, err := pipe.Run(input)
+			if err != nil {
+				t.Fatalf("Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			if !utf8.ValidString(out1) {
+				t.Fatalf("DBSafePreset produced invalid UTF-8: %q (widthFold=%t)", out1, widthFold)
+			}
+			out2, err := pipe.Run(out1)
+			if err != nil {
+				t.Fatalf("second Run() error = %v (widthFold=%t)", err, widthFold)
+			}
+			if out1 != out2 {
+				t.Fatalf("DBSafePreset(%q) not idempotent (widthFold=%t): %q != %q", input, widthFold, out1, out2)
+			}
 		}
 	})
 }
