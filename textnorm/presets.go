@@ -14,6 +14,7 @@ type presetConfig struct {
 type PresetOption func(*presetConfig)
 
 // WithWidthFold enables explicit width folding in a preset pipeline.
+// Presets that normalize run their normalizer again after width folding.
 func WithWidthFold() PresetOption {
 	return func(cfg *presetConfig) {
 		cfg.widthFold = true
@@ -62,6 +63,7 @@ func SearchPreset(opts ...PresetOption) Pipeline {
 }
 
 // CanonicalPreset builds a general-purpose canonicalization pipeline.
+// WithWidthFold repeats NormalizeUnicode immediately after folding width.
 // Cherokee case pairs share the uppercase representation produced by FoldCase.
 func CanonicalPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
@@ -73,7 +75,7 @@ func CanonicalPreset(opts ...PresetOption) Pipeline {
 
 	pipe := New().SanitizeUTF8().NormalizeUnicode()
 	if cfg.widthFold {
-		pipe = pipe.FoldWidth()
+		pipe = pipe.FoldWidth().NormalizeUnicode()
 	}
 
 	return pipe.
@@ -87,6 +89,7 @@ func CanonicalPreset(opts ...PresetOption) Pipeline {
 // NOT collide with "Galaxy S22" and "4.5" must NOT collide with "45".
 // Unlike SearchPreset it never merges tokens (rejected runes become spaces),
 // never dedups tokens, and strips diacritics only from Latin bases.
+// WithWidthFold repeats NormalizeUnicodeLatin immediately after folding width.
 // Cherokee case pairs share the uppercase representation produced by FoldCase.
 func MeaningPreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
@@ -98,7 +101,7 @@ func MeaningPreset(opts ...PresetOption) Pipeline {
 
 	pipe := New().SanitizeUTF8().DecodeHTMLEntities().NormalizeUnicodeLatin()
 	if cfg.widthFold {
-		pipe = pipe.FoldWidth()
+		pipe = pipe.FoldWidth().NormalizeUnicodeLatin()
 	}
 
 	return pipe.
@@ -131,6 +134,7 @@ func HygienePreset(opts ...PresetOption) Pipeline {
 }
 
 // DBSafePreset builds a persistence-safe normalization pipeline.
+// WithWidthFold repeats NormalizeUnicode immediately after folding width.
 func DBSafePreset(opts ...PresetOption) Pipeline {
 	cfg := presetConfig{}
 	for _, opt := range opts {
@@ -141,7 +145,7 @@ func DBSafePreset(opts ...PresetOption) Pipeline {
 
 	pipe := New().SanitizeUTF8().NormalizeUnicode()
 	if cfg.widthFold {
-		pipe = pipe.FoldWidth()
+		pipe = pipe.FoldWidth().NormalizeUnicode()
 	}
 
 	return pipe.
