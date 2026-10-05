@@ -59,6 +59,46 @@ var commonAffixCases = []struct {
 	{"broken between valid runes", []string{"é\x80😀", "é�😀"}, "é�😀", "é�😀"},
 	{"malformed prefix shortened later", []string{"\xffabc", "�abc", "�ax"}, "�a", ""},
 	{"malformed suffix shortened later", []string{"abc\xff", "abc�", "xbc�"}, "", "bc�"},
+	{
+		"many inputs truncated two-byte completed late",
+		[]string{"\xffa\xc3", "\xffa\xc3x", "\xffa\xc3y", "\xffa\xc3", "\xffa\xc3z", "\xffaé"},
+		"�a", "",
+	},
+	{
+		"many inputs truncated three-byte completed late",
+		[]string{"\xffé\xe2\x82", "\xffé\xe2\x82x", "\xffé\xe2\x82", "\xffé\xe2\x82y", "\xffé\xe2\x82z", "\xffé€"},
+		"�é", "",
+	},
+	{
+		"many inputs truncated three-byte stays malformed",
+		[]string{"\xffé\xe2\x82", "\xffé\xe2\x82x", "\xffé\xe2\x82", "\xffé\xe2\x82y", "\xffé\xe2\x82z"},
+		"�é��", "",
+	},
+	{
+		"many inputs truncated four-byte completed late",
+		[]string{"\xffa\x80\xf0\x9f\x92", "\xffa\x80\xf0\x9f\x92x", "\xffa\x80\xf0\x9f\x92", "\xffa\x80\xf0\x9f\x92y", "\xffa\x80\xf0\x9f\x92z", "\xffa\x80💩"},
+		"�a�", "",
+	},
+	{
+		"many inputs truncated four-byte and replacements",
+		[]string{"\xffa\xf0\x9f\x92", "\xffa\xf0\x9f\x92x", "\xffa���", "\xffa\xf0\x9f\x92y", "�a���z", "\xffa\xf0\x9f\x92"},
+		"�a���", "",
+	},
+	{
+		"many inputs continuation boundary after valid rune",
+		[]string{"\xff😀\x80\x80x", "\xff😀\x80\x80y", "\xff😀\x80\x80z", "\xff😀\x80\x80", "\xff😀\x80\x80q"},
+		"�😀��", "",
+	},
+	{
+		"many inputs ASCII before continuation boundary",
+		[]string{"\xffA\x80\x80x", "\xffA\x80\x80y", "\xffA\x80\x80z", "\xffA\x80\x80", "\xffA\x80\x80q"},
+		"�A��", "",
+	},
+	{
+		"many inputs discard earlier malformed region",
+		[]string{"a\xff\xe2\x82", "a\xff\xe2\x82x", "a���", "a\xff\xe2\x82y", "a���z", "ab"},
+		"a", "",
+	},
 }
 
 // The oracle deliberately materializes every input's runes and compares them
@@ -129,6 +169,17 @@ func TestCommonAffixRunes(t *testing.T) {
 			reversed := slices.Clone(tc.inputs)
 			slices.Reverse(reversed)
 			checkCommonAffixes(t, reversed)
+			if len(tc.inputs) >= 5 {
+				// Exercise every first input, including truncated and complete
+				// encodings, with the differing input encountered at each step.
+				rotated := slices.Clone(tc.inputs)
+				for range len(rotated) - 1 {
+					first := rotated[0]
+					copy(rotated, rotated[1:])
+					rotated[len(rotated)-1] = first
+					checkCommonAffixes(t, rotated)
+				}
+			}
 		})
 	}
 }
@@ -251,11 +302,13 @@ func FuzzCommonAffixRunes(f *testing.F) {
 		for _, s := range []string{a, b, c} {
 			checkCommonAffixSegmentation(t, s)
 		}
-		inputs := []string{a, b, c, a}
+		inputs := []string{a, b, c, a, b, c}
 		for n := range len(inputs) + 1 {
 			checkCommonAffixes(t, inputs[:n])
 		}
 		checkCommonAffixes(t, []string{c, b, a})
 		checkCommonAffixes(t, []string{a, string([]rune(a))})
+		// A shared malformed tail can be completed in only some inputs.
+		checkCommonAffixes(t, []string{a, a + b, a + c, a + b + c, a + c + b})
 	})
 }

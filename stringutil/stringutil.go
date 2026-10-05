@@ -710,31 +710,33 @@ func CommonPrefix(strs ...string) string {
 		return ""
 	}
 	prefix := strs[0]
-	invalid := 0
 	for _, s := range strs[1:] {
 		// Keep the shared-byte scan fast; no need to validate discarded tails.
 		i := 0
 		for limit := min(len(prefix), len(s)); i < limit && prefix[i] == s[i]; {
 			i++
 		}
-		// A mismatch can lie inside a valid rune. Back off before decoding it.
-		for i > 0 && i < len(prefix) && !utf8.RuneStart(prefix[i]) {
-			i--
+		// Only a rune starting in the preceding three bytes can cross i.
+		// A shared non-continuation byte is a decoding boundary in both
+		// inputs: no earlier rune can consume it, so the identical bytes
+		// before it cannot have different segmentation, even if malformed.
+		// Restart there unless it is ASCII, which also ends before i. If
+		// all three bytes are continuations, any rune consuming them ends
+		// by i (UTF-8 uses at most four bytes), so i itself is safe.
+		for start := i - 1; start >= max(0, i-(utf8.UTFMax-1)); start-- {
+			if prefix[start] < utf8.RuneSelf {
+				break
+			}
+			if utf8.RuneStart(prefix[start]) {
+				i = start
+				break
+			}
 		}
-		if !utf8.ValidString(prefix[:i]) {
-			// Equal malformed bytes may have different segmentation at the
-			// boundary. Compare decoded runes from the beginning in that case.
-			i = 0
-		}
-		invalid = 0
 		for j := i; i < len(prefix) && j < len(s); {
 			r, width := utf8.DecodeRuneInString(prefix[i:])
 			other, otherWidth := utf8.DecodeRuneInString(s[j:])
 			if r != other {
 				break
-			}
-			if r == utf8.RuneError && width == 1 {
-				invalid++
 			}
 			i += width
 			j += otherWidth
@@ -742,6 +744,17 @@ func CommonPrefix(strs ...string) string {
 		prefix = prefix[:i]
 		if prefix == "" {
 			return ""
+		}
+	}
+	// Count malformed bytes only once, after every input has shortened the
+	// candidate. A literal U+FFFD is already encoded and needs no expansion.
+	invalid := 0
+	for i, r := range prefix {
+		if r == utf8.RuneError {
+			_, width := utf8.DecodeRuneInString(prefix[i:])
+			if width == 1 {
+				invalid++
+			}
 		}
 	}
 	return encodeSpan(prefix, invalid, "")
