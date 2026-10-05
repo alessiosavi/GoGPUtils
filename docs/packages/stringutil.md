@@ -644,18 +644,27 @@ The `stringutil` package includes a comprehensive set of string similarity and d
 func LevenshteinDistance(s1, s2 string) int
 ```
 
-Returns the minimum number of single-character edits (insertions, deletions, substitutions) required to change `s1` into `s2`.
+Returns the minimum number of single-rune edits (insertions, deletions, substitutions) required to change `s1` into `s2`. Comparisons use decoded Unicode code points without normalization, so a combining sequence can contain multiple runes. Each invalid UTF-8 byte is treated as U+FFFD.
 
-| Aspect | Complexity               |
-| ------ | ------------------------ |
-| Time   | O(len(s1) × len(s2))     |
-| Space  | O(min(len(s1), len(s2))) |
+If either input is empty, the distance is the other input's rune count; two empty strings have distance zero. Counting a nonempty input against an empty one takes O(len(s)) time and O(1) space.
+
+For nonempty inputs containing `m` and `n` runes:
+
+| Aspect | Complexity                            |
+| ------ | ------------------------------------- |
+| Time   | O(m × n)                              |
+| Space  | O(m + n), including input rune slices |
 
 **Example:**
 
 ```go
 distance := stringutil.LevenshteinDistance("kitten", "sitting")
 // distance = 3
+
+stringutil.LevenshteinDistance("", "é")      // 1
+stringutil.LevenshteinDistance("🙂", "")     // 1
+stringutil.LevenshteinDistance("", "e\u0301") // 2
+stringutil.LevenshteinDistance("", "é\xff")  // 2
 ```
 
 ### Levenshtein Similarity
@@ -664,13 +673,16 @@ distance := stringutil.LevenshteinDistance("kitten", "sitting")
 func LevenshteinSimilarity(s1, s2 string) float64
 ```
 
-Returns a similarity score between 0 and 1 based on Levenshtein distance. 1 means identical strings.
+Returns `1 - distance / maxRuneCount`, where `distance` is the Levenshtein distance and `maxRuneCount` is the larger input rune count. The score is between 0 and 1. Identical decoded rune sequences, including two empty strings, score 1; exactly one empty input scores 0. Rune decoding and malformed-byte handling follow `LevenshteinDistance`.
 
 **Example:**
 
 ```go
 score := stringutil.LevenshteinSimilarity("hello", "hallo")
 // score ≈ 0.8
+
+stringutil.LevenshteinSimilarity("", "🙂") // 0
+stringutil.LevenshteinSimilarity("", "")   // 1
 ```
 
 ### Damerau-Levenshtein Distance
