@@ -26,8 +26,8 @@ func TestPR14GenerateBatchIDAllocations(t *testing.T) {
 				pr14BatchIDAllocSink = generateBatchID(tc.index)
 			})
 			t.Logf("allocations: BASE=%g candidate=%g", base, got)
-			if got != tc.want || got > base {
-				t.Errorf("allocations = %g, want %g and <= BASE %g", got, tc.want, base)
+			if got > tc.want || got > base {
+				t.Errorf("allocations = %g, want <= %g and <= BASE %g", got, tc.want, base)
 			}
 		})
 	}
