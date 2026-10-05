@@ -183,9 +183,21 @@ func Hash(data []byte) []byte {
 
 // HashString returns the SHA-256 hash of a string as a hex-encoded string.
 func HashString(s string) string {
-	h := sha256.Sum256([]byte(s))
+	if len(s) <= 32 {
+		h := sha256.Sum256([]byte(s))
+		return encodeHex(h[:])
+	}
 
-	return encodeHex(h[:])
+	// Copy bounded chunks so converting a long string does not allocate.
+	h := sha256.New()
+	var buf [512]byte
+	for len(s) > 0 {
+		n := copy(buf[:], s)
+		h.Write(buf[:n])
+		s = s[n:]
+	}
+	var digest [sha256.Size]byte
+	return encodeHex(h.Sum(digest[:0]))
 }
 
 // CompareHash compares a hash with a computed hash of data in constant time.
