@@ -746,6 +746,10 @@ func CommonPrefix(strs ...string) string {
 			return ""
 		}
 	}
+	// Valid spans need only a detached copy, without counting malformed bytes.
+	if utf8.ValidString(prefix) {
+		return strings.Clone(prefix)
+	}
 	// Count malformed bytes only once, after every input has shortened the
 	// candidate. A literal U+FFFD is already encoded and needs no expansion.
 	invalid := 0
