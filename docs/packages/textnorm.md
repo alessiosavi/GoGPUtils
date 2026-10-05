@@ -117,6 +117,8 @@ Executes all stages in declaration order, passing the output of each stage as in
 
 Presets are pre-configured pipelines for common use cases. All presets accept optional `PresetOption` arguments. Every preset starts with `SanitizeUTF8()`, so normalization receives valid UTF-8.
 
+`SearchPreset`, `CanonicalPreset`, and `MeaningPreset` use `FoldCase()`: both cases of Cherokee letters produce the same stable uppercase representation (for example, `ꮳ` and `Ꮳ` both become `Ꮳ`).
+
 ### `SearchPreset`
 
 ```go
@@ -305,6 +307,10 @@ func (p Pipeline) FoldCase() Pipeline
 ```
 
 Appends full Unicode case folding. This is more aggressive than simple lowercasing — it handles special cases like the German eszett (`ß` → `ss`).
+
+Cherokee folds to uppercase: U+AB70–U+ABBF map to U+13A0–U+13EF, and U+13F8–U+13FD map to U+13F0–U+13F5. Uppercase Cherokee stays uppercase, so repeated folding is stable and both cases compare equal. A targeted correction after `cases.Fold()` works around [golang/go#46101](https://github.com/golang/go/issues/46101), copying all other spans verbatim, including malformed bytes. Text without Cherokee retains its existing behavior; the correction allocates no extra result buffer when no mapping is needed.
+
+**Compatibility:** this corrects earlier Cherokee case toggling. Persisted Cherokee keys produced by `FoldCase()` or the folding presets can change; regenerate affected keys and account for case variants now sharing a key.
 
 **Example:**
 

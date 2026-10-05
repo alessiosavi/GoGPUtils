@@ -11,6 +11,8 @@ func FuzzPipeline(f *testing.F) {
 	for _, seed := range []string{
 		"",
 		"  Café   Straße  ",
+		"Ꮳꮳ Ᏸᏸ",
+		"00000000000000000000000000000ꮒ0",
 		"🙂🙂",
 		string([]byte{'g', 'o', 0xff, 0x00, '!', 0xfe}),
 		"0000000000\xf2Ă", // A malformed byte can block decomposition without sanitization.
@@ -38,6 +40,7 @@ func FuzzSearchPreset(f *testing.F) {
 	for _, seed := range []string{
 		"  Café,   go!  ",
 		"Straße",
+		"Ꮳꮳ Ᏸᏸ",
 		"🙂 mixed CASE 🙂",
 	} {
 		f.Add(seed)
@@ -63,6 +66,7 @@ func FuzzCanonicalPreset(f *testing.F) {
 	for _, seed := range []string{
 		"  Hello,   World!  ",
 		"Café",
+		"Ꮳꮳ Ᏸᏸ",
 		"mixed   whitespace",
 	} {
 		f.Add(seed)
@@ -88,6 +92,7 @@ func FuzzMeaningPreset(f *testing.F) {
 	f.Add("Galaxy S22+ 4.5\" 1,000 100%")
 	f.Add("c++ a+b % off 1.000")
 	f.Add("Café किताब مَكتَب")
+	f.Add("Ꮳꮳ Ᏸᏸ")
 	f.Fuzz(func(t *testing.T, in string) {
 		out, err := MeaningPreset().Run(in)
 		if err != nil {
