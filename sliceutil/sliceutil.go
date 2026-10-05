@@ -915,9 +915,9 @@ func Insert[T any](s []T, index int, value T) []T {
 }
 
 // Shuffle returns a new slice with elements in random order.
-// Uses math/rand (NOT crypto/rand) for performance; not suitable for security-sensitive use.
+// Uses a fast PRNG; not suitable for security-sensitive use.
 //
-// For a deterministic shuffle use ShuffleWithSeed; for crypto-secure shuffling use randutil.Shuffle.
+// For a deterministic shuffle use SeedShuffle; for crypto-secure shuffling use randutil.Shuffle.
 func Shuffle[T any](s []T) []T {
 	if s == nil {
 		return nil
@@ -933,14 +933,15 @@ func Shuffle[T any](s []T) []T {
 const shuffleDrawBatchSize = 16
 
 // ShuffleInPlace shuffles the slice in place using Fisher-Yates algorithm.
-// Uses math/rand for performance; use Shuffle for crypto-secure randomness.
+// Uses a fast PRNG; use randutil.Shuffle for crypto-secure randomness.
+// After SeedShuffle, the same sequence of calls without concurrent use produces
+// identical permutations on 32-bit and 64-bit systems, consuming one draw per swap.
 func ShuffleInPlace[T any](s []T) {
 	if bits.UintSize == 32 {
-		// Fisher-Yates shuffle using simple PRNG seeded from time
-		// For tests/determinism, see ShuffleWithSeed
+		// Keep one draw per lock hold and swap after unlocking. Take the unsigned
+		// remainder first so high-bit draws match the 64-bit permutation.
 		for i := len(s) - 1; i > 0; i-- {
-			// Simple LCG for shuffling - not crypto secure but fast
-			j := int(fastrand()) % (i + 1)
+			j := int(fastrand() % uint32(i+1)) // #nosec G115 -- On 32-bit, 0 < i+1 <= len(s) <= MaxInt32; the remainder fits int.
 			s[i], s[j] = s[j], s[i]
 		}
 		return

@@ -396,7 +396,7 @@ sliceutil.ReverseInPlace(nums)
 
 #### Shuffle
 
-Returns a new slice with elements in random order. Uses `math/rand` (NOT `crypto/rand`) for performance; not suitable for security-sensitive use.
+Returns a new slice with elements in random order without modifying the input. Preserves nil input as nil and non-nil empty input as non-nil empty. Uses a fast PRNG; not suitable for security-sensitive use. Call `SeedShuffle` first for deterministic results.
 
 ```go
 func Shuffle[T any](s []T) []T
@@ -404,7 +404,9 @@ func Shuffle[T any](s []T) []T
 
 #### ShuffleInPlace
 
-Shuffles the slice in place using Fisher-Yates algorithm. Uses `math/rand` for performance; use `randutil.Shuffle` for crypto-secure randomness.
+Shuffles the slice in place using Fisher-Yates algorithm and a fast PRNG; use `randutil.Shuffle` for crypto-secure randomness. After `SeedShuffle`, the same sequence of calls without concurrent use produces identical permutations on 32-bit and 64-bit systems. Each shuffle consumes one draw per swap (`len(s)-1` draws for nonempty input, zero for empty input).
+
+The 32-bit index uses an unsigned remainder, fixing negative-index panics for draws with the high bit set. Previously failing calls now complete and advance the generator for all swaps. The 64-bit sequence is unchanged.
 
 ```go
 func ShuffleInPlace[T any](s []T)
