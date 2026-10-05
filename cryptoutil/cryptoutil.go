@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"slices"
 )
 
 // Common errors.
@@ -89,12 +90,22 @@ func Decrypt(ciphertextB64 string, key []byte) ([]byte, error) {
 
 	nonce, encryptedData := ciphertext[:nonceSize], ciphertext[nonceSize:]
 
-	plaintext, err := gcm.Open(nil, nonce, encryptedData, nil)
+	// Reuse the decoded buffer unless base64 newlines left excessive slack.
+	// Inputs too short to carry a full tag take the original Open(nil, ...) path.
+	var dst []byte
+	plainLen := len(encryptedData) - gcm.Overhead()
+	if plainLen >= 0 && cap(ciphertext)-plainLen <= 64+plainLen/8 {
+		dst = encryptedData[:0]
+	}
+	plaintext, err := gcm.Open(dst, nonce, encryptedData, nil)
 	if err != nil {
 		return nil, ErrDecryptFailed
 	}
 
-	return plaintext, nil
+	if len(plaintext) == 0 {
+		return nil, nil
+	}
+	return slices.Clip(plaintext), nil
 }
 
 // EncryptString encrypts a string and returns base64-encoded ciphertext.
@@ -172,9 +183,21 @@ func Hash(data []byte) []byte {
 
 // HashString returns the SHA-256 hash of a string as a hex-encoded string.
 func HashString(s string) string {
-	h := sha256.Sum256([]byte(s))
+	if len(s) <= 32 {
+		h := sha256.Sum256([]byte(s))
+		return encodeHex(h[:])
+	}
 
-	return encodeHex(h[:])
+	// Copy bounded chunks so converting a long string does not allocate.
+	h := sha256.New()
+	var buf [512]byte
+	for len(s) > 0 {
+		n := copy(buf[:], s)
+		h.Write(buf[:n])
+		s = s[n:]
+	}
+	var digest [sha256.Size]byte
+	return encodeHex(h.Sum(digest[:0]))
 }
 
 // CompareHash compares a hash with a computed hash of data in constant time.
