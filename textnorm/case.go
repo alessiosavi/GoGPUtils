@@ -27,16 +27,20 @@ func (p Pipeline) FoldCase() Pipeline {
 // https://github.com/golang/go/issues/46101 (golang/go#46101).
 // Copy untouched spans verbatim so this correction preserves malformed bytes.
 func foldCherokee(s string) string {
-	// Lowercase Cherokee starts with 0xEA (U+AB70–U+ABBF) or 0xE1
-	// (U+13F8–U+13FD). Skip rune decoding when neither byte is present.
-	first := strings.IndexByte(s, 0xEA)
-	if i := strings.IndexByte(s, 0xE1); first < 0 || (i >= 0 && i < first) {
+	// Lowercase Cherokee uses the UTF-8 prefixes EA AD (U+AB70–U+AB7F),
+	// EA AE (U+AB80–U+ABBF), or E1 8F (U+13F8–U+13FD). Skip rune
+	// decoding when none is present, including Korean and Greek Extended text.
+	first := strings.Index(s, "\xea\xad")
+	if i := strings.Index(s, "\xea\xae"); first < 0 || (i >= 0 && i < first) {
+		first = i
+	}
+	if i := strings.Index(s, "\xe1\x8f"); first < 0 || (i >= 0 && i < first) {
 		first = i
 	}
 	if first < 0 {
 		return s
 	}
-	// Neither byte can be a UTF-8 continuation byte, so starting here is
+	// Neither lead byte can be a UTF-8 continuation byte, so starting here is
 	// safe even when the candidate or the preceding bytes are malformed.
 	var b strings.Builder
 	last := 0
