@@ -31,7 +31,7 @@ func TestSearchPresetSinglePassAndIdempotence(t *testing.T) {
 		// The oracle deliberately stops at tokens; it must not use JoinTokens.
 		tokens := source.FoldCase().FilterRunes(runes.Predicate(func(r rune) bool {
 			return unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r)
-		})).TrimSpace().CollapseWhitespace().SplitTokens()
+		})).NormalizeUnicode().TrimSpace().CollapseWhitespace().SplitTokens()
 		pipe := SearchPreset(opts...)
 		for _, input := range searchPresetSeeds {
 			t.Run(fmt.Sprintf("width=%t/%q", widthFold, input), func(t *testing.T) {
