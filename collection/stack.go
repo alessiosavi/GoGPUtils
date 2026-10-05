@@ -1,7 +1,7 @@
 package collection
 
 // Stack is a generic LIFO (Last-In-First-Out) data structure.
-// The zero value is not usable; use NewStack to create a Stack.
+// The zero value is an empty, ready-to-use stack.
 // A Stack must not be copied by value.
 type Stack[T any] struct {
 	items []T
