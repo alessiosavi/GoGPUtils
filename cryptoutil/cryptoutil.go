@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"slices"
 )
 
 // Common errors.
@@ -89,12 +90,22 @@ func Decrypt(ciphertextB64 string, key []byte) ([]byte, error) {
 
 	nonce, encryptedData := ciphertext[:nonceSize], ciphertext[nonceSize:]
 
-	plaintext, err := gcm.Open(nil, nonce, encryptedData, nil)
+	// Reuse the decoded buffer unless base64 newlines left excessive slack.
+	// Short authentication tags take the original Open(nil, ...) path.
+	var dst []byte
+	plainLen := len(encryptedData) - gcm.Overhead()
+	if plainLen >= 0 && cap(ciphertext)-plainLen <= 64+plainLen/8 {
+		dst = encryptedData[:0]
+	}
+	plaintext, err := gcm.Open(dst, nonce, encryptedData, nil)
 	if err != nil {
 		return nil, ErrDecryptFailed
 	}
 
-	return plaintext, nil
+	if len(plaintext) == 0 {
+		return nil, nil
+	}
+	return slices.Clip(plaintext), nil
 }
 
 // EncryptString encrypts a string and returns base64-encoded ciphertext.
