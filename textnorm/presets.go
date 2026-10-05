@@ -23,6 +23,9 @@ func WithWidthFold() PresetOption {
 // SearchPreset builds a search-key pipeline (UTF-8 sanitize, Unicode
 // normalize, fold case, keep letters/numbers/spaces, trim, collapse).
 // Cherokee case pairs share the uppercase representation produced by FoldCase.
+// Each stage runs once per Run. Earlier versions ran the source stages twice
+// through JoinTokens; correcting that behavior can change persisted search keys.
+// Regenerate stored keys and indexes when upgrading from that behavior.
 //
 // To dedup repeated tokens or strip stopwords, compose on top:
 //

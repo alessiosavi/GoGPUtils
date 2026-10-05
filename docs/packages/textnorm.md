@@ -137,6 +137,12 @@ Builds a **search-key pipeline** optimized for indexing and search:
 8. `SplitTokens()` — split into tokens
 9. `JoinTokens(" ")` — join tokens with single spaces
 
+Each stage executes once per `Run`, including normalization and case folding.
+**Key compatibility:** earlier versions accidentally ran the source stages twice
+inside `JoinTokens`. Correcting this can change `SearchPreset` output, so regenerate
+persisted search keys and indexes from the original text when upgrading from that
+behavior. Cherokee case pairs still produce the same stable uppercase representation.
+
 **Example:**
 
 ```go
@@ -519,7 +525,22 @@ result, err := textnorm.New().SplitTokens().RemoveStopwords(stop).JoinTokens(" "
 func (tp TokenPipeline) JoinTokens(sep string) Pipeline
 ```
 
-Joins token output back into a string pipeline. The token pipeline is executed, and tokens are joined with `sep` using `strings.Join`.
+Returns a new string pipeline with a single joining stage. Each `Run(input)` calls
+`tp.Run(input)` exactly once, including the source string pipeline, and joins the
+result with `sep` using `strings.Join`. Nested split/join conversions also execute
+the original source once. Empty or nil token slices produce `""`; empty token
+elements and separator bytes are preserved as with `strings.Join`.
+
+Errors retain their identity and stop the pipeline with empty output; panics
+propagate unchanged. Appended string stages receive the joined result. Building
+new stages on the returned pipeline, the token pipeline, or its source leaves the
+other pipelines unchanged.
+
+Earlier versions executed the source twice. For example, a source stage appending
+`" x"` to `"a"` now joins with `"|"` to produce `"a|x"`, rather than `"a|x|x"`.
+Likewise, `DecodeHTMLEntities().SplitTokens().JoinTokens(" ")` turns `"&amp;amp;"`
+into `"&amp;"`, rather than `"&"`. Side effects, errors, and panics caused only by
+the extra source execution no longer occur.
 
 **Example:**
 
