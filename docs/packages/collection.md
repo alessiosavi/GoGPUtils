@@ -20,7 +20,7 @@ import "github.com/alessiosavi/GoGPUtils/collection"
 ## Design Principles
 
 - **Generic**: All structures use type parameters — no `interface{}` or code generation
-- **Zero values work**: `NewXxx()` returns ready-to-use structures
+- **Zero values**: `Stack` and `Queue` zero values are empty and ready to use; constructors remain available, including `NewStackWithCapacity` and `NewQueueWithCapacity` for capacity hints
 - **Optional returns**: `Pop`/`Dequeue` return `(value, bool)` instead of panicking on empty structures
 - **Immutable iterators**: `Values()` returns copies, not references
 - **Not thread-safe**: For concurrent access, wrap operations with `sync` primitives

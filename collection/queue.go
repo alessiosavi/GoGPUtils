@@ -1,7 +1,7 @@
 package collection
 
 // Queue is a generic FIFO (First-In-First-Out) data structure.
-// The zero value is not usable; use NewQueue to create a Queue.
+// The zero value is an empty, ready-to-use queue.
 // A Queue must not be copied by value.
 type Queue[T any] struct {
 	items []T

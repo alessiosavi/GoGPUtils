@@ -494,7 +494,7 @@ func BenchmarkPercentile(b *testing.B) {
 	)
 }
 
-// BenchmarkQuartiles measures three copy/sort percentile passes over nonempty slices;
+// BenchmarkQuartiles measures one copy/sort pass and three percentile calculations over nonempty slices;
 // n is the number of input elements. Read-only inputs are reused; ints
 // are in [0,128), floats in [0,1). No restoration is measured.
 func BenchmarkQuartiles(b *testing.B) {
@@ -523,7 +523,7 @@ func BenchmarkQuartiles(b *testing.B) {
 	)
 }
 
-// BenchmarkIQR measures the interquartile range using three copy/sort passes over nonempty slices;
+// BenchmarkIQR measures the interquartile range via Quartiles using one copy/sort pass over nonempty slices;
 // n is the number of input elements. Read-only inputs are reused; ints
 // are in [0,128), floats in [0,1). No restoration is measured.
 func BenchmarkIQR(b *testing.B) {
