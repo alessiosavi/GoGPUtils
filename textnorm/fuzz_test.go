@@ -36,13 +36,20 @@ func FuzzPipeline(f *testing.F) {
 	})
 }
 
+var searchPresetSeeds = []string{
+	"  Café,   go!  ",
+	"Straße",
+	"Ꮳꮳ Ᏸᏸ",
+	"🙂 mixed CASE 🙂",
+	"",
+	"00000000000000000000000000000ꮒ0",
+	"0000000000\xf2Ă",
+	"go\xff\x00!\xfe",
+	"Ｇｏ ＣＡＦÉ",
+}
+
 func FuzzSearchPreset(f *testing.F) {
-	for _, seed := range []string{
-		"  Café,   go!  ",
-		"Straße",
-		"Ꮳꮳ Ᏸᏸ",
-		"🙂 mixed CASE 🙂",
-	} {
+	for _, seed := range searchPresetSeeds {
 		f.Add(seed)
 	}
 

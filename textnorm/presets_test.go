@@ -1,9 +1,13 @@
 package textnorm
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/runes"
 )
 
 func TestSearchPreset(t *testing.T) {
@@ -13,6 +17,38 @@ func TestSearchPreset(t *testing.T) {
 	}
 	if got != "cafe go gophers" {
 		t.Fatalf("Run() = %q, want %q", got, "cafe go gophers")
+	}
+}
+
+func TestSearchPresetSinglePassAndIdempotence(t *testing.T) {
+	for _, widthFold := range []bool{false, true} {
+		var opts []PresetOption
+		source := New().SanitizeUTF8().NormalizeUnicode()
+		if widthFold {
+			opts = append(opts, WithWidthFold())
+			source = source.FoldWidth()
+		}
+		// The oracle deliberately stops at tokens; it must not use JoinTokens.
+		tokens := source.FoldCase().FilterRunes(runes.Predicate(func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r)
+		})).TrimSpace().CollapseWhitespace().SplitTokens()
+		pipe := SearchPreset(opts...)
+		for _, input := range searchPresetSeeds {
+			t.Run(fmt.Sprintf("width=%t/%q", widthFold, input), func(t *testing.T) {
+				wantTokens, err := tokens.Run(input)
+				if err != nil {
+					t.Fatal(err)
+				}
+				want := strings.Join(wantTokens, " ")
+				got, err := pipe.Run(input)
+				if err != nil || got != want {
+					t.Fatalf("SearchPreset(%q) = %q, %v; single pass = %q", input, got, err, want)
+				}
+				if again, err := pipe.Run(got); err != nil || again != got {
+					t.Fatalf("SearchPreset(%q) = %q, %v; want %q, nil", got, again, err, got)
+				}
+			})
+		}
 	}
 }
 
