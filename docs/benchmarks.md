@@ -18,7 +18,7 @@ Every exported function or method of the utility packages (everything except `aw
 
 ## Commands
 
-**Requirements:** Go 1.26.4 or newer, Git with worktree support, Make, and Bash. The comparison runs the pinned benchstat through `go run`; its first use needs the module proxy and checksum service unless the module is already cached.
+**Requirements:** Go 1.27.1 or newer, Git with worktree support, Make, and Bash. The comparison runs the pinned benchstat through `go run`; its first use needs the module proxy and checksum service unless the module is already cached.
 
 | Command | What it does |
 |---|---|
