@@ -438,6 +438,14 @@ func finishWrite(f io.Closer, err error) error {
 	return err
 }
 
+func removeTemp(name string, err error) error {
+	if rmErr := os.Remove(name); rmErr != nil && !errors.Is(rmErr, fs.ErrNotExist) {
+		return errors.Join(err, fmt.Errorf("remove temporary file %q: %w", name, rmErr))
+	}
+
+	return err
+}
+
 // AppendString appends a string to a file.
 func AppendString(path, content string, perm fs.FileMode) error {
 	//nolint:gosec // G304: this utility intentionally opens the caller-supplied path.
@@ -698,7 +706,6 @@ func Copy(ctx context.Context, src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(dstFile.Name())
 
 	_, err = io.Copy(dstFile, contextReader{ctx: ctx, reader: srcFile})
 	if err == nil {
@@ -706,14 +713,18 @@ func Copy(ctx context.Context, src, dst string) error {
 	}
 
 	if err := finishWrite(dstFile, err); err != nil {
-		return err
+		return removeTemp(dstFile.Name(), err)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return err
+		return removeTemp(dstFile.Name(), err)
 	}
 
-	return os.Rename(dstFile.Name(), dst)
+	if err := os.Rename(dstFile.Name(), dst); err != nil {
+		return removeTemp(dstFile.Name(), err)
+	}
+
+	return nil
 }
 
 // Move moves a file from src to dst.
@@ -1021,7 +1032,8 @@ func Split(path string) (dir, file string) {
 
 // TempFile creates a temporary file and returns its path.
 // The caller is responsible for removing the file.
-// If closing the file fails, removes it and returns the close error.
+// If closing the file fails, attempts removal and returns the close error,
+// joined with any cleanup error.
 func TempFile(dir, pattern string) (string, error) {
 	f, err := os.CreateTemp(dir, pattern)
 	if err != nil {
@@ -1030,9 +1042,7 @@ func TempFile(dir, pattern string) (string, error) {
 
 	name := f.Name()
 	if err := finishWrite(f, nil); err != nil {
-		os.Remove(name)
-
-		return "", err
+		return "", removeTemp(name, err)
 	}
 
 	return name, nil

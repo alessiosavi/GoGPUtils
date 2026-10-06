@@ -516,3 +516,51 @@ func TestWriters_ReportCloseErrorAfterSuccessfulWrite(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoveTemp_ReportsCleanupFailure(t *testing.T) {
+	// A nonempty directory fails removal without relying on Unix permissions
+	// or an open file, whose removal behavior differs on Windows.
+	dir := t.TempDir()
+	child := createTestFile(t, dir, "child", "keep me")
+	primary := fmt.Errorf("copy failed: %w", context.Canceled)
+	err := removeTemp(dir, primary)
+	if !errors.Is(err, primary) || !errors.Is(err, context.Canceled) {
+		t.Errorf("removeTemp() error = %v, want preserved primary error", err)
+	}
+
+	var removeErr *os.PathError
+	if !errors.As(err, &removeErr) {
+		t.Fatalf("removeTemp() error = %v, want wrapped removal error", err)
+	}
+
+	if removeErr.Op != "remove" || removeErr.Path != dir || !errors.Is(err, removeErr.Err) {
+		t.Errorf("removeTemp() error = %v, want removal failure for %q with matchable cause", err, dir)
+	}
+
+	if !strings.Contains(err.Error(), fmt.Sprintf("remove temporary file %q:", dir)) {
+		t.Errorf("removeTemp() error = %v, want temporary-file cleanup context", err)
+	}
+
+	assertFileContent(t, child, "keep me")
+}
+
+func TestRemoveTemp_PreservesPrimaryError(t *testing.T) {
+	for _, exists := range []bool{false, true} {
+		t.Run(fmt.Sprintf("file_exists=%t", exists), func(t *testing.T) {
+			dir := t.TempDir()
+			name := filepath.Join(dir, "temporary")
+			if exists {
+				createTestFile(t, dir, "temporary", "contents")
+			}
+
+			primary := fmt.Errorf("write failed: %w", io.ErrShortWrite)
+			if err := removeTemp(name, primary); err != primary { //nolint:errorlint // Successful cleanup must return the identical error value.
+				t.Errorf("removeTemp() error = %v, want original error %v", err, primary)
+			}
+
+			if _, err := os.Stat(name); !errors.Is(err, os.ErrNotExist) {
+				t.Errorf("temporary file should not exist: %v", err)
+			}
+		})
+	}
+}
