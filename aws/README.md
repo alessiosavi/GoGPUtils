@@ -1,7 +1,7 @@
 # AWS Utilities for Go
 
 [![CI](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml)
-[![GoDoc](https://godoc.org/github.com/alessiosavi/GoGPUtils/aws?status.svg)](https://godoc.org/github.com/alessiosavi/GoGPUtils/aws)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alessiosavi/GoGPUtils/aws.svg)](https://pkg.go.dev/github.com/alessiosavi/GoGPUtils/aws)
 
 > **v1 - Experimental**: This library is in its initial release phase. APIs may change in future versions.
 

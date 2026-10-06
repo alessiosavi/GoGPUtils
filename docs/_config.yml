@@ -38,8 +38,8 @@ search:
 nav_external_links:
   - title: GitHub
     url: https://github.com/alessiosavi/GoGPUtils
-  - title: GoDoc
-    url: https://godoc.org/github.com/alessiosavi/GoGPUtils
+  - title: pkg.go.dev
+    url: https://pkg.go.dev/github.com/alessiosavi/GoGPUtils
 
 # Auxiliary links (top right)
 aux_links:

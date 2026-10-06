@@ -1,9 +1,11 @@
 # GoGPUtils
 
 [![CI](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiosavi/GoGPUtils/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/alessiosavi/GoGPUtils)](https://goreportcard.com/report/github.com/alessiosavi/GoGPUtils)
-[![GoDoc](https://godoc.org/github.com/alessiosavi/GoGPUtils?status.svg)](https://godoc.org/github.com/alessiosavi/GoGPUtils)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alessiosavi/GoGPUtils.svg)](https://pkg.go.dev/github.com/alessiosavi/GoGPUtils)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/alessiosavi/GoGPUtils)](https://github.com/alessiosavi/GoGPUtils/blob/master/go.mod)
+[![Latest Tag](https://img.shields.io/github/v/tag/alessiosavi/GoGPUtils?sort=semver)](https://github.com/alessiosavi/GoGPUtils/tags)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/alessiosavi/GoGPUtils)
 
 > **v1 - Experimental**: This library is in its initial release phase. APIs may change in future versions.
 
@@ -14,6 +16,8 @@ A collection of well-tested, idiomatic Go utilities for common programming tasks
 ```bash
 go get github.com/alessiosavi/GoGPUtils
 ```
+
+Requires Go 1.27.1 or later.
 
 ## Design Philosophy
 
