@@ -10,3 +10,8 @@ integration-coverage.out
 benchmark.txt
 *.prof
 bench-out/
+
+# Local planning artifacts
+docs/superpowers/specs/
+docs/superpowers/plans/
+docs/superpowers/go.mod
