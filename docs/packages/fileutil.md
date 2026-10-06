@@ -330,7 +330,7 @@ func DirSize(ctx context.Context, dir string) (int64, error)
 
 Copies a file from src to dst, creating the destination directory if needed. Returns `ErrSameFile` without changing the file when the paths refer to the same file, including hard links and symbolic links.
 
-Writes to a temporary file in the destination directory, applies the source mode, checks the close error, and renames the completed file over dst. Errors before the rename leave any existing destination intact and clean up the temporary file. The rename has the platform guarantees of `os.Rename`; no crash-durability guarantee is made.
+Writes to a temporary file in the destination directory, applies the source mode, checks the close error, and renames the completed file over dst. Errors before the rename leave any existing destination intact. On any failure the temporary file is removed; if that removal fails, its error is joined to the returned error, which still matches the original cause with `errors.Is`. The rename has the platform guarantees of `os.Rename`; no crash-durability guarantee is made.
 
 Replacement changes the destination's file identity: a destination symbolic link is replaced, and other hard links to the old destination retain their contents. Replacement requires write permission on the destination directory, and existing destination metadata is replaced by the new file's metadata, with mode copied from the source.
 
@@ -454,7 +454,7 @@ func Split(path string) (dir, file string)
 
 ### TempFile
 
-Creates a temporary file and returns its path. The caller is responsible for removing the file. If closing fails, removes the temporary file and returns the close error.
+Creates a temporary file and returns its path. The caller is responsible for removing the file. If closing fails, removes the temporary file and returns the close error, joined with the removal error if the removal also fails.
 
 ```go
 func TempFile(dir, pattern string) (string, error)

@@ -25,9 +25,10 @@ Most of these packages use only the standard library; `stringutil` also uses `go
 
 ## Text Processing
 
-| Package                 | Description                  | Dependencies              |
-| ----------------------- | ---------------------------- | ------------------------- |
-| [textnorm](textnorm.md) | Text normalization pipelines | `stringutil`, `stopwords` |
+| Package                                                     | Description                  | Dependencies        |
+| ----------------------------------------------------------- | ---------------------------- | ------------------- |
+| [textnorm](textnorm.md)                                     | Text normalization pipelines | `golang.org/x/text` |
+| [textnorm/stopwords](textnorm.md#package-textnormstopwords) | Embedded stopword lists      | None                |
 
 ## AWS SDK Helpers
 
@@ -45,13 +46,15 @@ These packages wrap AWS SDK v2 for easier use:
 
 ## Internal Packages
 
-| Package                   | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `internal/constraints`    | Generic type constraints used by `sliceutil`, `stringutil`, `mathutil` |
-| `aws/internal/pagination` | Shared pagination helpers for AWS service clients                      |
-| `aws/internal/testutil`   | LocalStack test utilities for AWS integration tests                    |
+| Package                   | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `internal/constraints`    | Generic numeric and ordered type constraints (currently no importers)   |
+| `aws/internal/pagination` | Pagination helpers for AWS service clients (currently no importers)     |
+| `aws/internal/testutil`   | LocalStack test utilities for AWS integration tests                     |
 
 ## Package Interaction Diagram
+
+Only the AWS service packages import another GoGPUtils package (the shared `aws` package); the diagram excludes tests:
 
 ```mermaid
 graph TB
@@ -63,6 +66,7 @@ graph TB
         R[randutil]
         CR[cryptoutil]
         COL[collection]
+        CA[cache]
     end
 
     subgraph Text["Text Processing"]
@@ -71,32 +75,19 @@ graph TB
     end
 
     subgraph AWS2["AWS SDK v2"]
-        AC[aws/config]
+        AC[aws]
         S3[aws/s3]
         DDB[aws/dynamodb]
         SQS[aws/sqs]
         SSM[aws/ssm]
         SM[aws/secretsmanager]
         L[aws/lambda]
-        AIP[aws/internal/pagination]
     end
 
-    subgraph Internal["Internal"]
-        IC[internal/constraints]
-    end
-
-    SL --> IC
-    STR --> IC
-    M --> IC
-    TN --> STR
-    TN --> SW
     S3 --> AC
     DDB --> AC
     SQS --> AC
     SSM --> AC
     SM --> AC
     L --> AC
-    S3 --> AIP
-    DDB --> AIP
-    SQS --> AIP
 ```

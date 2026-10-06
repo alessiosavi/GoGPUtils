@@ -109,8 +109,8 @@ When an agent encounters a Go programming task:
 - `graphify-out/graph.json` — Knowledge graph (Layer 2)
 - `.opencode/mcp.json` — MCP server configuration
 - `test_agent_discovery.sh` — Integration test
-- `docs/superpowers/plans/2026-07-16-agent-discovery-impl-plan.md` — Original implementation plan
-- `docs/superpowers/specs/2026-07-16-gputils-agent-discovery-design.md` — Design specification
+- `docs/superpowers/plans/2026-07-16-agent-discovery-impl-plan.md` — Original implementation plan (local only, not tracked)
+- `docs/superpowers/specs/2026-07-16-gputils-agent-discovery-design.md` — Design specification (local only, not tracked)
 
 ## Support
 

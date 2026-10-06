@@ -2,19 +2,19 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are currently being supported with security
-updates.
+Security fixes are released for the latest minor version of v1.
 
 | Version | Supported          |
 |---------|--------------------|
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.4.x   | :white_check_mark: |
+| < 1.4   | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Please report vulnerabilities privately through GitHub's
+[private vulnerability reporting](https://github.com/alessiosavi/GoGPUtils/security/advisories/new)
+rather than in a public issue.
 
-Tell them where to go, how often they can expect to get an update on a reported vulnerability, what to expect if the
-vulnerability is accepted or declined, etc.
+Include the affected package and version, a description of the impact, and a minimal
+reproduction if possible. Fixes are published as a new patch release with a GitHub
+security advisory.

@@ -44,6 +44,7 @@ graph TB
         R[randutil]
         C[cryptoutil]
         COL[collection]
+        CA[cache]
     end
 
     subgraph Text[Text Processing]
@@ -52,7 +53,7 @@ graph TB
     end
 
     subgraph AWS[AWS SDK v2]
-        AW[aws/config]
+        AW[aws]
         S3[aws/s3]
         DDB[aws/dynamodb]
         SQS[aws/sqs]
@@ -61,7 +62,6 @@ graph TB
         L[aws/lambda]
     end
 
-    TN --> SW
     S3 --> AW
     DDB --> AW
     SQS --> AW
@@ -72,73 +72,44 @@ graph TB
 
 ## Package Dependency Graph
 
+The core and text packages import no other GoGPUtils package: `stringutil` and `textnorm` use `golang.org/x/text`, and the rest use only the standard library. The AWS service packages import the shared `aws` package. The diagram shows dependencies between local packages, excluding tests:
+
 ```mermaid
 graph LR
-    subgraph Internal[Internal]
-        IC[internal/constraints]
+    subgraph Base["Base Packages"]
+        AC[aws]
     end
 
-    subgraph Utils[Utilities]
-        SL[sliceutil]
-        STR[stringutil]
-        MT[mathutil]
-        FL[fileutil]
-        RD[randutil]
-        CR[cryptoutil]
-        CL[collection]
-    end
-
-    subgraph TextProc[Text]
-        TX[textnorm]
-        SW2[stopwords]
-    end
-
-    subgraph AWS2[AWS]
-        AC[aws/config]
+    subgraph Services["Service Packages"]
         AS3[aws/s3]
         ADD[aws/dynamodb]
         ASQ[aws/sqs]
         ASM[aws/ssm]
         ASE[aws/secretsmanager]
         AL[aws/lambda]
-        AIP[aws/internal/pagination]
-        AIT[aws/internal/testutil]
     end
 
-    MT --> IC
-    SL --> IC
-    STR --> IC
-    TX --> STR
-    TX --> SW2
-    ADD --> AC
     AS3 --> AC
+    ADD --> AC
     ASQ --> AC
     ASM --> AC
     ASE --> AC
     AL --> AC
-    AS3 --> AIP
-    ADD --> AIP
-    ASQ --> AIP
-    ADD --> AIT
-    AS3 --> AIT
-    ASE --> AIT
-    ASM --> AIT
-    ASQ --> AIT
-    AL --> AIT
 ```
 
 ## Packages
 
 | Package                                | Description                                                          | Dependencies              |
 | -------------------------------------- | -------------------------------------------------------------------- | ------------------------- |
-| [`sliceutil`](packages/sliceutil.md)   | Generic slice operations (filter, map, reduce, chunk, etc.)          | `internal/constraints`    |
-| [`stringutil`](packages/stringutil.md) | String manipulation and similarity algorithms                        | `internal/constraints`    |
-| [`textnorm`](packages/textnorm.md)     | Deterministic text normalization pipelines                           | `stringutil`, `stopwords` |
-| [`mathutil`](packages/mathutil.md)     | Mathematical and statistical operations                              | `internal/constraints`    |
+| [`sliceutil`](packages/sliceutil.md)   | Generic slice operations (filter, map, reduce, chunk, etc.)          | None                      |
+| [`stringutil`](packages/stringutil.md) | String manipulation and similarity algorithms                        | `golang.org/x/text`       |
+| [`textnorm`](packages/textnorm.md)     | Deterministic text normalization pipelines                           | `golang.org/x/text`       |
+| [`mathutil`](packages/mathutil.md)     | Mathematical and statistical operations                              | None                      |
 | [`fileutil`](packages/fileutil.md)     | File system operations with proper error handling                    | None                      |
 | [`cryptoutil`](packages/cryptoutil.md) | Secure AES-GCM encryption                                            | None                      |
 | [`randutil`](packages/randutil.md)     | Cryptographically secure random generation                           | None                      |
 | [`collection`](packages/collection.md) | Generic data structures (Stack, Queue, Set, BST)                     | None                      |
+| [`cache`](packages/cache.md)           | Generic in-memory cache (SIEVE eviction, TTL, deduplicated loading)  | None                      |
 | [`aws`](aws/index.md)                  | AWS SDK v2 helpers (S3, DynamoDB, SQS, SSM, Secrets Manager, Lambda) | `aws-sdk-go-v2`           |
 
 ## Quick Start

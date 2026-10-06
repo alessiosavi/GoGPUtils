@@ -24,6 +24,8 @@
 //   - randutil: Cryptographically secure random generation
 //   - collection: Generic data structures (Stack, Queue, Set, BST)
 //   - textnorm: Deterministic text normalization pipelines
+//   - cache: Generic in-memory cache (SIEVE eviction, TTL, deduplicated loading)
+//   - aws: AWS SDK v2 helpers (S3, DynamoDB, SQS, SSM, Secrets Manager, Lambda)
 //
 // # Example Usage
 //

@@ -45,6 +45,8 @@ graph TB
 
 ## Package Sizes
 
+_Snapshot measured on 2026-07-05, before the `cache` package and the October 2026 changes; treat the figures as approximate._
+
 | Package              | Lines of Code | Functions | Tests | Test Ratio |
 | -------------------- | ------------- | --------- | ----- | ---------- |
 | `stringutil`         | 3,609         | 76        | 88    | 1.16x      |

@@ -656,6 +656,8 @@ func FindByExtension(ctx context.Context, dir, ext string) ([]string, error) {
 // same file, including through hard links or symbolic links.
 // Copies to a temporary file in the destination directory and closes it before
 // renaming it over dst. Errors before the rename leave any existing dst intact.
+// On failure the temporary file is removed; if that removal fails, its error is
+// joined to the returned error.
 // Replacement changes dst's file identity: a destination symlink is replaced,
 // and other hard links to the previous destination keep their original contents.
 // Checks context cancellation between reads and before the final rename, but

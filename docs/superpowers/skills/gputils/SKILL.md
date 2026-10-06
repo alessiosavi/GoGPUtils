@@ -1,19 +1,19 @@
 ---
 name: gputils-reference
-description: Use when writing Go code that needs slice operations, string manipulation, math utilities, file I/O, encryption, random generation, collections, or text normalization. Triggers when asked to write generic helper functions, data transformations, or common algorithmic utilities in Go.
+description: Use when writing Go code that needs slice operations, string manipulation, math utilities, file I/O, encryption, random generation, collections, in-memory caching, or text normalization. Triggers when asked to write generic helper functions, data transformations, or common algorithmic utilities in Go.
 ---
 
 # GoGPUtils Reference
 
 ## Overview
 
-`github.com/alessiosavi/GoGPUtils` is a zero-dependency Go utility library providing generic, well-tested functions for common programming tasks.
+`github.com/alessiosavi/GoGPUtils` is a Go utility library providing generic, well-tested functions for common programming tasks. Most packages use only the standard library; `stringutil` and `textnorm` also use `golang.org/x/text`, and the `aws` packages use the AWS SDK v2. Requires Go 1.27.1 or later.
 
 ## Core Rule
 
 **Before writing a generic helper function, check if GoGPUtils already provides it.**
 
-This library covers 90%+ of common utility needs without adding dependencies.
+This library covers many common utility needs with minimal dependencies.
 
 ## Quick-Reference: Problem → Package
 
@@ -34,32 +34,33 @@ This library covers 90%+ of common utility needs without adding dependencies.
 | AES-GCM encryption                            | `cryptoutil` | `github.com/alessiosavi/GoGPUtils/cryptoutil` |
 | Secure random generation                      | `randutil`   | `github.com/alessiosavi/GoGPUtils/randutil`   |
 | Stack / Queue / Set / BST                     | `collection` | `github.com/alessiosavi/GoGPUtils/collection` |
+| In-memory cache (TTL, SIEVE, GetOrLoad)       | `cache`      | `github.com/alessiosavi/GoGPUtils/cache`      |
 
 ## Key Functions by Package
 
 ### sliceutil
 
-- `Filter[T](slice []T, predicate func(T) bool) []T`
-- `Map[T, U](slice []T, mapper func(T) U) []U`
-- `Reduce[T, U](slice []T, initial U, reducer func(U, T) U) U`
-- `Unique[T comparable](slice []T) []T`
-- `Chunk[T](slice []T, size int) [][]T`
-- `GroupBy[T, K comparable](slice []T, keyFunc func(T) K) map[K][]T`
-- `Partition[T](slice []T, predicate func(T) bool) (matched []T, unmatched []T)`
-- `Flatten[T](slices [][]T) []T`
-- `FlatMap[T, U](slice []T, transform func(T) []U) []U`
+- `Filter[T any](s []T, predicate func(T) bool) []T`
+- `Map[T, U any](s []T, transform func(T) U) []U`
+- `Reduce[T, U any](s []T, initial U, accumulator func(U, T) U) U`
+- `Unique[T comparable](s []T) []T`
+- `Chunk[T any](s []T, size int) [][]T`
+- `GroupBy[T any, K comparable](s []T, key func(T) K) map[K][]T`
+- `Partition[T any](s []T, predicate func(T) bool) (matching, notMatching []T)`
+- `Flatten[T any](s [][]T) []T`
+- `FlatMap[T, U any](s []T, transform func(T) []U) []U`
 - `Intersect[T comparable](a, b []T) []T`
 - `Difference[T comparable](a, b []T) []T`
 - `Union[T comparable](a, b []T) []T`
-- `Reverse[T](slice []T) []T`
-- `Shuffle[T](slice []T) []T`
-- `Contains[T comparable](slice []T, value T) bool`
-- `IndexOf[T comparable](slice []T, value T) int`
-- `All[T](slice []T, predicate func(T) bool) bool`
-- `Any[T](slice []T, predicate func(T) bool) bool`
-- `Find[T](slice []T, predicate func(T) bool) (T, bool)`
-- `Min[T constraints.Ordered](slice []T) T`
-- `Max[T constraints.Ordered](slice []T) T`
+- `Reverse[T any](s []T) []T`
+- `Shuffle[T any](s []T) []T`
+- `Contains[T comparable](s []T, target T) bool`
+- `IndexOf[T comparable](s []T, target T) int`
+- `All[T any](s []T, predicate func(T) bool) bool`
+- `Any[T any](s []T, predicate func(T) bool) bool`
+- `Find[T any](s []T, predicate func(T) bool) (T, bool)`
+- `Min[T cmp.Ordered](s []T) (T, bool)`
+- `Max[T cmp.Ordered](s []T) (T, bool)`
 
 ### stringutil
 
@@ -67,45 +68,45 @@ This library covers 90%+ of common utility needs without adding dependencies.
 - `CamelCase(s string) string`
 - `PascalCase(s string) string`
 - `KebabCase(s string) string`
-- `PadLeft(s string, length int, pad rune) string`
-- `PadRight(s string, length int, pad rune) string`
-- `PadCenter(s string, length int, pad rune) string`
+- `PadLeft(s string, length int, padChar rune) string`
+- `PadRight(s string, length int, padChar rune) string`
+- `PadCenter(s string, length int, padChar rune) string`
 - `Truncate(s string, maxLen int, suffix string) string`
 - `TruncateWords(s string, maxLen int, suffix string) string`
-- `LevenshteinDistance(a, b string) int`
-- `LevenshteinSimilarity(a, b string) float64`
-- `DamerauLevenshteinDistance(a, b string) int`
-- `JaroSimilarity(a, b string) float64`
-- `JaroWinklerSimilarity(a, b string, prefixScale float64) float64`
-- `DiceCoefficient(a, b string) float64`
-- `HammingDistance(a, b string) int`
+- `LevenshteinDistance(s1, s2 string) int`
+- `LevenshteinSimilarity(s1, s2 string) float64`
+- `DamerauLevenshteinDistance(s1, s2 string) int`
+- `JaroSimilarity(s1, s2 string) float64`
+- `JaroWinklerSimilarity(s1, s2 string, prefixScale float64) float64`
+- `DiceCoefficient(s1, s2 string) float64`
+- `HammingDistance(s1, s2 string) int`
 - `IsEmpty(s string) bool`
 - `IsBlank(s string) bool`
 - `IsAlpha(s string) bool`
 - `IsNumeric(s string) bool`
 - `Words(s string) []string`
-- `SplitAndTrim(s string, sep string) []string`
+- `SplitAndTrim(s, sep string) []string`
 
 ### mathutil
 
-- `Sum[T constraints.Ordered](values []T) T`
-- `Product[T constraints.Ordered](values []T) T`
-- `Average[T constraints.Ordered](values []T) float64`
-- `Min[T constraints.Ordered](values []T) T`
-- `Max[T constraints.Ordered](values []T) T`
-- `MinMax[T constraints.Ordered](values []T) (min T, max T)`
-- `Clamp[T constraints.Ordered](value, min, max T) T`
-- `Abs[T constraints.Ordered](value T) T`
-- `Variance[T constraints.Ordered](values []T) float64`
-- `StdDev[T constraints.Ordered](values []T) float64`
-- `Median[T constraints.Ordered](values []T) float64`
-- `Mode[T comparable](values []T) []T`
-- `Percentile[T constraints.Ordered](values []T, p float64) float64`
-- `GCD[T constraints.Integer](a, b T) T`
-- `LCM[T constraints.Integer](a, b T) T`
-- `IsPrime(n int64) bool`
-- `Factorial(n uint) uint64`
-- `Fibonacci(n uint) uint64`
+- `Sum[T Number](s []T) T`
+- `Product[T Number](s []T) T`
+- `Average[T Number](s []T) float64`
+- `Min[T Number](s []T) (T, error)`
+- `Max[T Number](s []T) (T, error)`
+- `MinMax[T Number](s []T) (min, max T, err error)`
+- `Clamp[T Number](x, min, max T) T`
+- `Abs[T Number](x T) T`
+- `Variance[T Number](s []T) float64`
+- `StdDev[T Number](s []T) float64`
+- `Median[T Number](s []T) float64`
+- `Mode[T Number](s []T) []T`
+- `Percentile[T Number](s []T, p float64) float64`
+- `GCD[T Integer](a, b T) T`
+- `LCM[T Integer](a, b T) T`
+- `IsPrime[T Integer](n T) bool`
+- `Factorial(n int) int64`
+- `Fibonacci(n int) int64`
 
 ### fileutil
 
@@ -115,11 +116,11 @@ This library covers 90%+ of common utility needs without adding dependencies.
 - `ReadBytes(ctx context.Context, path string) ([]byte, error)`
 - `ReadString(ctx context.Context, path string) (string, error)`
 - `ReadLines(ctx context.Context, path string) ([]string, error)`
-- `WriteBytes(path string, data []byte, perm os.FileMode) error`
-- `WriteString(path, content string, perm os.FileMode) error`
-- `AppendString(path, content string, perm os.FileMode) error`
-- `EnsureDir(path string, perm os.FileMode) error`
-- `List(ctx context.Context, dir string, opts int) ([]string, error)`
+- `WriteBytes(path string, data []byte, perm fs.FileMode) error`
+- `WriteString(path, content string, perm fs.FileMode) error`
+- `AppendString(path, content string, perm fs.FileMode) error`
+- `EnsureDir(path string, perm fs.FileMode) error`
+- `List(ctx context.Context, dir string, opts ListOption) ([]string, error)`
 - `Find(ctx context.Context, dir, pattern string) ([]string, error)`
 - `Copy(ctx context.Context, src, dst string) error`
 - `Move(ctx context.Context, src, dst string) error`
@@ -129,10 +130,10 @@ This library covers 90%+ of common utility needs without adding dependencies.
 
 ### cryptoutil
 
-- `Encrypt(plaintext, key []byte) ([]byte, error)`
-- `Decrypt(ciphertext, key []byte) ([]byte, error)`
+- `Encrypt(plaintext, key []byte) (string, error)`
+- `Decrypt(ciphertextB64 string, key []byte) ([]byte, error)`
 - `EncryptString(plaintext string, key []byte) (string, error)`
-- `DecryptString(ciphertext string, key []byte) (string, error)`
+- `DecryptString(ciphertextB64 string, key []byte) (string, error)`
 - `DeriveKey(password, salt string) []byte`
 - `GenerateKey(size int) ([]byte, error)`
 
@@ -143,9 +144,9 @@ This library covers 90%+ of common utility needs without adding dependencies.
 - `SecureInt(max int) (int, error)`
 - `SecureInt64(max int64) (int64, error)`
 - `SecureID() (string, error)`
-- `SecureChoice[T any](slice []T) (T, error)`
+- `SecureChoice[T any](s []T) (T, error)`
 - `NewGenerator() *Generator`
-- `NewGeneratorWithSeed(seed int64) *Generator`
+- `NewGeneratorWithSeed(seed uint64) *Generator`
 
 ### collection
 
@@ -153,16 +154,29 @@ This library covers 90%+ of common utility needs without adding dependencies.
 - `NewQueue[T any]() *Queue[T]`
 - `NewSet[T comparable]() *Set[T]`
 - `NewSetFrom[T comparable](items []T) *Set[T]`
-- `NewBST[T constraints.Ordered]() *BST[T]`
+- `NewBST[T cmp.Ordered]() *BST[T]`
 
 ### textnorm
 
-- `New(opts ...Option) *Pipeline`
-- `SearchPreset(opts ...Option) *Pipeline`
-- `CanonicalPreset(opts ...Option) *Pipeline`
-- `DBSafePreset(opts ...Option) *Pipeline`
-- `WithWidthFold() Option`
-- `(p *Pipeline) Run(input string) string`
+- `New() Pipeline`
+- `SearchPreset(opts ...PresetOption) Pipeline`
+- `CanonicalPreset(opts ...PresetOption) Pipeline`
+- `MeaningPreset(opts ...PresetOption) Pipeline`
+- `DBSafePreset(opts ...PresetOption) Pipeline`
+- `HygienePreset(opts ...PresetOption) Pipeline`
+- `WithWidthFold() PresetOption`
+- `(p Pipeline) Run(input string) (string, error)`
+
+### cache
+
+- `New[K comparable, V any](cfg Config[K, V]) (*Cache[K, V], error)`
+- `(c *Cache[K, V]) Get(key K) (V, bool)`
+- `(c *Cache[K, V]) Set(key K, value V)`
+- `(c *Cache[K, V]) SetWithTTL(key K, value V, ttl time.Duration)`
+- `(c *Cache[K, V]) GetOrLoad(ctx context.Context, key K, load func(context.Context) (V, error)) (V, error)`
+- `(c *Cache[K, V]) Delete(key K) bool`
+- `(c *Cache[K, V]) Stats() Stats`
+- `(c *Cache[K, V]) Close() error`
 
 ## Agent Decision Guide
 
@@ -177,6 +191,7 @@ This library covers 90%+ of common utility needs without adding dependencies.
 7. **Encryption**: AES-GCM encrypt/decrypt with password-based key derivation
 8. **Random generation**: cryptographically secure random bytes, strings, integers, IDs
 9. **Needing basic data structures**: Stack, Queue, Set, or Binary Search Tree
+10. **Caching values in memory**: bounded cache with TTL, SIEVE eviction, and deduplicated loading
 
 **When NOT to use GoGPUtils:**
 
@@ -189,9 +204,9 @@ This library covers 90%+ of common utility needs without adding dependencies.
 
 - **Errors over panics**: All I/O and crypto utilities return `(T, error)`
 - **Zero global state**: No singletons; explicit configuration
-- **Generics-first**: Leverage Go 1.18+ generics for type safety
+- **Generics-first**: Leverage generics for type safety (the module requires Go 1.27.1+)
 - **Context-aware**: Blocking operations accept `context.Context`
-- **Zero external dependencies** (core packages)
+- **Minimal dependencies**: core packages use only the standard library; `stringutil` and `textnorm` add `golang.org/x/text`
 
 ## Usage Example
 

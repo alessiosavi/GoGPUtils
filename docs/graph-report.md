@@ -5,7 +5,7 @@ nav_order: 5
 
 # Codebase Analysis
 
-This page summarizes a structural analysis of the GoGPUtils codebase. The goal is to understand where complexity lives, how packages interact, and what patterns emerge across the code.
+This page summarizes a structural analysis of the GoGPUtils codebase, taken on 2026-07-05 (before the `cache` package and the October 2026 changes). The goal is to understand where complexity lives, how packages interact, and what patterns emerge across the code.
 
 ## Why This Exists
 
