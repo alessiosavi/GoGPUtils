@@ -28,6 +28,7 @@ This library covers many common utility needs with minimal dependencies.
 | String padding / truncation                   | `stringutil` | `github.com/alessiosavi/GoGPUtils/stringutil` |
 | String similarity (Levenshtein, Jaro-Winkler) | `stringutil` | `github.com/alessiosavi/GoGPUtils/stringutil` |
 | Text normalization (search, DB-safe)          | `textnorm`   | `github.com/alessiosavi/GoGPUtils/textnorm`   |
+| Near-duplicate text / persisted LSH candidates | `minhash` | `github.com/alessiosavi/GoGPUtils/minhash` |
 | Min / Max / Clamp / Average                   | `mathutil`   | `github.com/alessiosavi/GoGPUtils/mathutil`   |
 | Stats (median, stddev, percentile)            | `mathutil`   | `github.com/alessiosavi/GoGPUtils/mathutil`   |
 | Read / Write / List files                     | `fileutil`   | `github.com/alessiosavi/GoGPUtils/fileutil`   |
@@ -166,6 +167,23 @@ This library covers many common utility needs with minimal dependencies.
 - `HygienePreset(opts ...PresetOption) Pipeline`
 - `WithWidthFold() PresetOption`
 - `(p Pipeline) Run(input string) (string, error)`
+
+### minhash
+
+- `BandKeys(sig Signature, bands int) ([]uint64, error)`
+- `Bands(numPerm int, threshold float64) (bands, rows int, err error)`
+- `Jaccard(a, b []uint64) float64`
+- `Shingles(tokens []string, k int) ([]uint64, error)`
+- `Similarity(a, b Signature) (float64, error)`
+- `New(numPerm int, seed uint64) (*Hasher, error)`
+- `(h *Hasher) NumPerm() int`
+- `(h *Hasher) Sign(shingles []uint64) (Signature, error)`
+- `(h *Hasher) SignInto(dst Signature, shingles []uint64) error`
+- `NewIndex(bands, rows int) (*Index, error)`
+- `(idx *Index) Add(id string, sig Signature) error`
+- `(idx *Index) Candidates(sig Signature) ([]string, error)`
+
+Persist `SignatureVersion = 1` with seed, shingle k, signature length, normalization and band layout. `MaxNumPerm = 1024`. Normalize with `textnorm.MeaningPreset().SplitTokens()` first. For recall-focused dedup use 64 permutations and 16×4 bands, then verify candidates with exact `Jaccard`; `Bands(64, 0.85)` instead chooses balanced 4×16.
 
 ### cache
 

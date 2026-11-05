@@ -49,6 +49,7 @@ graph TB
 
     subgraph Text[Text Processing]
         TN[textnorm]
+        MH[minhash]
         SW[textnorm/stopwords]
     end
 
@@ -104,6 +105,7 @@ graph LR
 | [`sliceutil`](packages/sliceutil.md)   | Generic slice operations (filter, map, reduce, chunk, etc.)          | None                      |
 | [`stringutil`](packages/stringutil.md) | String manipulation and similarity algorithms                        | `golang.org/x/text`       |
 | [`textnorm`](packages/textnorm.md)     | Deterministic text normalization pipelines                           | `golang.org/x/text`       |
+| [`minhash`](packages/minhash.md) | Deterministic MinHash and LSH for near-duplicate text | None |
 | [`mathutil`](packages/mathutil.md)     | Mathematical and statistical operations                              | None                      |
 | [`fileutil`](packages/fileutil.md)     | File system operations with proper error handling                    | None                      |
 | [`cryptoutil`](packages/cryptoutil.md) | Secure AES-GCM encryption                                            | None                      |

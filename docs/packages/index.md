@@ -28,6 +28,7 @@ Most of these packages use only the standard library; `stringutil` also uses `go
 | Package                                                     | Description                  | Dependencies        |
 | ----------------------------------------------------------- | ---------------------------- | ------------------- |
 | [textnorm](textnorm.md)                                     | Text normalization pipelines | `golang.org/x/text` |
+| [minhash](minhash.md) | MinHash signatures and LSH candidate lookup | None |
 | [textnorm/stopwords](textnorm.md#package-textnormstopwords) | Embedded stopword lists      | None                |
 
 ## AWS SDK Helpers
@@ -71,6 +72,7 @@ graph TB
 
     subgraph Text["Text Processing"]
         TN[textnorm]
+        MH[minhash]
         SW[textnorm/stopwords]
     end
 

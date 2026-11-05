@@ -10,7 +10,7 @@ Every exported function or method of the utility packages (everything except `aw
 ## Conventions
 
 - **File and names.** Each package has one `bench_test.go`. Function `Foo` is benchmarked by `BenchmarkFoo`, method `T.M` by `BenchmarkT_M`.
-- **Sub-benchmarks** are `key=value` dimensions: `n=` (input size), `type=`, `case=`, `mode=`, `order=`, `shards=`, `key=`, `bins=`, `files=`, `languages=`, `read=`, `words=`. Benchmark names and dimension values contain neither spaces nor commas, because paired-row counting reads benchstat's CSV output.
+- **Sub-benchmarks** are `key=value` dimensions: `n=` (input size), `type=`, `case=`, `mode=`, `order=`, `shards=`, `key=`, `bins=`, `files=`, `languages=`, `read=`, `words=`, `perm=` (permutations), `k=` (shingle width). Benchmark names and dimension values contain neither spaces nor commas, because paired-row counting reads benchstat's CSV output.
 - **Inputs** come from `internal/benchkit`. They are deterministic and seeded, with standard sizes `16, 1024, 65536`, or `8, 64, 512` for quadratic work.
 - **Loops.** Serial benchmarks use `for b.Loop()` with `b.ReportAllocs()`. Parallel ones use `b.RunParallel`.
 - **State.** Every iteration measures the same documented state. A benchmark that consumes its input restores it inside the loop, and its doc comment says so.
