@@ -16,7 +16,7 @@ func benchShingles() []uint64 {
 }
 
 func BenchmarkShingles(b *testing.B) {
-	for _, n := range []int{16, 1000, 65536} {
+	for _, n := range benchkit.Sizes {
 		b.Run(fmt.Sprintf("n=%d/k=5", n), func(b *testing.B) {
 			tokens := benchkit.Words(n)
 			b.ReportAllocs()
