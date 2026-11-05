@@ -34,6 +34,7 @@ Requires Go 1.27.1 or later.
 | [`sliceutil`](#sliceutil) | Generic slice operations (filter, map, reduce, chunk, etc.) |
 | [`stringutil`](#stringutil) | String manipulation and similarity algorithms |
 | [`textnorm`](#textnorm) | Deterministic text normalization pipelines |
+| [`minhash`](#minhash) | Deterministic MinHash and LSH for near-duplicate text |
 | [`mathutil`](#mathutil) | Mathematical and statistical operations |
 | [`fileutil`](#fileutil) | File system operations with proper error handling |
 | [`cryptoutil`](#cryptoutil) | Secure AES-GCM encryption |
@@ -199,6 +200,52 @@ textnorm.SearchPreset().Run("  Café, go!  ")
 textnorm.CanonicalPreset().Run("  Hello, World!  ")
 textnorm.DBSafePreset(textnorm.WithWidthFold()).Run("  Ｇｏ\x00  ")
 ```
+
+---
+
+## minhash
+
+Deterministic word shingles, MinHash signatures, and LSH candidates for near-duplicate text. Standard library only. See [the full reference](docs/packages/minhash.md) for persistence and band selection.
+
+```go
+import "github.com/alessiosavi/GoGPUtils/minhash"
+```
+
+### Functions
+
+| Function | Description |
+|----------|-------------|
+| `Shingles(tokens, k)` | Sorted, deduplicated word-shingle hashes; no normalization |
+| `New(numPerm, seed)` | Immutable, deterministic hasher |
+| `Hasher.NumPerm()` | Signature length |
+| `Hasher.Sign(shingles)` | Allocate a signature; reject empty sets |
+| `Hasher.SignInto(dst, shingles)` | Fill a reusable signature without allocations |
+| `Similarity(a, b)` | Estimate Jaccard from compatible signatures |
+| `Jaccard(a, b)` | Exact Jaccard of sorted, unique shingle sets |
+| `BandKeys(sig, bands)` | Stable keys for database candidate lookup |
+| `NewIndex(bands, rows)` | Small concurrent in-memory index |
+| `Index.Add(id, sig)` | Add a unique document ID |
+| `Index.Candidates(sig)` | Candidate IDs in insertion order |
+| `Bands(numPerm, threshold)` | Balance integrated false positives and negatives |
+
+### Example
+
+```go
+tokens, err := textnorm.MeaningPreset().SplitTokens().Run(text)
+if err != nil { return err }
+shingles, err := minhash.Shingles(tokens, 5)
+if err != nil { return err }
+h, err := minhash.New(64, 42)
+if err != nil { return err }
+sig, err := h.Sign(shingles)
+if err != nil { return err } // ErrEmptySet for empty text
+keys, err := minhash.BandKeys(sig, 16) // 16 bands x 4 rows
+if err != nil { return err }
+// Persist SignatureVersion, the hashing configuration, sig and keys.
+// Query matching (band, key) rows; verify candidates with Jaccard >= 0.85.
+```
+
+`Bands(64, 0.85)` chooses balanced 4×16 (~27% candidate recall at J=0.85). For candidate-then-verify dedup, 16×4 favors recall (~99.999% at J=0.85); exact Jaccard filters extra candidates. Persisted data must share the version, seed, k, signature length, normalization, and band layout.
 
 ---
 

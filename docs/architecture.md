@@ -9,7 +9,7 @@ This page describes the structure, design patterns, and relationships between Go
 
 ## Package Overview
 
-GoGPUtils is organized into three layers: **Core utilities** (no external dependencies), **Text processing** (`stringutil` and `textnorm`, using `golang.org/x/text`), and **AWS SDK wrappers** (many external dependencies).
+GoGPUtils is organized into three layers: **Core utilities** (no external dependencies), **Text processing** (`stringutil` and `textnorm`, using `golang.org/x/text`, plus stdlib-only `minhash`), and **AWS SDK wrappers** (many external dependencies).
 
 ```mermaid
 graph TB
@@ -26,6 +26,7 @@ graph TB
     subgraph Text["Text Processing (+1 dep)"]
         STR[stringutil]
         TN[textnorm]
+        MH[minhash]
         SW[textnorm/stopwords]
     end
 
@@ -91,7 +92,7 @@ textnorm   → golang.org/x/text (Unicode normalization, case folding, and width
 ```
 
 `stringutil` and `textnorm` share one external dependency (`golang.org/x/text`).
-`textnorm/stopwords` uses only the standard library.
+`textnorm/stopwords` and `minhash` use only the standard library.
 
 ### AWS Layer
 
@@ -255,5 +256,6 @@ Based on lines of code per function, these are the most complex areas:
 | -------- | ----------------------- | --------------------- |
 | Core (6) | 0                       | Standard library only |
 | stringutil, textnorm | 1 shared (`golang.org/x/text`) | Unicode text processing |
+| minhash | 0 | Deterministic near-duplicate detection |
 | textnorm/stopwords | 0              | Embedded word lists   |
 | aws/*    | 15 (`aws-sdk-go-v2/*`)  | AWS service clients   |
